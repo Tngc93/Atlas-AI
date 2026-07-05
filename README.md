@@ -61,6 +61,7 @@ Faz 6'da varsayılan sağlayıcı `mock` değeridir. OpenAI ve Gemini alanları 
 - `/expenses` zorunlu giderler CRUD
 - `/plan` SQLite verisine dayalı deterministik aylık borç kapatma yol haritası
 - `/decisions` gerçek kayıtları değiştirmeyen deterministik karar simülatörü
+- `/forecast` 3, 6, 12 ve 24 aylık deterministik finansal tahmin ekranı
 
 ## Veri ve Gizlilik
 
@@ -93,6 +94,16 @@ Bu fazda yeni TCMB entegrasyonu yapılmaz. Mevcut sağlayıcı yapısı sonraki 
 https://www.tcmb.gov.tr/wps/wcm/connect/TR/TCMB+TR/Main+Menu/Istatistikler/Bankacilik+Verileri/Kredi_Karti_Islemlerinde_Uygulanacak_Azami_Faiz_Oranlari
 
 Bu oranlar yasal azami bağlamdır; sizin kartınıza uygulanan kesin oran olmayabilir. Gerçek karta özel aylık faiz oranını her zaman elle girin.
+
+## Forecast Engine
+
+`/forecast` sayfası mevcut lokal SQLite kayıtlarından 3, 6, 12 ve 24 aylık finansal projeksiyon üretir.
+
+- Finans motoru tek hesaplama kaynağıdır.
+- Forecast sonuçları veritabanına kaydedilmez.
+- AI/OpenAI/Gemini çağrısı yapılmaz.
+- Pasif ve kapanmış borçlar tahmine dahil edilmez.
+- Çıktılar tahmin ve karar desteği niteliğindedir; kesin finansal tavsiye değildir.
 
 ## Doğrulama
 

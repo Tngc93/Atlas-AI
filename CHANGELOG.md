@@ -2,6 +2,16 @@
 
 Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koçu panelidir. Bu dosya ürün sürümleri ve önemli teknik değişiklikleri özetler.
 
+## Unreleased
+
+### Faz 9 - Forecast Engine
+
+- `/forecast` sayfası eklendi.
+- 3, 6, 12 ve 24 aylık deterministik finansal tahmin raporu oluşturuldu.
+- Kalan borç trendi, yaşam bütçesi trendi, toplam tahmini faiz, risk trendi ve borç kapanış kilometre taşları gösterildi.
+- Forecast Engine, mevcut finans motorunun `MonthlyFinancePlan.payoffForecast` çıktısını kullanır; AI/OpenAI/Gemini çağrısı yapmaz.
+- Forecast sonuçları SQLite’a kaydedilmez.
+
 ## v0.1.0 - Personal Finance OS Foundation
 
 Tarih: 2026-07-05
