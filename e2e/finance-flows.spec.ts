@@ -93,6 +93,13 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await page.getByLabel("Hedef borç").selectOption({ label: "Örnek E2E Kart" });
   await page.getByRole("button", { name: "Simüle Et" }).click();
   await expect(page.getByText("Belirli borca ekstra ödeme")).toBeVisible();
+
+  await page.goto("/forecast");
+  await expect(page.getByRole("heading", { name: "Finansal Tahmin" })).toBeVisible();
+  await expect(page.getByText("24 ay sonu kalan borç")).toBeVisible();
+  await expect(page.getByText("Tahmin dönemleri")).toBeVisible();
+  await expect(page.getByText("Risk trendi")).toBeVisible();
+  await expect(page.getByText("Forecast varsayımları")).toBeVisible();
   expect(browserErrors).toEqual([]);
 });
 
@@ -101,7 +108,7 @@ test("mobil görünümde ana akışlarda yatay taşma oluşmaz", async ({ page }
 
   await page.setViewportSize({ width: 375, height: 812 });
 
-  for (const path of ["/", "/income", "/debts", "/expenses", "/plan", "/decisions"]) {
+  for (const path of ["/", "/income", "/debts", "/expenses", "/plan", "/decisions", "/forecast"]) {
     await page.goto(path);
     const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(hasHorizontalOverflow, `${path} mobil yatay taşma üretmemeli`).toBe(false);
