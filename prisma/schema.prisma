@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum DebtType {
+  credit_card
+  personal_loan
+  overdraft_account
+  friend_debt
+  other
+}
+
+enum DebtStatus {
+  active
+  paused
+  paid_off
+}
+
+model Profile {
+  id                      String   @id @default(cuid())
+  currency                String   @default("TRY")
+  monthlySalaryKurus      Int      @default(0)
+  survivalThresholdKurus  Int      @default(0)
+  salaryDay               Int?
+  monthlyLivingReserveKurus Int?
+  riskTolerance           String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+model SalaryRecord {
+  id          String   @id @default(cuid())
+  amountKurus Int
+  salaryDay   Int?
+  effectiveDate DateTime
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DebtAccount {
+  id                   String     @id @default(cuid())
+  type                 DebtType
+  name                 String
+  lender               String
+  totalDebtKurus       Int        @default(0)
+  balanceKurus         Int
+  creditLimitKurus     Int?
+  interestRateMonthly  Decimal
+  interestRateAnnual   Decimal?
+  manualInterestRateMonthly Decimal?
+  resolvedInterestRateMonthly Decimal @default(0)
+  interestRateSource   String     @default("missing")
+  interestRateResolvedAt DateTime?
+  interestRateNote     String?
+  minimumPaymentKurus  Int
+  dueDay               Int
+  statementDay         Int?
+  lastPaymentDate      DateTime?
+  isMinimumPaymentPaidThisMonth Boolean @default(false)
+  priorityOverride     Int?
+  graceDays            Int?
+  paymentStatus        String?
+  installmentCount     Int?
+  remainingInstallments Int?
+  status               DebtStatus @default(active)
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+}
+
+model MandatoryExpense {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  amountKurus Int
+  dueDay      Int?
+  isFixed     Boolean  @default(true)
+  isPaidThisMonth Boolean @default(false)
+  priority    Int?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PaymentPlanMonth {
+  id                         String           @id @default(cuid())
+  month                      String
+  salaryKurus                Int
+  mandatoryExpenseTotalKurus Int
+  minimumDebtPaymentsKurus   Int
+  extraDebtPaymentKurus      Int
+  survivalBudgetKurus        Int
+  riskLevel                  String
+  createdAt                  DateTime         @default(now())
+  debtProjections            DebtProjection[]
+}
+
+model DebtProjection {
+  id                    String           @id @default(cuid())
+  planMonthId           String
+  debtAccountId         String
+  startingBalanceKurus  Int
+  interestChargedKurus  Int
+  minimumPaymentKurus   Int
+  extraPaymentKurus     Int
+  endingBalanceKurus    Int
+  projectedPayoffMonth  String?
+  planMonth             PaymentPlanMonth @relation(fields: [planMonthId], references: [id], onDelete: Cascade)
+}
+
+model InterestRateSnapshot {
+  id                    String   @id @default(cuid())
+  source                String
+  providerStatus        String   @default("fallback")
+  country               String   @default("TR")
+  currency              String   @default("TRY")
+  effectiveDate         String
+  rateType              String   @default("credit_card")
+  referenceRate         Decimal?
+  maxContractualRate    Decimal?
+  maxOverdueRate        Decimal?
+  rawSourceUrl          String
+  note                  String?
+  retrievedAt           DateTime @default(now())
+}
+
+model CoachInsight {
+  id          String   @id @default(cuid())
+  month       String
+  inputHash   String   @unique
+  provider    String   @default("mock")
+  providerMode String  @default("mock")
+  inputSummaryHash String?
+  estimatedInputTokens Int?
+  estimatedOutputTokens Int?
+  estimatedCostKurus Int?
+  isPlaceholder Boolean @default(true)
+  riskLevel   String
+  summary     String
+  actionsJson String
+  caveats     String
+  model       String
+  createdAt   DateTime @default(now())
+}
