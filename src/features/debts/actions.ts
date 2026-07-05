@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { FormActionState } from "@/lib/actions/action-state";
 import { toErrorState, toSuccessState } from "@/lib/actions/action-state";
 import { revalidateFinancePages } from "@/lib/actions/revalidate-finance";
+import { recordFinancialMemoryAfterFinanceMutation } from "@/features/memory/actions";
 import { createDebt, deleteDebt, updateDebt } from "./repository";
 import { debtSchema, deleteDebtSchema, updateDebtSchema } from "./schemas";
 
@@ -22,6 +23,7 @@ export async function createDebtAction(
   }
 
   await createDebt(parsed.data);
+  await recordFinancialMemoryAfterFinanceMutation("debt_changed");
   revalidateFinancePages();
 
   return toSuccessState("Borç kaydı eklendi.");
@@ -38,6 +40,7 @@ export async function updateDebtAction(
   }
 
   await updateDebt(parsed.data);
+  await recordFinancialMemoryAfterFinanceMutation("debt_changed");
   revalidateFinancePages();
 
   return toSuccessState("Borç kaydı güncellendi.");
@@ -54,6 +57,7 @@ export async function deleteDebtAction(
   }
 
   await deleteDebt(parsed.data.id);
+  await recordFinancialMemoryAfterFinanceMutation("debt_changed");
   revalidateFinancePages();
 
   redirect("/debts?notice=debtDeleted");

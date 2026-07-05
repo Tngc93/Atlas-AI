@@ -18,6 +18,7 @@ export const trCopy = {
     plan: "Aylık plan",
     decisions: "Kararlar",
     forecast: "Tahmin",
+    memory: "Hafıza",
     mainAria: "Ana gezinme",
     mobileAria: "Mobil gezinme",
   },
@@ -165,6 +166,31 @@ export const trCopy = {
     noWarnings: "24 aylık pencerede belirgin nakit sıkışıklığı uyarısı yok.",
     noMilestones: "24 aylık pencerede kapanması beklenen borç görünmüyor.",
     noActiveDebt: "Aktif borç olmadığı için borç trendi üretilemiyor.",
+  },
+  memory: {
+    kicker: "Financial Memory",
+    title: "Finansal Hafıza",
+    description:
+      "Bu analiz sadece lokal SQLite verinize dayanır. Üçüncü partiye finansal veri gönderilmez; OpenAI veya Gemini çağrısı yapılmaz.",
+    refresh: "Hafızayı güncelle",
+    emptyTitle: "Henüz finansal hafıza yok",
+    emptyDescription:
+      "Gelir, gider ve borç kayıtlarınızdan aylık bir snapshot oluşturduğunuzda sistem trendleri ve alışkanlık içgörülerini izlemeye başlar.",
+    notEnoughHistoryTitle: "Yeterli geçmiş yok",
+    notEnoughHistoryDescription:
+      "Trend ve davranış analizi için en az iki aylık finansal hafıza gerekir. Şimdilik güncel durum snapshot’ı saklanıyor.",
+    comparisons: "3 / 6 / 12 ay karşılaştırmaları",
+    debtTrend: "Borç trendi",
+    budgetTrend: "Yaşam bütçesi ve gider trendi",
+    insights: "Deterministik koç içgörüleri",
+    categoryChanges: "Kategori değişimleri",
+    triggers: {
+      manual_refresh: "Manuel güncelleme",
+      income_changed: "Gelir değişti",
+      salary_record_changed: "Maaş geçmişi değişti",
+      debt_changed: "Borç değişti",
+      expense_changed: "Gider değişti",
+    },
   },
   risk: {
     low: "Düşük",
