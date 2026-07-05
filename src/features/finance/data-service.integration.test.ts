@@ -18,6 +18,8 @@ describe("SQLite-backed finance data flow", () => {
   let listSalaryRecords: typeof import("@/features/income/repository").listSalaryRecords;
   let upsertProfileIncome: typeof import("@/features/income/repository").upsertProfileIncome;
   let getMonthlyFinancePlanSnapshot: typeof import("./data-service").getMonthlyFinancePlanSnapshot;
+  let getFinanceSnapshot: typeof import("./data-service").getFinanceSnapshot;
+  let buildForecastReport: typeof import("@/features/forecast/service").buildForecastReport;
 
   beforeAll(async () => {
     const migrationsPath = join(process.cwd(), "prisma/migrations");
@@ -33,7 +35,8 @@ describe("SQLite-backed finance data flow", () => {
     ({ createExpense, updateExpense, deleteExpense } = await import("@/features/expenses/repository"));
     ({ createSalaryRecord, updateSalaryRecord, deleteSalaryRecord, listSalaryRecords, upsertProfileIncome } =
       await import("@/features/income/repository"));
-    ({ getMonthlyFinancePlanSnapshot } = await import("./data-service"));
+    ({ getFinanceSnapshot, getMonthlyFinancePlanSnapshot } = await import("./data-service"));
+    ({ buildForecastReport } = await import("@/features/forecast/service"));
   });
 
   afterAll(async () => {
@@ -159,6 +162,36 @@ describe("SQLite-backed finance data flow", () => {
 
     expect(updatedSnapshot.monthlyPlan.cashFlow.minimumDebtPaymentsKurus).toBe(0);
     expect(updatedSnapshot.monthlyPlan.debtPriorities).toHaveLength(0);
+  });
+
+  it("builds a deterministic forecast report from the SQLite finance snapshot", async () => {
+    await upsertProfileIncome({
+      monthlySalaryKurus: 120_000_00,
+      survivalThresholdKurus: 12_000_00,
+      salaryDay: 1,
+    });
+    await createDebt({
+      type: "credit_card",
+      lender: "QA Örnek Forecast Banka",
+      name: "QA Örnek Forecast Kart",
+      totalDebtKurus: 12_000_00,
+      balanceKurus: 12_000_00,
+      creditLimitKurus: 30_000_00,
+      interestRateMonthly: 4,
+      minimumPaymentKurus: 1_500_00,
+      dueDay: 15,
+      statementDay: 5,
+      installmentCount: undefined,
+      remainingInstallments: undefined,
+      status: "active",
+    });
+
+    const snapshot = await getFinanceSnapshot();
+    const forecast = buildForecastReport(snapshot, new Date(2026, 6, 4));
+
+    expect(forecast.checkpoints.map((checkpoint) => checkpoint.horizonMonths)).toEqual([3, 6, 12, 24]);
+    expect(forecast.monthlyTrend.length).toBeGreaterThan(0);
+    expect(forecast.assumptions.some((assumption) => assumption.value.includes("mock"))).toBe(false);
   });
 
   it("creates, updates and deletes mandatory expenses", async () => {
