@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { FormActionState } from "@/lib/actions/action-state";
 import { toErrorState, toSuccessState } from "@/lib/actions/action-state";
 import { revalidateFinancePages } from "@/lib/actions/revalidate-finance";
+import { recordFinancialMemoryAfterFinanceMutation } from "@/features/memory/actions";
 import { createExpense, deleteExpense, updateExpense } from "./repository";
 import { deleteExpenseSchema, expenseSchema, updateExpenseSchema } from "./schemas";
 
@@ -22,6 +23,7 @@ export async function createExpenseAction(
   }
 
   await createExpense(parsed.data);
+  await recordFinancialMemoryAfterFinanceMutation("expense_changed");
   revalidateFinancePages();
 
   return toSuccessState("Gider kaydı eklendi.");
@@ -38,6 +40,7 @@ export async function updateExpenseAction(
   }
 
   await updateExpense(parsed.data);
+  await recordFinancialMemoryAfterFinanceMutation("expense_changed");
   revalidateFinancePages();
 
   return toSuccessState("Gider kaydı güncellendi.");
@@ -54,6 +57,7 @@ export async function deleteExpenseAction(
   }
 
   await deleteExpense(parsed.data.id);
+  await recordFinancialMemoryAfterFinanceMutation("expense_changed");
   revalidateFinancePages();
 
   redirect("/expenses?notice=expenseDeleted");

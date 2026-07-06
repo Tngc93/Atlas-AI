@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart3, CreditCard, Home, Landmark, ReceiptText, Split, TrendingUp, WalletCards } from "lucide-react";
+import { BarChart3, Brain, CreditCard, Home, Landmark, ReceiptText, Split, TrendingUp, WalletCards } from "lucide-react";
 import { trCopy } from "@/lib/copy/tr";
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/plan", label: trCopy.nav.plan, icon: BarChart3 },
   { href: "/decisions", label: trCopy.nav.decisions, icon: Split },
   { href: "/forecast", label: trCopy.nav.forecast, icon: TrendingUp },
+  { href: "/memory", label: trCopy.nav.memory, icon: Brain },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

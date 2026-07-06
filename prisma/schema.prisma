@@ -147,3 +147,45 @@ model CoachInsight {
   model       String
   createdAt   DateTime @default(now())
 }
+
+model FinancialMemorySnapshot {
+  id                            String                         @id @default(cuid())
+  periodMonth                   String                         @unique
+  capturedAt                    DateTime                       @default(now())
+  trigger                       String
+  salaryKurus                   Int
+  mandatoryExpenseTotalKurus    Int
+  minimumDebtPaymentsKurus      Int
+  survivalBudgetKurus           Int
+  dailyLimitKurus               Int
+  weeklyLimitKurus              Int
+  extraDebtPaymentCapacityKurus Int
+  totalDebtKurus                Int
+  activeDebtKurus               Int
+  creditCardDebtKurus           Int
+  activeDebtCount               Int
+  paidOffDebtCount              Int
+  riskLevel                     String
+  criticalReasonCount           Int
+  warningCount                  Int
+  fallbackRateDebtCount         Int
+  missingRateDebtCount          Int
+  manualRateDebtCount           Int
+  providerRateDebtCount         Int
+  planExtraDebtPaymentKurus     Int
+  planMinimumPaymentsCovered    Boolean
+  createdAt                     DateTime                       @default(now())
+  updatedAt                     DateTime                       @updatedAt
+  categoryTotals                FinancialMemoryCategoryTotal[]
+}
+
+model FinancialMemoryCategoryTotal {
+  id             String                  @id @default(cuid())
+  snapshotId     String
+  category       String
+  amountKurus    Int
+  itemCount      Int
+  memorySnapshot FinancialMemorySnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@unique([snapshotId, category])
+}

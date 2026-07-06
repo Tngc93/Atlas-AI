@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { FormActionState } from "@/lib/actions/action-state";
 import { toErrorState, toSuccessState } from "@/lib/actions/action-state";
 import { revalidateFinancePages } from "@/lib/actions/revalidate-finance";
+import { recordFinancialMemoryAfterFinanceMutation } from "@/features/memory/actions";
 import {
   deleteSalaryRecordSchema,
   profileIncomeSchema,
@@ -32,6 +33,7 @@ export async function saveProfileIncomeAction(
   }
 
   await upsertProfileIncome(parsed.data);
+  await recordFinancialMemoryAfterFinanceMutation("income_changed");
   revalidateFinancePages();
 
   return toSuccessState("Gelir bilgileri kaydedildi.");
@@ -48,6 +50,7 @@ export async function createSalaryRecordAction(
   }
 
   await createSalaryRecord(parsed.data);
+  await recordFinancialMemoryAfterFinanceMutation("salary_record_changed");
   revalidateFinancePages();
 
   return toSuccessState("Maaş geçmişi kaydı eklendi.");
@@ -64,6 +67,7 @@ export async function updateSalaryRecordAction(
   }
 
   await updateSalaryRecord(parsed.data);
+  await recordFinancialMemoryAfterFinanceMutation("salary_record_changed");
   revalidateFinancePages();
 
   return toSuccessState("Maaş geçmişi kaydı güncellendi.");
@@ -80,6 +84,7 @@ export async function deleteSalaryRecordAction(
   }
 
   await deleteSalaryRecord(parsed.data.id);
+  await recordFinancialMemoryAfterFinanceMutation("salary_record_changed");
   revalidateFinancePages();
 
   redirect("/income?notice=salaryRecordDeleted");

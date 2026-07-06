@@ -62,6 +62,7 @@ Faz 6'da varsayılan sağlayıcı `mock` değeridir. OpenAI ve Gemini alanları 
 - `/plan` SQLite verisine dayalı deterministik aylık borç kapatma yol haritası
 - `/decisions` gerçek kayıtları değiştirmeyen deterministik karar simülatörü
 - `/forecast` 3, 6, 12 ve 24 aylık deterministik finansal tahmin ekranı
+- `/memory` lokal SQLite snapshot’larından finansal davranış ve trend hafızası
 
 ## Veri ve Gizlilik
 
@@ -104,6 +105,16 @@ Bu oranlar yasal azami bağlamdır; sizin kartınıza uygulanan kesin oran olmay
 - AI/OpenAI/Gemini çağrısı yapılmaz.
 - Pasif ve kapanmış borçlar tahmine dahil edilmez.
 - Çıktılar tahmin ve karar desteği niteliğindedir; kesin finansal tavsiye değildir.
+
+## Financial Memory
+
+`/memory` sayfası gelir, borç, gider, risk ve yaşam bütçesi snapshot’larını lokal SQLite içinde aylık olarak tutar.
+
+- Memory snapshot’ları aynı ay içinde tekrar üretilirse güncellenir.
+- CRUD işlemlerinden sonra memory kaydı best-effort denenir; ana kayıt akışı bu işleme bağımlı değildir.
+- Kullanıcı `/memory` üzerinde `Hafızayı güncelle` butonuyla manuel snapshot oluşturabilir.
+- Trendler için en az iki aylık geçmiş gerekir; geçmiş azsa ekran açıkça `Yeterli geçmiş yok` der.
+- Financial Memory AI/OpenAI/Gemini çağrısı yapmaz ve üçüncü partiye finansal veri göndermez.
 
 ## Doğrulama
 

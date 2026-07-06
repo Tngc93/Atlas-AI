@@ -6,4 +6,7 @@ export function revalidateFinancePages() {
   revalidatePath("/debts");
   revalidatePath("/expenses");
   revalidatePath("/plan");
+  revalidatePath("/decisions");
+  revalidatePath("/forecast");
+  revalidatePath("/memory");
 }

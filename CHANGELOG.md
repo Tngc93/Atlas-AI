@@ -4,6 +4,15 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Faz 10 - Financial Memory
+
+- `/memory` sayfası eklendi.
+- Lokal SQLite üzerinde aylık `FinancialMemorySnapshot` ve kategori toplamı kayıtları oluşturuldu.
+- Gelir, borç ve gider değişikliklerinden sonra memory snapshot kaydı best-effort çalışacak şekilde bağlandı.
+- 3, 6 ve 12 aylık borç, yaşam bütçesi, gider/maaş oranı, risk ve kategori trendleri için deterministik rapor üretildi.
+- Geçmiş veri az olduğunda Türkçe `Yeterli geçmiş yok` boş/yetersiz veri deneyimi eklendi.
+- AI/OpenAI/Gemini çağrısı yapılmadı; finansal veri üçüncü partiye gönderilmedi.
+
 ### Faz 9 - Forecast Engine
 
 - `/forecast` sayfası eklendi.
