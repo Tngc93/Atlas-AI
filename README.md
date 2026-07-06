@@ -119,11 +119,36 @@ Bu oranlar yasal azami bağlamdır; sizin kartınıza uygulanan kesin oran olmay
 ## Doğrulama
 
 ```bash
+npm run security:secrets
+npm run security:audit
+npm run prisma:generate
 npm run lint
 npm run test
 npm run build
 npm run test:e2e
 ```
+
+## GitHub Actions CI
+
+Pull request açıldığında ve `main` veya `develop` branch'lerine push yapıldığında `.github/workflows/ci.yml` otomatik çalışır.
+
+CI kalite kapısı şunları kontrol eder:
+
+- `npx prisma generate`
+- `npm run security:secrets`
+- `npm run security:audit`
+- `npm run lint`
+- `npm run test`
+- `npm run build`
+- `npm run test:e2e`
+
+Playwright raporu ve test sonuçları GitHub Actions artifact olarak 14 gün saklanır.
+
+Önerilen branch protection:
+
+- `main`: PR zorunlu, CI required check, force push kapalı.
+- `develop`: CI required check, doğrudan push yerine PR tercih edilir.
+- Merge öncesi CI yeşil olmalıdır.
 
 ## GitHub ve Release Akışı
 
@@ -132,7 +157,7 @@ npm run test:e2e
 - `feature/*`: yeni faz veya feature branch'leri.
 - Release tag'leri `main` üzerinden oluşturulur.
 - İlk release önerisi: `v0.1.0 — Personal Finance OS Foundation`.
-- GitHub Actions bu fazda eklenmez; ileride lint, test, build, e2e ve secret kontrollerini çalıştıracak şekilde eklenebilir.
+- GitHub Actions CI, lint, test, build, e2e, Prisma generate, dependency audit ve secret scan kontrollerini çalıştırır.
 
 ## Notlar
 

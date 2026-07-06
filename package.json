@@ -9,6 +9,9 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "security:secrets": "node scripts/check-secrets.mjs",
+    "security:audit": "npm audit --omit=dev --audit-level=high",
+    "ci": "npm run security:secrets && npm run security:audit && npx prisma generate && npm run lint && npm run test && npm run build && npm run test:e2e",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"
   },
