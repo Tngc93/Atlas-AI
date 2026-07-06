@@ -3,7 +3,9 @@ import "server-only";
 import { createHash } from "node:crypto";
 import type { MonthlyFinancePlan } from "@/features/finance/types";
 import type { InterestRateSnapshot } from "@/features/rates/types";
+import { getCachedCoachInsight, setCachedCoachInsight } from "./cache";
 import { coachInsightSchema, type AIProviderName, type CoachInputSummary, type CoachInsight } from "./types";
+import { recordAIRequest, recordCacheHit, recordCacheMiss, recordFallback } from "./usage-metrics";
 import { geminiProvider } from "./providers/gemini-provider";
 import { mockProvider } from "./providers/mock-provider";
 import { openAIProvider } from "./providers/openai-provider";
@@ -129,12 +131,41 @@ function isWithinCostControls(input: CoachInputSummary, provider: AIProvider): b
 
 export async function generateCoachInsight(input: CoachInputSummary): Promise<CoachInsight> {
   const selectedProvider = selectAIProvider();
-  const provider = selectedProvider.name === "mock" || isWithinCostControls(input, selectedProvider) ? selectedProvider : mockProvider;
+  const provider =
+    selectedProvider.name === "mock" || (selectedProvider.isConfigured() && isWithinCostControls(input, selectedProvider))
+      ? selectedProvider
+      : mockProvider;
+  const inputHash = hashCoachInputSummary(input);
+  const cached = getCachedCoachInsight(provider.name, inputHash);
+
+  if (cached) {
+    recordCacheHit(provider.name);
+    return cached;
+  }
+
+  recordCacheMiss(provider.name);
+  const startedAt = performance.now();
 
   try {
     const insight = await provider.generateCoachInsight(input);
-    return coachInsightSchema.parse(insight);
+    const parsed = coachInsightSchema.parse(insight);
+    recordAIRequest(provider.name, performance.now() - startedAt);
+
+    if (parsed.providerMode === "fallback" || parsed.provider === "mock") {
+      recordFallback(selectedProvider.name);
+    }
+
+    setCachedCoachInsight(provider.name, inputHash, parsed);
+    return parsed;
   } catch {
-    return mockProvider.generateCoachInsight(input);
+    recordFallback(selectedProvider.name);
+    const fallback = await mockProvider.generateCoachInsight(input);
+    const parsedFallback = coachInsightSchema.parse({
+      ...fallback,
+      providerMode: selectedProvider.name === "mock" ? "mock" : "fallback",
+    });
+    recordAIRequest(mockProvider.name, performance.now() - startedAt);
+    setCachedCoachInsight(provider.name, inputHash, parsedFallback);
+    return parsedFallback;
   }
 }
