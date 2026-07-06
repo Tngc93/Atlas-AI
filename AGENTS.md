@@ -118,6 +118,21 @@ This version has breaking changes. APIs, conventions, and file structure may dif
 - Validate structured AI responses before displaying or saving them.
 - Provide safe fallback copy when the API key is missing or the OpenAI call fails.
 
+## Gemini API Usage Rules
+
+- Gemini integration must be server-side only.
+- Use `GEMINI_API_KEY` from server-side environment variables only.
+- `.env.example` may contain `GEMINI_API_KEY=` as an empty placeholder only.
+- Never place Gemini API keys in frontend/client-side code, logs, docs, tests, screenshots, or commits.
+- `AI_PROVIDER=gemini` may call the real Gemini provider; `AI_PROVIDER=mock` must keep all AI behavior local and deterministic.
+- The default Gemini model is `gemini-2.5-flash`; use `GEMINI_MODEL` only for server-side model selection.
+- Gemini prompts must be Turkish and must not ask the model to perform financial calculations.
+- Gemini may only receive the minimized deterministic finance summary, never raw database rows, names, IBANs, account numbers, card numbers, transaction descriptions, notes, or bank movement data.
+- Gemini responses must be structured JSON and validated before use.
+- If the API key is missing, the request times out, JSON validation fails, or Gemini returns an error, the app must gracefully fall back to Mock Provider without showing a crash screen.
+- Cache repeated minimized finance summaries to avoid unnecessary provider calls.
+- Track provider usage metrics without logging secrets or raw financial data.
+
 ## Testing Requirements
 
 - Before every completion that changes code, run the most relevant checks.

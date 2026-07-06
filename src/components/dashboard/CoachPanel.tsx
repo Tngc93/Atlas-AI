@@ -4,7 +4,14 @@ import { trCopy } from "@/lib/copy/tr";
 const providerLabels: Record<CoachInsight["provider"], string> = {
   mock: "Mock sağlayıcı",
   openai: "OpenAI placeholder",
-  gemini: "Gemini placeholder",
+  gemini: "Gemini sağlayıcı",
+};
+
+const providerModeLabels: Record<CoachInsight["providerMode"], string> = {
+  mock: "Mock",
+  placeholder: "Placeholder",
+  live: "Canlı",
+  fallback: "Fallback",
 };
 
 export function CoachPanel({ insight }: { insight: CoachInsight }) {
@@ -68,7 +75,7 @@ export function CoachPanel({ insight }: { insight: CoachInsight }) {
         {insight.caveats}
       </p>
       <p className="mt-3 text-xs leading-5 text-ink/50">
-        Sağlayıcı modu: {insight.providerMode === "mock" ? "Mock" : "Placeholder"} · Model: {insight.model} · Tahmini maliyet:{" "}
+        Sağlayıcı modu: {providerModeLabels[insight.providerMode]} · Model: {insight.model} · Tahmini maliyet:{" "}
         {insight.usage.estimatedCostKurus / 100} TL
       </p>
     </section>

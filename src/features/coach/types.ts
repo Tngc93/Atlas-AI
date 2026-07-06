@@ -61,7 +61,7 @@ export const coachInsightSchema = z.object({
   model: z.string(),
   isPlaceholder: z.boolean(),
   provider: z.enum(["mock", "openai", "gemini"]),
-  providerMode: z.enum(["mock", "placeholder"]),
+  providerMode: z.enum(["mock", "placeholder", "live", "fallback"]),
   usage: z.object({
     estimatedInputTokens: z.number().int().nonnegative(),
     estimatedOutputTokens: z.number().int().nonnegative(),
@@ -72,6 +72,17 @@ export const coachInsightSchema = z.object({
 export type CoachInsight = z.infer<typeof coachInsightSchema>;
 
 export type AIProviderName = "mock" | "openai" | "gemini";
+
+export const geminiCoachResponseSchema = z.object({
+  summary: z.string().min(1),
+  strengths: z.array(z.string().min(1)).max(5),
+  risks: z.array(z.string().min(1)).max(5),
+  recommendations: z.array(z.string().min(1)).min(1).max(5),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
+  confidence: z.number().min(0).max(1),
+});
+
+export type GeminiCoachResponse = z.infer<typeof geminiCoachResponseSchema>;
 
 export type CoachInputSummary = {
   month: string;
@@ -94,7 +105,7 @@ export type CoachInputSummary = {
   };
 };
 
-export type AIProviderMode = "mock" | "placeholder";
+export type AIProviderMode = "mock" | "placeholder" | "live" | "fallback";
 
 export type AIUsageEstimate = {
   estimatedInputTokens: number;

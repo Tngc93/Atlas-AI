@@ -12,7 +12,7 @@ Faz 3 itibarıyla gelir, borç ve zorunlu gider ekranları yerel SQLite veritaba
 - SQLite + Prisma
 - Recharts
 - Mock-first AI provider katmanı
-- OpenAI/Gemini provider yer tutucuları
+- Gemini provider ve OpenAI placeholder katmanı
 - TCMB faiz verisi sağlayıcı yer tutucusu
 
 ## Başlangıç
@@ -40,10 +40,19 @@ AI_MAX_INPUT_SUMMARY_CHARS=4000
 OPENAI_API_KEY=
 OPENAI_MODEL=
 GEMINI_API_KEY=
-GEMINI_MODEL=
+GEMINI_MODEL=gemini-2.5-flash
+GEMINI_TIMEOUT_MS=12000
+GEMINI_RETRY_COUNT=2
 ```
 
-Faz 6'da varsayılan sağlayıcı `mock` değeridir. OpenAI ve Gemini alanları yalnızca gelecek entegrasyonlar için boş placeholder olarak durur; bu fazda gerçek API çağrısı yapılmaz.
+Varsayılan sağlayıcı `mock` değeridir. Gemini kullanmak için kendi `.env.local` dosyanızda `AI_PROVIDER=gemini` yapın ve `GEMINI_API_KEY` değerini yalnızca lokal ortamda doldurun. Anahtarı README, kod, test, commit veya GitHub'a eklemeyin.
+
+Gemini sağlayıcısı şu şekilde çalışır:
+
+- Varsayılan model `gemini-2.5-flash`; gerekirse `GEMINI_MODEL` ile değiştirilebilir.
+- API key eksikse, timeout olursa, Gemini hata döndürürse veya JSON doğrulama başarısız olursa uygulama otomatik olarak Mock Provider'a döner.
+- AI'ya yalnızca deterministik finans motorunun ürettiği minimize özet gönderilir; isim, IBAN, hesap numarası, kart numarası, işlem açıklaması veya ham banka hareketi gönderilmez.
+- Aynı finansal özet tekrar geldiğinde cache kullanılır; gereksiz Gemini çağrısı yapılmaz.
 
 Önemli notlar:
 
@@ -51,7 +60,7 @@ Faz 6'da varsayılan sağlayıcı `mock` değeridir. OpenAI ve Gemini alanları 
 - Anahtarı `NEXT_PUBLIC_` ile başlatmayın.
 - AI provider kodu server-only çalışır.
 - `/api/coach` client payload'a güvenmez; server tarafında mevcut aylık plan snapshot'ından minimize edilmiş özet üretir.
-- Finansal raw veri bu fazda üçüncü parti AI sağlayıcısına gönderilmez.
+- Finansal raw veri üçüncü parti AI sağlayıcısına gönderilmez.
 
 ## Mevcut Sayfalar
 
