@@ -143,6 +143,9 @@ After every completed phase or meaningful feature, the release workflow checklis
 - `npm run test` passed.
 - `npm run build` passed.
 - `npm run test:e2e` passed.
+- `npm run security:secrets` passed.
+- `npm run security:audit` passed.
+- GitHub Actions CI passed for the related PR or push when available.
 - Obsidian `Personal Finance OS` was updated.
 - README was updated if user setup, workflow, or behavior changed.
 - `CHANGELOG.md` or release notes were updated.
@@ -157,7 +160,8 @@ GitHub branch rules:
 - `develop` is the active integration branch.
 - Feature work should branch from `develop` using names such as `feature/phase-9-forecast-engine`.
 - Release tags should be created from `main` only after validation passes.
-- GitHub Actions workflows are not required yet, but future CI should enforce lint, tests, build, e2e, and secret safety.
+- GitHub Actions CI must stay green before merging PRs into `develop` or `main`.
+- CI should enforce Prisma generate, secret scan, dependency audit, lint, tests, build, and Playwright E2E checks.
 
 Git safety rules:
 
@@ -165,6 +169,7 @@ Git safety rules:
 - Before the first commit or any broad staging operation, run a dry-run staging check and inspect ignored files.
 - Prefer explicit `git add` paths when the worktree contains unrelated files.
 - Do not push directly to GitHub until validation and secret/local-data checks are complete.
+- Prefer PR-based merges after CI passes; branch protection should require CI checks on `main` and `develop`.
 
 ## Security and Privacy Checklist
 

@@ -19,6 +19,8 @@ const prisma = new PrismaClient({
 });
 
 await prisma.$transaction([
+  prisma.financialMemoryCategoryTotal.deleteMany(),
+  prisma.financialMemorySnapshot.deleteMany(),
   prisma.coachInsight.deleteMany(),
   prisma.interestRateSnapshot.deleteMany(),
   prisma.debtProjection.deleteMany(),

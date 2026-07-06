@@ -20,12 +20,16 @@ function riskLabel(riskLevel: "low" | "medium" | "high") {
 
 function Notice({ notice }: { notice?: string }) {
   if (notice === "memoryUpdated") {
-    return <p className="rounded-md border border-mint/20 bg-mint/10 p-3 text-sm text-mint">Finansal hafıza güncellendi.</p>;
+    return (
+      <p role="status" className="rounded-md border border-mint/20 bg-mint/10 p-3 text-sm text-mint">
+        Finansal hafıza güncellendi.
+      </p>
+    );
   }
 
   if (notice === "memoryError") {
     return (
-      <p className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+      <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
         Finansal hafıza güncellenemedi. Kayıtlarınızı kontrol edip tekrar deneyin.
       </p>
     );
