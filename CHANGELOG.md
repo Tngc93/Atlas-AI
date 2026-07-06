@@ -4,6 +4,23 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Faz 12A - Gemini AI Provider
+
+- Gerçek Gemini provider eklendi ve varsayılan model `gemini-2.5-flash` olarak ayarlandı.
+- `AI_PROVIDER=gemini` seçildiğinde `GEMINI_API_KEY` yalnızca server-side ortam değişkeninden okunur.
+- Gemini çağrıları timeout, retry, exponential backoff, JSON doğrulama ve güvenli Mock fallback ile dayanıklı hale getirildi.
+- AI prompt sistemi Türkçe, veri minimizasyonlu ve finans motorunu tek doğruluk kaynağı kabul edecek şekilde ayrıştırıldı.
+- Aynı minimize finans özeti için process içi cache ve provider kullanım metrikleri eklendi.
+- Gemini provider, invalid JSON, timeout, retry, fallback ve cache davranışları için testler eklendi.
+
+### Faz 11 - Engineering Excellence / GitHub Actions CI
+
+- GitHub Actions CI workflow eklendi.
+- PR ve `main`/`develop` push akışlarında Prisma generate, secret scan, dependency audit, lint, test, build ve Playwright E2E kontrolleri tanımlandı.
+- Playwright raporları ve test sonuçları GitHub Actions artifact olarak saklanacak şekilde yapılandırıldı.
+- Dependency’siz secret scan script’i ve güvenlik npm scriptleri eklendi.
+- README, AGENTS.md ve Obsidian Project Brain CI/branch protection beklentileriyle güncellendi.
+
 ### Faz 10 - Financial Memory
 
 - `/memory` sayfası eklendi.

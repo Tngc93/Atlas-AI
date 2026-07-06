@@ -2,7 +2,7 @@ import { execFileSync, spawn } from "node:child_process";
 import { PrismaClient } from "@prisma/client";
 
 const databaseUrl = process.env.DATABASE_URL ?? "file:./e2e.db";
-const env = { ...process.env, DATABASE_URL: databaseUrl };
+const env = { ...process.env, DATABASE_URL: databaseUrl, AI_PROVIDER: "mock" };
 
 execFileSync("npx", ["prisma", "db", "push", "--skip-generate"], {
   cwd: process.cwd(),
@@ -19,6 +19,8 @@ const prisma = new PrismaClient({
 });
 
 await prisma.$transaction([
+  prisma.financialMemoryCategoryTotal.deleteMany(),
+  prisma.financialMemorySnapshot.deleteMany(),
   prisma.coachInsight.deleteMany(),
   prisma.interestRateSnapshot.deleteMany(),
   prisma.debtProjection.deleteMany(),

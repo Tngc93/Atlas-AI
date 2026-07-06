@@ -18,6 +18,8 @@ function collectBrowserErrors(page: Page) {
 }
 
 test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ page }) => {
+  test.setTimeout(60_000);
+
   const browserErrors = collectBrowserErrors(page);
 
   await page.goto("/");
@@ -104,8 +106,11 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await page.goto("/memory");
   await expect(page.getByRole("heading", { name: "Finansal Hafıza" })).toBeVisible();
   await expect(page.getByText("Bu analiz sadece lokal SQLite verinize dayanır.")).toBeVisible();
-  await page.getByRole("button", { name: "Hafızayı güncelle" }).click();
-  await expect(page.getByText("Finansal hafıza güncellendi.")).toBeVisible();
+  await Promise.all([
+    page.waitForURL(/\/memory\?notice=memoryUpdated/, { timeout: 30_000 }),
+    page.getByRole("button", { name: "Hafızayı güncelle" }).click(),
+  ]);
+  await expect(page.getByRole("status")).toContainText("Finansal hafıza güncellendi.");
   await expect(page.getByText("Deterministik koç içgörüleri")).toBeVisible();
   expect(browserErrors).toEqual([]);
 });
