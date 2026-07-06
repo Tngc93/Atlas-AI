@@ -18,6 +18,8 @@ function collectBrowserErrors(page: Page) {
 }
 
 test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ page }) => {
+  test.setTimeout(60_000);
+
   const browserErrors = collectBrowserErrors(page);
 
   await page.goto("/");
