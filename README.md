@@ -125,6 +125,14 @@ Bu oranlar yasal azami bağlamdır; sizin kartınıza uygulanan kesin oran olmay
 - Trendler için en az iki aylık geçmiş gerekir; geçmiş azsa ekran açıkça `Yeterli geçmiş yok` der.
 - Financial Memory AI/OpenAI/Gemini çağrısı yapmaz ve üçüncü partiye finansal veri göndermez.
 
+## Coach Context Builder
+
+AI koç katmanı `src/features/coach/context-builder.ts` üzerinden oluşturulan `CoachContext` nesnesini kullanır.
+
+- `CoachContext`, deterministik finans motorundan gelen minimize finans özetini ve lokal Financial Memory sinyallerini tek yerde toplar.
+- Prompt builder yalnızca bu context katmanını görür; raw Prisma kayıtları, kullanıcı notları, IBAN, kart numarası veya ham banka hareketi prompt’a taşınmaz.
+- Eski `CoachInputSummary` tabanlı çağrılar geriye uyumluluk için korunur.
+
 ## Doğrulama
 
 ```bash

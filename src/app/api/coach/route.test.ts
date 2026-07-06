@@ -9,19 +9,35 @@ const ratesMock = vi.hoisted(() => ({
 }));
 
 const orchestratorMock = vi.hoisted(() => ({
-  buildCoachInputSummary: vi.fn(),
+  buildCoachContext: vi.fn(),
   generateCoachInsight: vi.fn(),
+}));
+
+const memoryRepositoryMock = vi.hoisted(() => ({
+  getMemoryReportData: vi.fn(),
+}));
+
+const memoryServiceMock = vi.hoisted(() => ({
+  buildFinancialMemoryReport: vi.fn(),
 }));
 
 vi.mock("@/features/finance/data-service", () => financeMock);
 vi.mock("@/features/rates/service", () => ratesMock);
 vi.mock("@/features/coach/orchestrator", () => orchestratorMock);
+vi.mock("@/features/memory/repository", () => memoryRepositoryMock);
+vi.mock("@/features/memory/service", () => memoryServiceMock);
 
 describe("/api/coach", () => {
   it("builds coach input server-side instead of trusting client payload", async () => {
     const monthlyPlan = { monthLabel: "Temmuz 2026" };
     const rateSnapshot = { source: "fallback" };
-    const summary = { month: "Temmuz 2026", activeDebtCount: 0 };
+    const memoryRecords = [{ periodMonth: "2026-07" }];
+    const memoryReport = { hasAnySnapshot: true, snapshotCount: 1 };
+    const context = {
+      version: "coach-context-v1",
+      summary: { month: "Temmuz 2026", activeDebtCount: 0 },
+      memory: { hasAnySnapshot: true, snapshotCount: 1 },
+    };
     const insight = {
       summary: "Mock koç yorumu",
       riskExplanation: "Deterministik özet kullanıldı.",
@@ -93,7 +109,9 @@ describe("/api/coach", () => {
 
     financeMock.getMonthlyFinancePlanSnapshot.mockResolvedValue({ monthlyPlan });
     ratesMock.getLatestInterestRateSnapshot.mockResolvedValue(rateSnapshot);
-    orchestratorMock.buildCoachInputSummary.mockReturnValue(summary);
+    memoryRepositoryMock.getMemoryReportData.mockResolvedValue(memoryRecords);
+    memoryServiceMock.buildFinancialMemoryReport.mockReturnValue(memoryReport);
+    orchestratorMock.buildCoachContext.mockReturnValue(context);
     orchestratorMock.generateCoachInsight.mockResolvedValue(insight);
 
     const { POST } = await import("./route");
@@ -101,8 +119,9 @@ describe("/api/coach", () => {
     const body = await response.json();
 
     expect(financeMock.getMonthlyFinancePlanSnapshot).toHaveBeenCalledWith(12);
-    expect(orchestratorMock.buildCoachInputSummary).toHaveBeenCalledWith(monthlyPlan, rateSnapshot);
-    expect(orchestratorMock.generateCoachInsight).toHaveBeenCalledWith(summary);
+    expect(memoryServiceMock.buildFinancialMemoryReport).toHaveBeenCalledWith(memoryRecords);
+    expect(orchestratorMock.buildCoachContext).toHaveBeenCalledWith({ monthlyPlan, rateSnapshot, memoryReport });
+    expect(orchestratorMock.generateCoachInsight).toHaveBeenCalledWith(context);
     expect(body.provider).toBe("mock");
   });
 });

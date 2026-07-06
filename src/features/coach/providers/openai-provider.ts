@@ -2,7 +2,7 @@ import "server-only";
 
 import { composeCoachSections } from "../composer";
 import { runCoachAgents } from "../agents";
-import { coachInsightSchema, type CoachInputSummary } from "../types";
+import { coachInsightSchema, type CoachContext } from "../types";
 import { EDUCATIONAL_CAVEAT, mockProvider } from "./mock-provider";
 import type { AIProvider } from "./types";
 
@@ -11,9 +11,9 @@ export const openAIProvider: AIProvider = {
   mode: "placeholder",
   isConfigured: () => Boolean(process.env.OPENAI_API_KEY),
   estimateUsage: mockProvider.estimateUsage,
-  async generateCoachInsight(input: CoachInputSummary) {
+  async generateCoachInsight(input: CoachContext) {
     const usage = mockProvider.estimateUsage(input);
-    const sections = composeCoachSections(runCoachAgents(input));
+    const sections = composeCoachSections(runCoachAgents(input.summary));
 
     return coachInsightSchema.parse({
       summary: "OpenAI sağlayıcısı placeholder modda. Bu fazda gerçek API çağrısı yapılmaz ve finansal veri üçüncü partiye gönderilmez.",

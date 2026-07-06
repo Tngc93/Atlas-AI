@@ -4,7 +4,7 @@ import { GoogleGenAI, Type, type GenerateContentResponse, type Schema } from "@g
 import { composeCoachSections } from "../composer";
 import { runCoachAgents } from "../agents";
 import { buildGeminiSystemPrompt, buildGeminiUserPrompt } from "../prompt-builder";
-import { coachInsightSchema, geminiCoachResponseSchema, type CoachInputSummary, type GeminiCoachResponse } from "../types";
+import { coachInsightSchema, geminiCoachResponseSchema, type CoachContext, type GeminiCoachResponse } from "../types";
 import { EDUCATIONAL_CAVEAT, mockProvider } from "./mock-provider";
 import type { AIProvider } from "./types";
 
@@ -69,7 +69,7 @@ function createGeminiClient(apiKey: string): GeminiClient {
   return new GoogleGenAI({ apiKey }) as GeminiClient;
 }
 
-function estimateUsage(input: CoachInputSummary) {
+function estimateUsage(input: CoachContext) {
   const estimatedInputTokens = Math.ceil((buildGeminiSystemPrompt().length + buildGeminiUserPrompt(input).length) / 4);
   const estimatedOutputTokens = 260;
 
@@ -158,9 +158,9 @@ function priorityToRisk(priority: GeminiCoachResponse["priority"]) {
   return "Düşük";
 }
 
-function buildGeminiInsight(input: CoachInputSummary, response: GeminiCoachResponse, model: string) {
+function buildGeminiInsight(input: CoachContext, response: GeminiCoachResponse, model: string) {
   const usage = estimateUsage(input);
-  const sections = composeCoachSections(runCoachAgents(input));
+  const sections = composeCoachSections(runCoachAgents(input.summary));
 
   const risks = response.risks.length > 0 ? response.risks : sections.risks.map((risk) => risk.finding);
   const strengths = response.strengths.length > 0 ? response.strengths : sections.insights.map((insight) => insight.finding);
@@ -200,7 +200,7 @@ function buildGeminiInsight(input: CoachInputSummary, response: GeminiCoachRespo
   });
 }
 
-async function requestGemini(input: CoachInputSummary) {
+async function requestGemini(input: CoachContext) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
@@ -254,7 +254,7 @@ export const geminiProvider: AIProvider = {
   mode: "live",
   isConfigured: () => Boolean(process.env.GEMINI_API_KEY),
   estimateUsage,
-  async generateCoachInsight(input: CoachInputSummary) {
+  async generateCoachInsight(input: CoachContext) {
     try {
       return await requestGemini(input);
     } catch (error) {

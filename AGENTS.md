@@ -206,6 +206,8 @@ Before completing security-sensitive work, verify:
 ### AI Coach
 
 - The AI coach should consume a summarized `MonthlyFinancePlan`, not raw database rows.
+- AI coach input should flow through `CoachContext` from `src/features/coach/context-builder.ts` before reaching providers or prompt builders.
+- `CoachContext` may include reduced Financial Memory signals, but must not include raw Prisma rows, user notes, IBANs, account numbers, card numbers, transaction descriptions, or bank movements.
 - It should explain risk, tradeoffs, next actions, and review questions in Turkish.
 - It should cache insights by input hash to avoid repeated calls.
 - It should keep the user in control and avoid licensed financial-advisor language.

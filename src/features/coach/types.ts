@@ -105,6 +105,26 @@ export type CoachInputSummary = {
   };
 };
 
+export type CoachMemoryContext = {
+  hasAnySnapshot: boolean;
+  hasEnoughHistory: boolean;
+  snapshotCount: number;
+  latestPeriodMonth: string | null;
+  highRiskMonthCount: number;
+  cashSqueezeCount: number;
+  totalDebtTrend: "unknown" | "decreasing" | "flat" | "increasing";
+  survivalBudgetTrend: "unknown" | "improving" | "flat" | "worsening";
+  planAdherenceScore: number | null;
+  insightTitles: string[];
+};
+
+export type CoachContext = {
+  version: "coach-context-v1";
+  builtAtIso: string;
+  summary: CoachInputSummary;
+  memory: CoachMemoryContext;
+};
+
 export type AIProviderMode = "mock" | "placeholder" | "live" | "fallback";
 
 export type AIUsageEstimate = {
