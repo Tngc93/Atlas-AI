@@ -209,6 +209,7 @@ Before completing security-sensitive work, verify:
 - AI coach input should flow through `CoachContext` from `src/features/coach/context-builder.ts` before reaching providers or prompt builders.
 - `CoachContext` may include reduced Financial Memory signals, but must not include raw Prisma rows, user notes, IBANs, account numbers, card numbers, transaction descriptions, or bank movements.
 - Trend context should come from deterministic Financial Memory analysis and should use minimized direction, band, count, and label signals instead of exact raw snapshot values.
+- Recommendation context should come from deterministic summary, memory, and trend signals, and should carry only priority, category, reason, expected impact, confidence, and minimized source signals.
 - It should explain risk, tradeoffs, next actions, and review questions in Turkish.
 - It should cache insights by input hash to avoid repeated calls.
 - It should keep the user in control and avoid licensed financial-advisor language.

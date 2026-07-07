@@ -2,6 +2,7 @@ import type { MonthlyFinancePlan } from "@/features/finance/types";
 import type { FinancialMemoryReport } from "@/features/memory/types";
 import type { InterestRateSnapshot } from "@/features/rates/types";
 import type { CoachContext, CoachInputSummary, CoachMemoryContext } from "./types";
+import { analyzeCoachRecommendations } from "./recommendation-analyzer";
 import { analyzeCoachTrends } from "./trend-analyzer";
 
 function bandAmount(valueKurus: number): CoachInputSummary["salaryBand"] {
@@ -134,21 +135,30 @@ export function buildCoachContext(params: {
   memoryReport?: FinancialMemoryReport | null;
   builtAt?: Date;
 }): CoachContext {
+  const summary = buildCoachInputSummary(params.monthlyPlan, params.rateSnapshot);
+  const memory = buildCoachMemoryContext(params.memoryReport);
+  const trends = analyzeCoachTrends(params.memoryReport);
+
   return {
     version: "coach-context-v1",
     builtAtIso: (params.builtAt ?? new Date()).toISOString(),
-    summary: buildCoachInputSummary(params.monthlyPlan, params.rateSnapshot),
-    memory: buildCoachMemoryContext(params.memoryReport),
-    trends: analyzeCoachTrends(params.memoryReport),
+    summary,
+    memory,
+    trends,
+    recommendations: analyzeCoachRecommendations({ summary, memory, trends }),
   };
 }
 
 export function buildCoachContextFromSummary(summary: CoachInputSummary, builtAt = new Date()): CoachContext {
+  const memory = buildCoachMemoryContext(null);
+  const trends = analyzeCoachTrends(null);
+
   return {
     version: "coach-context-v1",
     builtAtIso: builtAt.toISOString(),
     summary,
-    memory: buildCoachMemoryContext(null),
-    trends: analyzeCoachTrends(null),
+    memory,
+    trends,
+    recommendations: analyzeCoachRecommendations({ summary, memory, trends }),
   };
 }

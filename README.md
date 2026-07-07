@@ -131,6 +131,7 @@ AI koç katmanı `src/features/coach/context-builder.ts` üzerinden oluşturulan
 
 - `CoachContext`, deterministik finans motorundan gelen minimize finans özetini ve lokal Financial Memory sinyallerini tek yerde toplar.
 - Trend Intelligence katmanı Financial Memory snapshot’larından gelir, gider, borç, yaşam bütçesi, minimum ödeme yükü, risk, borç kapatma hızı ve nakit sıkışıklığı trendlerini minimize sinyallere dönüştürür.
+- Goal & Recommendation Intelligence katmanı mevcut summary, memory ve trend sinyallerinden hedef benzeri deterministic öneriler üretir; öneriler öncelik, kategori, neden, beklenen etki ve kaynak sinyalleriyle taşınır.
 - Prompt builder yalnızca bu context katmanını görür; raw Prisma kayıtları, kullanıcı notları, IBAN, kart numarası veya ham banka hareketi prompt’a taşınmaz.
 - Eski `CoachInputSummary` tabanlı çağrılar geriye uyumluluk için korunur.
 

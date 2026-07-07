@@ -205,7 +205,17 @@ describe("coach context builder", () => {
       survivalBudgetTrend: "improving",
       cashSqueezeRecurrence: "occasional",
     });
+    expect(context.recommendations.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "prioritize-high-interest-debt",
+          priority: "HIGH",
+          category: "DEBT",
+        }),
+      ]),
+    );
     expect(JSON.stringify(context.trends)).not.toContain("Örnek Kart");
+    expect(JSON.stringify(context.recommendations)).not.toContain("Örnek Kart");
   });
 
   it("uses an empty memory context when memory history is unavailable", () => {
@@ -229,11 +239,16 @@ describe("coach context builder", () => {
         monthlyPlan: makePlan(),
         rateSnapshot: sampleInterestRateSnapshot,
         memoryReport: null,
-      }).trends,
+      }),
     ).toMatchObject({
-      hasEnoughHistory: false,
-      reason: "no_snapshot",
-      labels: ["Yeterli geçmiş yok"],
+      trends: {
+        hasEnoughHistory: false,
+        reason: "no_snapshot",
+        labels: ["Yeterli geçmiş yok"],
+      },
+      recommendations: {
+        hasRecommendations: true,
+      },
     });
   });
 });

@@ -3,6 +3,8 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { getCachedCoachInsight, setCachedCoachInsight } from "./cache";
 import { buildCoachContext, buildCoachContextFromSummary, buildCoachInputSummary } from "./context-builder";
+import { analyzeCoachRecommendations } from "./recommendation-analyzer";
+import { analyzeCoachTrends } from "./trend-analyzer";
 import { coachInsightSchema, type AIProviderName, type CoachContext, type CoachInputSummary, type CoachInsight } from "./types";
 import { recordAIRequest, recordCacheHit, recordCacheMiss, recordFallback } from "./usage-metrics";
 import { geminiProvider } from "./providers/gemini-provider";
@@ -39,7 +41,18 @@ function isCoachContext(input: CoachContext | CoachInputSummary): input is Coach
 }
 
 function normalizeCoachContext(input: CoachContext | CoachInputSummary): CoachContext {
-  return isCoachContext(input) ? input : buildCoachContextFromSummary(input);
+  if (!isCoachContext(input)) {
+    return buildCoachContextFromSummary(input);
+  }
+
+  const trends = input.trends ?? analyzeCoachTrends(null);
+  const recommendations = input.recommendations ?? analyzeCoachRecommendations({ summary: input.summary, memory: input.memory, trends });
+
+  return {
+    ...input,
+    trends,
+    recommendations,
+  };
 }
 
 export function hashCoachInputSummary(input: CoachInputSummary): string {
@@ -54,6 +67,7 @@ export function hashCoachContext(input: CoachContext): string {
         summary: input.summary,
         memory: input.memory,
         trends: input.trends,
+        recommendations: input.recommendations,
       }),
     )
     .digest("hex");
