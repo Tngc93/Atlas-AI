@@ -63,6 +63,21 @@ const sampleContext: CoachContext = {
     highRiskMonthCount: 0,
     labels: ["Yeterli geçmiş yok"],
   },
+  recommendations: {
+    hasRecommendations: true,
+    items: [
+      {
+        id: "prioritize-high-interest-debt",
+        title: "En yüksek faizli borca öncelik ver",
+        priority: "HIGH",
+        category: "DEBT",
+        reason: "Yüksek faiz baskısı var.",
+        expectedImpact: "Faiz baskısı daha hızlı azalabilir.",
+        confidence: 0.7,
+        sourceSignals: ["high_interest_debt"],
+      },
+    ],
+  },
 };
 
 function validGeminiText() {

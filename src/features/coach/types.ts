@@ -143,12 +143,33 @@ export type CoachTrendContext = {
   labels: string[];
 };
 
+export type CoachRecommendationPriority = "LOW" | "MEDIUM" | "HIGH";
+
+export type CoachRecommendationCategory = "DEBT" | "CASHFLOW" | "RISK" | "SAVING" | "BUDGET" | "HABIT";
+
+export type CoachRecommendationItem = {
+  id: string;
+  title: string;
+  priority: CoachRecommendationPriority;
+  category: CoachRecommendationCategory;
+  reason: string;
+  expectedImpact: string;
+  confidence: number;
+  sourceSignals: string[];
+};
+
+export type CoachRecommendationContext = {
+  hasRecommendations: boolean;
+  items: CoachRecommendationItem[];
+};
+
 export type CoachContext = {
   version: "coach-context-v1";
   builtAtIso: string;
   summary: CoachInputSummary;
   memory: CoachMemoryContext;
   trends: CoachTrendContext;
+  recommendations: CoachRecommendationContext;
 };
 
 export type AIProviderMode = "mock" | "placeholder" | "live" | "fallback";
