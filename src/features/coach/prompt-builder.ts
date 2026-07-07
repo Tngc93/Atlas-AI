@@ -17,11 +17,14 @@ export function buildGeminiUserPrompt(context: CoachContext): string {
     "Aşağıdaki finansal özet, uygulamanın deterministik finans motoru tarafından kişisel veri azaltılarak üretilmiştir.",
     "Bu özet dışında isim, IBAN, hesap numarası, kart numarası, işlem açıklaması veya ham banka hareketi bilmiyorsun.",
     "Trendler deterministik Financial Memory analizinden gelir; hesaplama yapma, yalnızca yorumla.",
+    "Öneriler deterministic recommendation analyzer tarafından üretildi; yeni öneri uydurma, hesaplama yapma, yalnızca yorumla.",
     "JSON alanları şu yapıda olmalı:",
     '{"summary":"","strengths":[],"risks":[],"recommendations":[],"priority":"LOW | MEDIUM | HIGH","confidence":0}',
     "Özet:",
     JSON.stringify(context.summary),
     "Trend bağlamı:",
     JSON.stringify(context.trends),
+    "Öneri bağlamı:",
+    JSON.stringify(context.recommendations),
   ].join("\n\n");
 }

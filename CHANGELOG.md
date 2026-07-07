@@ -4,6 +4,14 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Faz 12B Sprint 3 - Goal & Recommendation Intelligence
+
+- Deterministik recommendation analyzer eklendi.
+- `CoachContext` içine minimize `recommendations` alanı eklendi.
+- Borç azaltma, yaşam bütçesi koruma, nakit sıkışıklığı azaltma, yüksek faiz önceliği, risk azaltma, tasarruf kapasitesi ve finansal alışkanlık önerileri üretildi.
+- Öneriler `priority`, `category`, `reason`, `expectedImpact`, `confidence` ve `sourceSignals` ile sıralandı.
+- Gemini prompt builder recommendation context’i güvenli ve Türkçe açıklama kurallarıyla kullanacak şekilde güncellendi.
+
 ### Faz 12B Sprint 2 - Trend Intelligence
 
 - Financial Memory snapshot’larından deterministik Trend Intelligence sinyalleri üretildi.

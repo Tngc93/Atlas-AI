@@ -55,15 +55,33 @@ const context: CoachContext = {
     highRiskMonthCount: 1,
     labels: ["Borç yükü azalıyor"],
   },
+  recommendations: {
+    hasRecommendations: true,
+    items: [
+      {
+        id: "prioritize-high-interest-debt",
+        title: "En yüksek faizli borca öncelik ver",
+        priority: "HIGH",
+        category: "DEBT",
+        reason: "Yüksek faiz baskısı var.",
+        expectedImpact: "Faiz baskısı daha hızlı azalabilir.",
+        confidence: 0.78,
+        sourceSignals: ["high_interest_debt", "avalanche_strategy"],
+      },
+    ],
+  },
 };
 
 describe("Gemini prompt builder", () => {
-  it("includes minimized trend context without raw financial records", () => {
+  it("includes minimized trend and recommendation context without raw financial records", () => {
     const prompt = buildGeminiUserPrompt(context);
 
     expect(prompt).toContain("Trendler deterministik Financial Memory analizinden gelir");
+    expect(prompt).toContain("Öneriler deterministic recommendation analyzer tarafından üretildi");
     expect(prompt).toContain("Trend bağlamı");
+    expect(prompt).toContain("Öneri bağlamı");
     expect(prompt).toContain("\"totalDebtTrend\":\"decreasing\"");
+    expect(prompt).toContain("\"id\":\"prioritize-high-interest-debt\"");
     expect(prompt).toContain("\"labels\":[\"Borç yükü azalıyor\"]");
     expect(prompt).not.toContain("capturedAt");
     expect(prompt).not.toContain("categoryTotals");
