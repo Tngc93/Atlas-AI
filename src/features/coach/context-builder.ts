@@ -2,6 +2,7 @@ import type { MonthlyFinancePlan } from "@/features/finance/types";
 import type { FinancialMemoryReport } from "@/features/memory/types";
 import type { InterestRateSnapshot } from "@/features/rates/types";
 import type { CoachContext, CoachInputSummary, CoachMemoryContext } from "./types";
+import { analyzeCoachTrends } from "./trend-analyzer";
 
 function bandAmount(valueKurus: number): CoachInputSummary["salaryBand"] {
   if (valueKurus <= 0) {
@@ -138,6 +139,7 @@ export function buildCoachContext(params: {
     builtAtIso: (params.builtAt ?? new Date()).toISOString(),
     summary: buildCoachInputSummary(params.monthlyPlan, params.rateSnapshot),
     memory: buildCoachMemoryContext(params.memoryReport),
+    trends: analyzeCoachTrends(params.memoryReport),
   };
 }
 
@@ -147,5 +149,6 @@ export function buildCoachContextFromSummary(summary: CoachInputSummary, builtAt
     builtAtIso: builtAt.toISOString(),
     summary,
     memory: buildCoachMemoryContext(null),
+    trends: analyzeCoachTrends(null),
   };
 }

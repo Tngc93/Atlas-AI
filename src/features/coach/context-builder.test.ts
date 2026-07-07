@@ -97,7 +97,44 @@ function makeMemoryReport(): FinancialMemoryReport {
       updatedAt: new Date("2026-07-05T00:00:00.000Z"),
       categoryTotals: [],
     },
-    trend: [],
+    trend: [
+      {
+        periodMonth: "2026-05",
+        totalDebtKurus: 15_000_00,
+        activeDebtKurus: 15_000_00,
+        creditCardDebtKurus: 15_000_00,
+        mandatoryExpenseTotalKurus: 32_000_00,
+        salaryKurus: 85_000_00,
+        survivalBudgetKurus: 18_000_00,
+        minimumDebtPaymentsKurus: 5_000_00,
+        extraDebtPaymentCapacityKurus: 8_000_00,
+        riskLevel: "medium",
+      },
+      {
+        periodMonth: "2026-06",
+        totalDebtKurus: 12_500_00,
+        activeDebtKurus: 12_500_00,
+        creditCardDebtKurus: 12_500_00,
+        mandatoryExpenseTotalKurus: 31_000_00,
+        salaryKurus: 85_000_00,
+        survivalBudgetKurus: 19_000_00,
+        minimumDebtPaymentsKurus: 5_000_00,
+        extraDebtPaymentCapacityKurus: 9_000_00,
+        riskLevel: "low",
+      },
+      {
+        periodMonth: "2026-07",
+        totalDebtKurus: 10_000_00,
+        activeDebtKurus: 10_000_00,
+        creditCardDebtKurus: 10_000_00,
+        mandatoryExpenseTotalKurus: 30_000_00,
+        salaryKurus: 85_000_00,
+        survivalBudgetKurus: 20_000_00,
+        minimumDebtPaymentsKurus: 5_000_00,
+        extraDebtPaymentCapacityKurus: 10_000_00,
+        riskLevel: "low",
+      },
+    ],
     comparisons: [
       {
         months: 3,
@@ -159,10 +196,22 @@ describe("coach context builder", () => {
       planAdherenceScore: 70,
     });
     expect(context.memory.insightTitles).toEqual(["Toplam borç azalıyor", "Analiz lokal veriye dayanır"]);
+    expect(context.trends).toMatchObject({
+      hasEnoughHistory: true,
+      reason: "none",
+      windowMonths: 3,
+      totalDebtTrend: "decreasing",
+      activeDebtTrend: "decreasing",
+      survivalBudgetTrend: "improving",
+      cashSqueezeRecurrence: "occasional",
+    });
+    expect(JSON.stringify(context.trends)).not.toContain("Örnek Kart");
   });
 
   it("uses an empty memory context when memory history is unavailable", () => {
-    expect(buildCoachMemoryContext(null)).toEqual({
+    const memory = buildCoachMemoryContext(null);
+
+    expect(memory).toEqual({
       hasAnySnapshot: false,
       hasEnoughHistory: false,
       snapshotCount: 0,
@@ -173,6 +222,18 @@ describe("coach context builder", () => {
       survivalBudgetTrend: "unknown",
       planAdherenceScore: null,
       insightTitles: [],
+    });
+
+    expect(
+      buildCoachContext({
+        monthlyPlan: makePlan(),
+        rateSnapshot: sampleInterestRateSnapshot,
+        memoryReport: null,
+      }).trends,
+    ).toMatchObject({
+      hasEnoughHistory: false,
+      reason: "no_snapshot",
+      labels: ["Yeterli geçmiş yok"],
     });
   });
 });

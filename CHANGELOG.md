@@ -4,6 +4,14 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Faz 12B Sprint 2 - Trend Intelligence
+
+- Financial Memory snapshot’larından deterministik Trend Intelligence sinyalleri üretildi.
+- `CoachContext` içine minimize `trends` alanı eklendi.
+- Gelir, zorunlu gider, toplam borç, aktif borç, yaşam bütçesi, minimum ödeme yükü, risk, borç kapatma hızı ve nakit sıkışıklığı trendleri hesaplandı.
+- Gemini prompt builder trend bağlamını güvenli ve Türkçe açıklama kurallarıyla kullanacak şekilde güncellendi.
+- Trend analyzer, prompt builder ve coach context builder için unit testler eklendi.
+
 ### Faz 12B Sprint 1 - Coach Context Builder
 
 - `CoachContext` tipi ve `coach-context-builder` servisi eklendi.
