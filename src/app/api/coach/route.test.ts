@@ -37,6 +37,7 @@ describe("/api/coach", () => {
       version: "coach-context-v1",
       summary: { month: "Temmuz 2026", activeDebtCount: 0 },
       memory: { hasAnySnapshot: true, snapshotCount: 1 },
+      trends: { hasEnoughHistory: false, reason: "single_snapshot" },
     };
     const insight = {
       summary: "Mock koç yorumu",

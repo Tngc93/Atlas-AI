@@ -53,6 +53,7 @@ export function hashCoachContext(input: CoachContext): string {
         version: input.version,
         summary: input.summary,
         memory: input.memory,
+        trends: input.trends,
       }),
     )
     .digest("hex");

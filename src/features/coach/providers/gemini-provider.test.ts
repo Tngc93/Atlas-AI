@@ -45,6 +45,24 @@ const sampleContext: CoachContext = {
     planAdherenceScore: null,
     insightTitles: [],
   },
+  trends: {
+    hasEnoughHistory: false,
+    reason: "no_snapshot",
+    windowMonths: null,
+    availableMonths: 0,
+    incomeTrend: "unknown",
+    mandatoryExpenseTrend: "unknown",
+    totalDebtTrend: "unknown",
+    activeDebtTrend: "unknown",
+    survivalBudgetTrend: "unknown",
+    minimumPaymentBurdenTrend: "unknown",
+    minimumPaymentBurden: "unknown",
+    riskTrend: "unknown",
+    debtPayoffVelocity: "none",
+    cashSqueezeRecurrence: "none",
+    highRiskMonthCount: 0,
+    labels: ["Yeterli geçmiş yok"],
+  },
 };
 
 function validGeminiText() {
