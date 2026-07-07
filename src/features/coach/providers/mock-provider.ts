@@ -2,13 +2,13 @@ import "server-only";
 
 import { composeCoachSections } from "../composer";
 import { runCoachAgents } from "../agents";
-import { coachInsightSchema, type AIUsageEstimate, type CoachInputSummary } from "../types";
+import { coachInsightSchema, type AIUsageEstimate, type CoachContext } from "../types";
 import type { AIProvider } from "./types";
 
 export const EDUCATIONAL_CAVEAT =
   "Yalnızca eğitim amaçlıdır. Bu yorumlar deterministik hesaplamaların Türkçe açıklamasıdır; yatırım, hukuk, vergi veya lisanslı finansal tavsiye değildir.";
 
-function estimateUsage(input: CoachInputSummary): AIUsageEstimate {
+function estimateUsage(input: CoachContext): AIUsageEstimate {
   const estimatedInputTokens = Math.ceil(JSON.stringify(input).length / 4);
 
   return {
@@ -24,15 +24,16 @@ export const mockProvider: AIProvider = {
   isConfigured: () => true,
   estimateUsage,
   async generateCoachInsight(input) {
+    const summary = input.summary;
     const usage = estimateUsage(input);
-    const sections = composeCoachSections(runCoachAgents(input));
-    const riskLabel = input.riskLevel === "high" || input.riskLevel === "critical" ? "yüksek" : input.riskLevel === "medium" ? "orta" : "düşük";
+    const sections = composeCoachSections(runCoachAgents(summary));
+    const riskLabel = summary.riskLevel === "high" || summary.riskLevel === "critical" ? "yüksek" : summary.riskLevel === "medium" ? "orta" : "düşük";
     const firstAction = sections.monthlyActions[0]?.action ?? "Bu ay gelir, gider ve borç kayıtlarını gözden geçir.";
 
     return coachInsightSchema.parse({
-      summary: `${input.month} için risk seviyesi ${riskLabel}. Mock AI sağlayıcısı aktif; bu fazda finansal veri üçüncü partiye gönderilmez.`,
+      summary: `${summary.month} için risk seviyesi ${riskLabel}. Mock AI sağlayıcısı aktif; bu fazda finansal veri üçüncü partiye gönderilmez.`,
       riskExplanation:
-        input.criticalReasonCount > 0
+        summary.criticalReasonCount > 0
           ? "Kritik nedenler bulunduğu için önce nakit akışını ve asgari ödeme güvenliğini kontrol et."
           : "Deterministik hesaplama motoru yükümlülükleri, yaşam bütçesini ve borç önceliğini değerlendirdi.",
       recommendedActions: [

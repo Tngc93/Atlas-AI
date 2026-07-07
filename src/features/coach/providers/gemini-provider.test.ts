@@ -6,7 +6,7 @@ import { clearCoachInsightCache } from "../cache";
 import { generateCoachInsight } from "../orchestrator";
 import { resetAIUsageMetrics, getAIUsageMetrics } from "../usage-metrics";
 import { geminiProvider, setGeminiClientFactoryForTests } from "./gemini-provider";
-import type { CoachInputSummary } from "../types";
+import type { CoachContext, CoachInputSummary } from "../types";
 
 const sampleInput: CoachInputSummary = {
   month: "Temmuz 2026",
@@ -26,6 +26,42 @@ const sampleInput: CoachInputSummary = {
     source: "fallback",
     providerStatus: "fallback",
     isFallback: true,
+  },
+};
+
+const sampleContext: CoachContext = {
+  version: "coach-context-v1",
+  builtAtIso: "2026-07-05T00:00:00.000Z",
+  summary: sampleInput,
+  memory: {
+    hasAnySnapshot: false,
+    hasEnoughHistory: false,
+    snapshotCount: 0,
+    latestPeriodMonth: null,
+    highRiskMonthCount: 0,
+    cashSqueezeCount: 0,
+    totalDebtTrend: "unknown",
+    survivalBudgetTrend: "unknown",
+    planAdherenceScore: null,
+    insightTitles: [],
+  },
+  trends: {
+    hasEnoughHistory: false,
+    reason: "no_snapshot",
+    windowMonths: null,
+    availableMonths: 0,
+    incomeTrend: "unknown",
+    mandatoryExpenseTrend: "unknown",
+    totalDebtTrend: "unknown",
+    activeDebtTrend: "unknown",
+    survivalBudgetTrend: "unknown",
+    minimumPaymentBurdenTrend: "unknown",
+    minimumPaymentBurden: "unknown",
+    riskTrend: "unknown",
+    debtPayoffVelocity: "none",
+    cashSqueezeRecurrence: "none",
+    highRiskMonthCount: 0,
+    labels: ["Yeterli geçmiş yok"],
   },
 };
 
@@ -55,7 +91,7 @@ describe("Gemini provider", () => {
     vi.stubEnv("GEMINI_MODEL", "gemini-2.5-flash");
     setGeminiClientFactoryForTests(() => ({ models: { generateContent } }));
 
-    const insight = await geminiProvider.generateCoachInsight(sampleInput);
+    const insight = await geminiProvider.generateCoachInsight(sampleContext);
 
     expect(generateContent).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -76,7 +112,7 @@ describe("Gemini provider", () => {
   it("falls back to mock when API key is missing", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
 
-    const insight = await geminiProvider.generateCoachInsight(sampleInput);
+    const insight = await geminiProvider.generateCoachInsight(sampleContext);
 
     expect(insight.provider).toBe("mock");
     expect(insight.providerMode).toBe("fallback");
@@ -89,7 +125,7 @@ describe("Gemini provider", () => {
     vi.stubEnv("GEMINI_RETRY_COUNT", "1");
     setGeminiClientFactoryForTests(() => ({ models: { generateContent } }));
 
-    const insight = await geminiProvider.generateCoachInsight(sampleInput);
+    const insight = await geminiProvider.generateCoachInsight(sampleContext);
 
     expect(generateContent).toHaveBeenCalledTimes(2);
     expect(insight.provider).toBe("gemini");
@@ -106,7 +142,7 @@ describe("Gemini provider", () => {
       },
     }));
 
-    const insight = await geminiProvider.generateCoachInsight(sampleInput);
+    const insight = await geminiProvider.generateCoachInsight(sampleContext);
 
     expect(insight.provider).toBe("mock");
     expect(insight.providerMode).toBe("fallback");
@@ -122,7 +158,7 @@ describe("Gemini provider", () => {
       },
     }));
 
-    const insight = await geminiProvider.generateCoachInsight(sampleInput);
+    const insight = await geminiProvider.generateCoachInsight(sampleContext);
 
     expect(insight.provider).toBe("mock");
     expect(insight.providerMode).toBe("fallback");

@@ -1,4 +1,4 @@
-import type { CoachInputSummary } from "./types";
+import type { CoachContext } from "./types";
 
 export function buildGeminiSystemPrompt(): string {
   return [
@@ -12,13 +12,16 @@ export function buildGeminiSystemPrompt(): string {
   ].join("\n");
 }
 
-export function buildGeminiUserPrompt(summary: CoachInputSummary): string {
+export function buildGeminiUserPrompt(context: CoachContext): string {
   return [
     "Aşağıdaki finansal özet, uygulamanın deterministik finans motoru tarafından kişisel veri azaltılarak üretilmiştir.",
     "Bu özet dışında isim, IBAN, hesap numarası, kart numarası, işlem açıklaması veya ham banka hareketi bilmiyorsun.",
+    "Trendler deterministik Financial Memory analizinden gelir; hesaplama yapma, yalnızca yorumla.",
     "JSON alanları şu yapıda olmalı:",
     '{"summary":"","strengths":[],"risks":[],"recommendations":[],"priority":"LOW | MEDIUM | HIGH","confidence":0}',
     "Özet:",
-    JSON.stringify(summary),
+    JSON.stringify(context.summary),
+    "Trend bağlamı:",
+    JSON.stringify(context.trends),
   ].join("\n\n");
 }

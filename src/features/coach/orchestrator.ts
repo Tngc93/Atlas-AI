@@ -1,15 +1,16 @@
 import "server-only";
 
 import { createHash } from "node:crypto";
-import type { MonthlyFinancePlan } from "@/features/finance/types";
-import type { InterestRateSnapshot } from "@/features/rates/types";
 import { getCachedCoachInsight, setCachedCoachInsight } from "./cache";
-import { coachInsightSchema, type AIProviderName, type CoachInputSummary, type CoachInsight } from "./types";
+import { buildCoachContext, buildCoachContextFromSummary, buildCoachInputSummary } from "./context-builder";
+import { coachInsightSchema, type AIProviderName, type CoachContext, type CoachInputSummary, type CoachInsight } from "./types";
 import { recordAIRequest, recordCacheHit, recordCacheMiss, recordFallback } from "./usage-metrics";
 import { geminiProvider } from "./providers/gemini-provider";
 import { mockProvider } from "./providers/mock-provider";
 import { openAIProvider } from "./providers/openai-provider";
 import type { AIProvider } from "./providers/types";
+
+export { buildCoachContext, buildCoachInputSummary };
 
 function parseProviderName(value: string | undefined): AIProviderName {
   if (value === "openai" || value === "gemini" || value === "mock") {
@@ -33,94 +34,32 @@ export function selectAIProvider(): AIProvider {
   return mockProvider;
 }
 
-function bandAmount(valueKurus: number): CoachInputSummary["salaryBand"] {
-  if (valueKurus <= 0) {
-    return "none";
-  }
-
-  if (valueKurus < 40_000_00) {
-    return "low";
-  }
-
-  if (valueKurus < 120_000_00) {
-    return "medium";
-  }
-
-  return "high";
+function isCoachContext(input: CoachContext | CoachInputSummary): input is CoachContext {
+  return "summary" in input && "memory" in input && input.version === "coach-context-v1";
 }
 
-function bandDailyLimit(valueKurus: number): CoachInputSummary["dailyLimitBand"] {
-  if (valueKurus <= 0) {
-    return "none";
-  }
-
-  if (valueKurus < 500_00) {
-    return "tight";
-  }
-
-  if (valueKurus < 1_500_00) {
-    return "moderate";
-  }
-
-  return "comfortable";
-}
-
-function bandRate(value: number): CoachInputSummary["topDebtRateBand"] {
-  if (value <= 0) {
-    return "none";
-  }
-
-  if (value < 2) {
-    return "low";
-  }
-
-  if (value < 4) {
-    return "medium";
-  }
-
-  return "high";
-}
-
-export function buildCoachInputSummary(
-  monthlyPlan: MonthlyFinancePlan,
-  rateSnapshot: InterestRateSnapshot,
-): CoachInputSummary {
-  const salaryKurus = monthlyPlan.cashFlow.salaryKurus;
-  const activeDebts = monthlyPlan.debtPriorities;
-  const topDebtRate = activeDebts[0]?.interestRateMonthly ?? 0;
-
-  return {
-    month: monthlyPlan.monthLabel,
-    riskLevel: monthlyPlan.riskLevel,
-    salaryBand: bandAmount(salaryKurus),
-    mandatoryExpenseShare: salaryKurus > 0 ? monthlyPlan.cashFlow.mandatoryExpenseTotalKurus / salaryKurus : 0,
-    minimumPaymentShare: salaryKurus > 0 ? monthlyPlan.cashFlow.minimumDebtPaymentsKurus / salaryKurus : 0,
-    survivalBudgetDirection:
-      monthlyPlan.livingBudget.remainingForMonthKurus < 0
-        ? "negative"
-        : monthlyPlan.livingBudget.remainingForMonthKurus < monthlyPlan.cashFlow.emergencyBufferKurus
-          ? "thin"
-          : "stable",
-    dailyLimitBand: bandDailyLimit(monthlyPlan.livingBudget.dailyLimitKurus),
-    activeDebtCount: activeDebts.length,
-    highInterestDebtCount: activeDebts.filter((debt) => debt.interestRateMonthly >= 4).length,
-    topDebtRateBand: bandRate(topDebtRate),
-    warningCount: monthlyPlan.warnings.length,
-    criticalReasonCount: monthlyPlan.criticalReasons.length,
-    actionTitles: monthlyPlan.actionPlan.slice(0, 3).map((action) => action.title),
-    rateContext: {
-      source: rateSnapshot.source,
-      providerStatus: rateSnapshot.providerStatus,
-      isFallback: rateSnapshot.providerStatus === "fallback" || rateSnapshot.source === "fallback",
-    },
-  };
+function normalizeCoachContext(input: CoachContext | CoachInputSummary): CoachContext {
+  return isCoachContext(input) ? input : buildCoachContextFromSummary(input);
 }
 
 export function hashCoachInputSummary(input: CoachInputSummary): string {
   return createHash("sha256").update(JSON.stringify(input)).digest("hex");
 }
 
-function isWithinCostControls(input: CoachInputSummary, provider: AIProvider): boolean {
+export function hashCoachContext(input: CoachContext): string {
+  return createHash("sha256")
+    .update(
+      JSON.stringify({
+        version: input.version,
+        summary: input.summary,
+        memory: input.memory,
+        trends: input.trends,
+      }),
+    )
+    .digest("hex");
+}
+
+function isWithinCostControls(input: CoachContext, provider: AIProvider): boolean {
   const maxSummaryChars = Number(process.env.AI_MAX_INPUT_SUMMARY_CHARS ?? "4000");
   const dailyLimit = Number(process.env.AI_DAILY_REQUEST_LIMIT ?? "20");
   const monthlyBudgetLimitTry = Number(process.env.AI_MONTHLY_BUDGET_LIMIT_TRY ?? "100");
@@ -129,13 +68,14 @@ function isWithinCostControls(input: CoachInputSummary, provider: AIProvider): b
   return JSON.stringify(input).length <= maxSummaryChars && dailyLimit > 0 && monthlyBudgetLimitTry >= 0 && usage.estimatedCostKurus <= monthlyBudgetLimitTry * 100;
 }
 
-export async function generateCoachInsight(input: CoachInputSummary): Promise<CoachInsight> {
+export async function generateCoachInsight(input: CoachContext | CoachInputSummary): Promise<CoachInsight> {
+  const context = normalizeCoachContext(input);
   const selectedProvider = selectAIProvider();
   const provider =
-    selectedProvider.name === "mock" || (selectedProvider.isConfigured() && isWithinCostControls(input, selectedProvider))
+    selectedProvider.name === "mock" || (selectedProvider.isConfigured() && isWithinCostControls(context, selectedProvider))
       ? selectedProvider
       : mockProvider;
-  const inputHash = hashCoachInputSummary(input);
+  const inputHash = hashCoachContext(context);
   const cached = getCachedCoachInsight(provider.name, inputHash);
 
   if (cached) {
@@ -147,7 +87,7 @@ export async function generateCoachInsight(input: CoachInputSummary): Promise<Co
   const startedAt = performance.now();
 
   try {
-    const insight = await provider.generateCoachInsight(input);
+    const insight = await provider.generateCoachInsight(context);
     const parsed = coachInsightSchema.parse(insight);
     recordAIRequest(provider.name, performance.now() - startedAt);
 
@@ -159,7 +99,7 @@ export async function generateCoachInsight(input: CoachInputSummary): Promise<Co
     return parsed;
   } catch {
     recordFallback(selectedProvider.name);
-    const fallback = await mockProvider.generateCoachInsight(input);
+    const fallback = await mockProvider.generateCoachInsight(context);
     const parsedFallback = coachInsightSchema.parse({
       ...fallback,
       providerMode: selectedProvider.name === "mock" ? "mock" : "fallback",

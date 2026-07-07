@@ -105,6 +105,52 @@ export type CoachInputSummary = {
   };
 };
 
+export type CoachMemoryContext = {
+  hasAnySnapshot: boolean;
+  hasEnoughHistory: boolean;
+  snapshotCount: number;
+  latestPeriodMonth: string | null;
+  highRiskMonthCount: number;
+  cashSqueezeCount: number;
+  totalDebtTrend: "unknown" | "decreasing" | "flat" | "increasing";
+  survivalBudgetTrend: "unknown" | "improving" | "flat" | "worsening";
+  planAdherenceScore: number | null;
+  insightTitles: string[];
+};
+
+export type CoachTrendDirection = "unknown" | "increasing" | "decreasing" | "flat" | "improving" | "worsening";
+
+export type CoachTrendMagnitude = "none" | "small" | "medium" | "large";
+
+export type CoachTrendBurden = "unknown" | "low" | "medium" | "high";
+
+export type CoachTrendContext = {
+  hasEnoughHistory: boolean;
+  reason: "none" | "no_snapshot" | "single_snapshot";
+  windowMonths: 3 | 6 | 12 | null;
+  availableMonths: number;
+  incomeTrend: CoachTrendDirection;
+  mandatoryExpenseTrend: CoachTrendDirection;
+  totalDebtTrend: CoachTrendDirection;
+  activeDebtTrend: CoachTrendDirection;
+  survivalBudgetTrend: CoachTrendDirection;
+  minimumPaymentBurdenTrend: CoachTrendDirection;
+  minimumPaymentBurden: CoachTrendBurden;
+  riskTrend: CoachTrendDirection;
+  debtPayoffVelocity: CoachTrendMagnitude;
+  cashSqueezeRecurrence: "none" | "occasional" | "repeated";
+  highRiskMonthCount: number;
+  labels: string[];
+};
+
+export type CoachContext = {
+  version: "coach-context-v1";
+  builtAtIso: string;
+  summary: CoachInputSummary;
+  memory: CoachMemoryContext;
+  trends: CoachTrendContext;
+};
+
 export type AIProviderMode = "mock" | "placeholder" | "live" | "fallback";
 
 export type AIUsageEstimate = {
