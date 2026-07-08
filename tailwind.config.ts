@@ -9,15 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#172026",
-        paper: "#f7f8f3",
-        mint: "#2f8f83",
-        amber: "#d2872f",
-        coral: "#c95f4f",
-        steel: "#4b6b82",
+        ink: "rgb(var(--color-ink) / <alpha-value>)",
+        paper: "rgb(var(--color-paper) / <alpha-value>)",
+        surface: "rgb(var(--color-surface) / <alpha-value>)",
+        "surface-muted": "rgb(var(--color-surface-muted) / <alpha-value>)",
+        line: "rgb(var(--color-line) / <alpha-value>)",
+        mint: "rgb(var(--color-mint) / <alpha-value>)",
+        amber: "rgb(var(--color-amber) / <alpha-value>)",
+        coral: "rgb(var(--color-coral) / <alpha-value>)",
+        steel: "rgb(var(--color-steel) / <alpha-value>)",
       },
       boxShadow: {
-        soft: "0 18px 60px rgba(23, 32, 38, 0.10)",
+        soft: "0 18px 60px rgb(var(--shadow-soft) / 0.28)",
+        panel: "0 24px 90px rgb(var(--shadow-soft) / 0.22)",
       },
     },
   },

@@ -4,6 +4,11 @@ Türkiye / TRY odağında maaş planlama, kredi kartı borcu kapatma, zorunlu gi
 
 Faz 3 itibarıyla gelir, borç ve zorunlu gider ekranları yerel SQLite veritabanına yazar. Başlangıçta gerçek veri veya otomatik seed yoktur; veritabanı boş gelir.
 
+## Product Philosophy
+
+This project is governed by the Product Manifesto:
+docs/product/PRODUCT_MANIFESTO.md
+
 ## Teknoloji Yığını
 
 - Next.js App Router

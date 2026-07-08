@@ -47,7 +47,7 @@ export function SubmitButton({ children }: { children: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex items-center justify-center rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink/85 disabled:cursor-not-allowed disabled:bg-ink/45"
+      className="ui-primary-button"
     >
       {pending ? "Kaydediliyor..." : children}
     </button>
@@ -61,7 +61,7 @@ export function DeleteButton() {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex items-center justify-center rounded-md border border-coral/25 px-3 py-2 text-sm font-semibold text-coral transition hover:bg-coral/10 disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex min-h-10 items-center justify-center rounded-md border border-coral/25 px-3 py-2 text-sm font-semibold text-coral transition hover:bg-coral/10 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "Siliniyor..." : "Sil"}
     </button>
@@ -91,7 +91,7 @@ export function ConfirmDeleteButton({ itemLabel = "kayıt" }: { itemLabel?: stri
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex items-center justify-center rounded-md bg-coral px-3 py-2 text-sm font-semibold text-white transition hover:bg-coral/85 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-10 items-center justify-center rounded-md bg-coral px-3 py-2 text-sm font-semibold text-white transition hover:bg-coral/85 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? "Siliniyor..." : "Eminim sil"}
       </button>
@@ -99,7 +99,7 @@ export function ConfirmDeleteButton({ itemLabel = "kayıt" }: { itemLabel?: stri
         type="button"
         disabled={pending}
         onClick={() => setIsConfirming(false)}
-        className="inline-flex items-center justify-center rounded-md border border-ink/15 bg-white px-3 py-2 text-sm font-semibold text-ink/70 transition hover:bg-ink/[0.03] disabled:cursor-not-allowed disabled:opacity-60"
+        className="ui-secondary-button"
       >
         Vazgeç
       </button>
@@ -124,9 +124,9 @@ export function MoneyInput({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-ink/70">{label}</span>
-      <div className="mt-2 flex overflow-hidden rounded-md border border-ink/15 bg-white transition focus-within:border-mint focus-within:ring-2 focus-within:ring-mint/20">
-        <span className="flex items-center border-r border-ink/10 bg-ink/[0.03] px-3 text-sm font-semibold text-ink/55">
+      <span className="text-sm font-medium text-steel">{label}</span>
+      <div className="mt-2 flex overflow-hidden rounded-md border border-line bg-surface transition focus-within:border-mint focus-within:ring-2 focus-within:ring-mint/20">
+        <span className="flex items-center border-r border-line bg-surface-muted px-3 text-sm font-semibold text-steel">
           ₺
         </span>
         <input
@@ -137,10 +137,44 @@ export function MoneyInput({
           required={required}
           defaultValue={kurusToLiraInput(value)}
           placeholder="0,00"
-          className="w-full bg-white px-3 py-2 text-sm outline-none"
+          className="w-full bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-steel/70"
         />
       </div>
-      <p className="mt-1 text-xs text-ink/45">{helper}</p>
+      <p className="mt-1 text-xs text-steel">{helper}</p>
+      <FieldError state={state} name={name} />
+    </label>
+  );
+}
+
+export function DaySelect({
+  state,
+  name,
+  label,
+  value,
+  required = false,
+  emptyLabel = "Gün seçin",
+  helper,
+}: {
+  state: FormActionState;
+  name: string;
+  label: string;
+  value?: number | null;
+  required?: boolean;
+  emptyLabel?: string;
+  helper?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="text-sm font-medium text-steel">{label}</span>
+      <select name={name} defaultValue={value ?? ""} required={required} className="ui-input mt-2 w-full">
+        <option value="">{emptyLabel}</option>
+        {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
+          <option key={day} value={day}>
+            {day}. gün
+          </option>
+        ))}
+      </select>
+      {helper ? <p className="mt-1 text-xs text-steel">{helper}</p> : null}
       <FieldError state={state} name={name} />
     </label>
   );
@@ -156,9 +190,9 @@ export function FormSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-ink/10 bg-white p-5 shadow-sm">
+    <section className="ui-card">
       <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-ink/60">{description}</p>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-steel">{description}</p>
       <div className="mt-6">{children}</div>
     </section>
   );

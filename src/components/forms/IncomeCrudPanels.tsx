@@ -10,7 +10,7 @@ import {
   saveProfileIncomeAction,
   updateSalaryRecordAction,
 } from "@/features/income/actions";
-import { ConfirmDeleteButton, FieldError, FormMessage, FormSection, MoneyInput, SubmitButton } from "./FormControls";
+import { ConfirmDeleteButton, DaySelect, FieldError, FormMessage, FormSection, MoneyInput, SubmitButton } from "./FormControls";
 
 export type ProfileFormModel = {
   id: string;
@@ -72,18 +72,7 @@ function ProfileIncomeForm({ profile }: { profile: ProfileFormModel }) {
           helper="Ay sonunda korunmasını istediğiniz güvenli TL tamponu."
         />
 
-        <label className="block">
-          <span className="text-sm font-medium text-ink/70">Maaş günü</span>
-          <input
-            name="salaryDay"
-            type="number"
-            min="1"
-            max="31"
-            defaultValue={profile?.salaryDay ?? ""}
-            className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
-          />
-          <FieldError state={state} name="salaryDay" />
-        </label>
+        <DaySelect state={state} name="salaryDay" label="Maaş günü" value={profile?.salaryDay} emptyLabel="Maaş günü seçilmedi" />
 
         <div className="flex items-end gap-3 lg:col-span-3">
           <SubmitButton>{profile ? "Geliri güncelle" : "Gelir ekle"}</SubmitButton>
@@ -107,24 +96,14 @@ function SalaryHistoryPanel({ salaryRecords }: { salaryRecords: SalaryRecordForm
     >
       <form action={createAction} className="grid gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
         <MoneyInput state={createState} name="amountKurus" label="Maaş tutarı" required />
+        <DaySelect state={createState} name="salaryDay" label="Maaş günü" emptyLabel="Maaş günü seçilmedi" />
         <label className="block">
-          <span className="text-sm font-medium text-ink/70">Maaş günü</span>
-          <input
-            name="salaryDay"
-            type="number"
-            min="1"
-            max="31"
-            className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
-          />
-          <FieldError state={createState} name="salaryDay" />
-        </label>
-        <label className="block">
-          <span className="text-sm font-medium text-ink/70">Geçerlilik tarihi</span>
+          <span className="text-sm font-medium text-steel">Geçerlilik tarihi</span>
           <input
             name="effectiveDate"
             type="date"
             defaultValue={dateInputValue()}
-            className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+            className="ui-input mt-2 w-full"
           />
           <FieldError state={createState} name="effectiveDate" />
         </label>
@@ -132,11 +111,11 @@ function SalaryHistoryPanel({ salaryRecords }: { salaryRecords: SalaryRecordForm
           <SubmitButton>Geçmişe ekle</SubmitButton>
         </div>
         <label className="block lg:col-span-3">
-          <span className="text-sm font-medium text-ink/70">Not</span>
+          <span className="text-sm font-medium text-steel">Not</span>
           <input
             name="notes"
             type="text"
-            className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+            className="ui-input mt-2 w-full"
           />
           <FieldError state={createState} name="notes" />
         </label>
@@ -147,7 +126,7 @@ function SalaryHistoryPanel({ salaryRecords }: { salaryRecords: SalaryRecordForm
 
       <div className="mt-6 space-y-3">
         {salaryRecords.length === 0 ? (
-          <p className="rounded-md border border-dashed border-ink/15 bg-ink/[0.02] p-4 text-sm text-ink/60">
+          <p className="rounded-md border border-dashed border-line bg-surface-muted p-4 text-sm text-steel">
             Henüz maaş geçmişi kaydı yok.
           </p>
         ) : (
@@ -169,42 +148,31 @@ function SalaryRecordRow({ record }: { record: SalaryRecordFormModel }) {
   );
 
   return (
-    <details className="rounded-md border border-ink/10 bg-white p-4">
+    <details className="rounded-md border border-line bg-surface p-4">
       <summary className="cursor-pointer text-sm font-semibold">
         {formatTry(record.amountKurus)} · {new Date(record.effectiveDateIso).toLocaleDateString("tr-TR")}
       </summary>
       <form action={updateAction} className="mt-4 grid gap-4 lg:grid-cols-4">
         <input type="hidden" name="id" value={record.id} />
         <MoneyInput state={updateState} name="amountKurus" label="Maaş tutarı" value={record.amountKurus} required />
+        <DaySelect state={updateState} name="salaryDay" label="Maaş günü" value={record.salaryDay} emptyLabel="Maaş günü seçilmedi" />
         <label className="block">
-          <span className="text-sm font-medium text-ink/70">Maaş günü</span>
-          <input
-            name="salaryDay"
-            type="number"
-            min="1"
-            max="31"
-            defaultValue={record.salaryDay ?? ""}
-            className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
-          />
-          <FieldError state={updateState} name="salaryDay" />
-        </label>
-        <label className="block">
-          <span className="text-sm font-medium text-ink/70">Geçerlilik tarihi</span>
+          <span className="text-sm font-medium text-steel">Geçerlilik tarihi</span>
           <input
             name="effectiveDate"
             type="date"
             defaultValue={dateInputValue(record.effectiveDateIso)}
-            className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+            className="ui-input mt-2 w-full"
           />
           <FieldError state={updateState} name="effectiveDate" />
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-ink/70">Not</span>
+          <span className="text-sm font-medium text-steel">Not</span>
           <input
             name="notes"
             type="text"
             defaultValue={record.notes ?? ""}
-            className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+            className="ui-input mt-2 w-full"
           />
           <FieldError state={updateState} name="notes" />
         </label>

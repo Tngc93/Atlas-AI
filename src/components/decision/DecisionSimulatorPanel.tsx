@@ -6,6 +6,7 @@ import type { DecisionScenarioType } from "@/features/decision/types";
 import { formatTry } from "@/features/finance/money";
 import type { UiRiskLevel } from "@/features/finance/types";
 import { FieldError, FormMessage, MoneyInput } from "@/components/forms/FormControls";
+import { EmptyState } from "@/components/ui/Primitives";
 import { initialFormActionState } from "@/lib/actions/action-state";
 import { trCopy } from "@/lib/copy/tr";
 
@@ -88,7 +89,7 @@ function SubmitButton() {
   return (
     <button
       type="submit"
-      className="inline-flex items-center justify-center rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink/85 disabled:cursor-not-allowed disabled:bg-ink/45"
+      className="ui-primary-button"
     >
       Simüle Et
     </button>
@@ -121,30 +122,30 @@ export function DecisionSimulatorPanel({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-      <section className="rounded-lg border border-ink/10 bg-white p-5 shadow-sm">
+      <section className="ui-card">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mint">Deterministik simülasyon</p>
           <h2 className="mt-2 text-lg font-semibold">“Şunu yaparsam ne olur?” senaryosu</h2>
-          <p className="mt-2 text-sm leading-6 text-ink/60">
+          <p className="mt-2 text-sm leading-6 text-steel">
             Bu form gerçek kayıtlarınızı değiştirmez. Sonuçlar mevcut finans motorundan üretilir ve yalnızca karar desteği
             sağlar.
           </p>
         </div>
 
         {!hasProfile ? (
-          <p className="mt-4 rounded-md border border-amber/25 bg-amber/10 p-3 text-sm text-ink/70">
+          <p className="mt-4 rounded-md border border-amber/25 bg-amber/10 p-3 text-sm text-steel">
             Daha anlamlı simülasyon için önce gelir sayfasından güncel maaşınızı ekleyin.
           </p>
         ) : null}
 
         <form action={action} className="mt-5 space-y-4">
           <label className="block">
-            <span className="text-sm font-medium text-ink/70">Senaryo türü</span>
+            <span className="text-sm font-medium text-steel">Senaryo türü</span>
             <select
               name="type"
               value={selectedType}
               onChange={(event) => setSelectedType(event.target.value as DecisionScenarioType)}
-              className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+              className="ui-input mt-2 w-full"
             >
               {scenarioOptions.map((scenario) => (
                 <option key={scenario.value} value={scenario.value}>
@@ -152,7 +153,7 @@ export function DecisionSimulatorPanel({
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-ink/45">{selectedScenario.description}</p>
+            <p className="mt-1 text-xs text-steel">{selectedScenario.description}</p>
             <FieldError state={state} name="type" />
           </label>
 
@@ -162,7 +163,7 @@ export function DecisionSimulatorPanel({
 
           {requiresPercent ? (
             <label className="block">
-              <span className="text-sm font-medium text-ink/70">Azaltma yüzdesi</span>
+              <span className="text-sm font-medium text-steel">Azaltma yüzdesi</span>
               <input
                 name="percent"
                 type="number"
@@ -170,9 +171,9 @@ export function DecisionSimulatorPanel({
                 max="100"
                 step="0.1"
                 disabled={!hasExpenses}
-                className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20 disabled:cursor-not-allowed disabled:bg-ink/[0.03]"
+                className="ui-input mt-2 w-full"
               />
-              <p className="mt-1 text-xs text-ink/45">
+              <p className="mt-1 text-xs text-steel">
                 Örnek: 10 yazarsanız zorunlu giderler %10 azaltılmış varsayılır.
               </p>
               <FieldError state={state} name="percent" />
@@ -181,11 +182,11 @@ export function DecisionSimulatorPanel({
 
           {requiresDebt ? (
             <label className="block">
-              <span className="text-sm font-medium text-ink/70">Hedef borç</span>
+              <span className="text-sm font-medium text-steel">Hedef borç</span>
               <select
                 name="debtAccountId"
                 disabled={activeDebts.length === 0}
-                className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20 disabled:cursor-not-allowed disabled:bg-ink/[0.03]"
+                className="ui-input mt-2 w-full"
               >
                 <option value="">Aktif borç seçin</option>
                 {activeDebts.map((debt) => (
@@ -199,7 +200,7 @@ export function DecisionSimulatorPanel({
           ) : null}
 
           {activeDebts.length === 0 && ["extra_debt_payment", "specific_debt_payment", "no_extra_payment"].includes(selectedType) ? (
-            <p className="rounded-md border border-amber/25 bg-amber/10 p-3 text-sm text-ink/70">
+            <p className="rounded-md border border-amber/25 bg-amber/10 p-3 text-sm text-steel">
               Borç odaklı senaryolar için önce aktif borç kaydı eklenmelidir.
             </p>
           ) : null}
@@ -211,7 +212,7 @@ export function DecisionSimulatorPanel({
         </form>
       </section>
 
-      <section className="rounded-lg border border-ink/10 bg-white p-5 shadow-sm">
+      <section className="ui-card">
         {state.result ? <ScenarioResult state={state} /> : <EmptyResult />}
       </section>
     </div>
@@ -220,13 +221,11 @@ export function DecisionSimulatorPanel({
 
 function EmptyResult() {
   return (
-    <div className="flex min-h-96 flex-col justify-center rounded-md border border-dashed border-ink/15 bg-ink/[0.02] p-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-steel">Sonuç bekleniyor</p>
-      <h2 className="mt-2 text-xl font-semibold">Bir senaryo seçip simülasyonu çalıştırın</h2>
-      <p className="mt-2 max-w-xl text-sm leading-6 text-ink/60">
-        Sonuç geldiğinde mevcut planla fark, kalan borç etkisi, yaşam bütçesi etkisi, risk değişimi ve “neden?”
-        açıklaması burada görünecek.
-      </p>
+    <div className="flex min-h-96 flex-col justify-center">
+      <EmptyState
+        title="Bir senaryo seçip simülasyonu çalıştırın"
+        description="Sonuç geldiğinde mevcut planla fark, kalan borç etkisi, yaşam bütçesi etkisi, risk değişimi ve neden açıklaması burada görünecek."
+      />
     </div>
   );
 }
@@ -245,7 +244,7 @@ function ScenarioResult({ state }: { state: DecisionActionState }) {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mint">Senaryo sonucu</p>
           <h2 className="mt-2 text-xl font-semibold">{result.title}</h2>
         </div>
-        <span className="w-fit rounded-md bg-ink/[0.04] px-3 py-2 text-xs font-semibold text-ink/65">
+        <span className="w-fit rounded-md border border-line bg-surface-muted px-3 py-2 text-xs font-semibold text-steel">
           Kesin tavsiye değil
         </span>
       </div>
@@ -287,18 +286,18 @@ function ScenarioResult({ state }: { state: DecisionActionState }) {
 
       <div className="mt-5 rounded-md border border-mint/20 bg-mint/10 p-4">
         <h3 className="text-sm font-semibold text-mint">Koç yorumu</h3>
-        <p className="mt-2 text-sm leading-6 text-ink/70">{result.coachComment.summary}</p>
+        <p className="mt-2 text-sm leading-6 text-steel">{result.coachComment.summary}</p>
       </div>
 
-      <div className="mt-4 rounded-md border border-ink/10 bg-ink/[0.02] p-4">
+      <div className="mt-4 rounded-md border border-line bg-surface-muted p-4">
         <h3 className="text-sm font-semibold">Neden?</h3>
-        <p className="mt-2 text-sm leading-6 text-ink/70">{result.coachComment.why}</p>
+        <p className="mt-2 text-sm leading-6 text-steel">{result.coachComment.why}</p>
       </div>
 
       {result.warnings.length > 0 ? (
         <div className="mt-4 rounded-md border border-coral/20 bg-coral/10 p-4">
           <h3 className="text-sm font-semibold text-coral">Risk uyarıları</h3>
-          <ul className="mt-2 space-y-2 text-sm leading-6 text-ink/70">
+          <ul className="mt-2 space-y-2 text-sm leading-6 text-steel">
             {result.warnings.map((warning) => (
               <li key={warning.id}>• {warning.message}</li>
             ))}
@@ -306,11 +305,11 @@ function ScenarioResult({ state }: { state: DecisionActionState }) {
         </div>
       ) : null}
 
-      <div className="mt-4 grid gap-3 text-sm text-ink/65 sm:grid-cols-2">
-        <p className="rounded-md bg-ink/[0.03] p-3">
+      <div className="mt-4 grid gap-3 text-sm text-steel sm:grid-cols-2">
+        <p className="rounded-md border border-line bg-surface-muted p-3">
           Günlük limit farkı: <span className="font-semibold">{signedTry(result.delta.dailyLimitDeltaKurus)}</span>
         </p>
-        <p className="rounded-md bg-ink/[0.03] p-3">
+        <p className="rounded-md border border-line bg-surface-muted p-3">
           Haftalık limit farkı: <span className="font-semibold">{signedTry(result.delta.weeklyLimitDeltaKurus)}</span>
         </p>
       </div>
@@ -330,10 +329,10 @@ function ResultMetric({
   tone?: string;
 }) {
   return (
-    <article className="rounded-md border border-ink/10 bg-ink/[0.02] p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink/45">{label}</p>
+    <article className="rounded-md border border-line bg-surface-muted p-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-steel">{label}</p>
       <p className={`mt-2 text-lg font-semibold ${tone}`}>{value}</p>
-      {helper ? <p className="mt-1 text-xs text-ink/50">{helper}</p> : null}
+      {helper ? <p className="mt-1 text-xs text-steel">{helper}</p> : null}
     </article>
   );
 }

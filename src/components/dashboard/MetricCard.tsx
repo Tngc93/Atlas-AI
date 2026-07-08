@@ -1,12 +1,5 @@
 import type { RiskLevel } from "@/features/finance/types";
-import { trCopy } from "@/lib/copy/tr";
-
-const riskStyles: Record<RiskLevel, string> = {
-  low: "border-mint/25 bg-mint/10 text-mint",
-  medium: "border-steel/25 bg-steel/10 text-steel",
-  high: "border-amber/30 bg-amber/10 text-amber",
-  critical: "border-coral/30 bg-coral/10 text-coral",
-};
+import { RiskBadge } from "@/components/ui/Primitives";
 
 export function MetricCard({
   label,
@@ -20,15 +13,16 @@ export function MetricCard({
   risk?: RiskLevel;
 }) {
   return (
-    <section className="rounded-lg border border-ink/10 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-ink/55">{label}</p>
-      <p className="mt-3 text-2xl font-semibold tracking-tight text-ink">{value}</p>
-      <p className="mt-2 text-sm leading-5 text-ink/60">{helper}</p>
-      {risk ? (
-        <span className={`mt-4 inline-flex rounded-md border px-2.5 py-1 text-xs font-semibold ${riskStyles[risk]}`}>
-          {trCopy.risk[risk]}
-        </span>
-      ) : null}
+    <section className="ui-card group min-h-44 overflow-hidden">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-steel">{label}</p>
+        {risk ? <RiskBadge riskLevel={risk} /> : null}
+      </div>
+      <p className="mt-5 text-4xl font-semibold tracking-tight text-ink">{value}</p>
+      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface-muted">
+        <span className="block h-full w-2/3 rounded-full bg-gradient-to-r from-mint to-steel transition duration-500 group-hover:w-5/6" />
+      </div>
+      <p className="mt-3 text-sm leading-5 text-steel">{helper}</p>
     </section>
   );
 }

@@ -1,12 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { formatTry } from "@/features/finance/money";
 import { debtStatusOptions, debtTypeOptions, getDebtStatusLabel, getDebtTypeLabel } from "@/features/finance/form-options";
 import type { FormActionState } from "@/lib/actions/action-state";
 import { initialFormActionState } from "@/lib/actions/action-state";
 import { createDebtAction, deleteDebtAction, updateDebtAction } from "@/features/debts/actions";
-import { ConfirmDeleteButton, FieldError, FormMessage, FormSection, MoneyInput, SubmitButton } from "./FormControls";
+import { ConfirmDeleteButton, DaySelect, FieldError, FormMessage, FormSection, MoneyInput, SubmitButton } from "./FormControls";
 
 export type DebtFormModel = {
   id: string;
@@ -50,7 +50,7 @@ export function DebtCrudPanel({ debts }: { debts: DebtFormModel[] }) {
 
       <div className="mt-6 space-y-3">
         {debts.length === 0 ? (
-          <p className="rounded-md border border-dashed border-ink/15 bg-ink/[0.02] p-4 text-sm text-ink/60">
+          <p className="rounded-md border border-dashed border-line bg-surface-muted p-4 text-sm text-steel">
             Henüz borç kaydı yok. İlk borcunuzu eklediğinizde panel ve aylık plan SQLite verisiyle güncellenecek.
           </p>
         ) : (
@@ -59,6 +59,28 @@ export function DebtCrudPanel({ debts }: { debts: DebtFormModel[] }) {
       </div>
     </FormSection>
   );
+}
+
+function kurusToLiraInput(value?: number | null): string {
+  if (typeof value !== "number") {
+    return "";
+  }
+
+  return new Intl.NumberFormat("tr-TR", {
+    minimumFractionDigits: value % 100 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(value / 100);
+}
+
+function parseLiraInputToKurus(value: string): number {
+  const normalized = value.trim().replace(/\./g, "").replace(",", ".");
+  const parsed = Number(normalized);
+
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0;
+  }
+
+  return Math.round(parsed * 100);
 }
 
 function DebtRow({ debt }: { debt: DebtFormModel }) {
@@ -72,7 +94,7 @@ function DebtRow({ debt }: { debt: DebtFormModel }) {
   );
 
   return (
-    <details className="rounded-md border border-ink/10 bg-white p-4">
+    <details className="rounded-md border border-line bg-surface p-4">
       <summary className="cursor-pointer text-sm font-semibold">
         {debt.name} · {getDebtTypeLabel(debt.type)} · {getDebtStatusLabel(debt.status)} · {formatTry(debt.balanceKurus)}
       </summary>
@@ -94,14 +116,22 @@ function DebtRow({ debt }: { debt: DebtFormModel }) {
 }
 
 function DebtFields({ state, debt }: { state: FormActionState; debt?: DebtFormModel }) {
+  const [selectedType, setSelectedType] = useState(debt?.type ?? "credit_card");
+  const [balanceInput, setBalanceInput] = useState(kurusToLiraInput(debt?.balanceKurus));
+  const balanceKurus = useMemo(() => parseLiraInputToKurus(balanceInput), [balanceInput]);
+  const isCreditCard = selectedType === "credit_card";
+  const calculatedMinimumPaymentKurus = Math.round(balanceKurus * 0.4);
+  const calculatedMinimumPaymentLira = calculatedMinimumPaymentKurus / 100;
+
   return (
     <>
       <label className="block">
-        <span className="text-sm font-medium text-ink/70">Borç türü</span>
+        <span className="text-sm font-medium text-steel">Borç türü</span>
         <select
           name="type"
-          defaultValue={debt?.type ?? "credit_card"}
-          className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+          value={selectedType}
+          onChange={(event) => setSelectedType(event.target.value)}
+          className="ui-input mt-2 w-full"
         >
           {debtTypeOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -113,33 +143,35 @@ function DebtFields({ state, debt }: { state: FormActionState; debt?: DebtFormMo
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-ink/70">Banka veya alacaklı</span>
+        <span className="text-sm font-medium text-steel">Banka veya alacaklı</span>
         <input
           name="lender"
           type="text"
+          required
           defaultValue={debt?.lender ?? ""}
-          className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+          className="ui-input mt-2 w-full"
         />
         <FieldError state={state} name="lender" />
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-ink/70">Borç adı</span>
+        <span className="text-sm font-medium text-steel">Borç adı</span>
         <input
           name="name"
           type="text"
+          required
           defaultValue={debt?.name ?? ""}
-          className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+          className="ui-input mt-2 w-full"
         />
         <FieldError state={state} name="name" />
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-ink/70">Durum</span>
+        <span className="text-sm font-medium text-steel">Durum</span>
         <select
           name="status"
           defaultValue={debt?.status ?? "active"}
-          className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+          className="ui-input mt-2 w-full"
         >
           {debtStatusOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -151,8 +183,27 @@ function DebtFields({ state, debt }: { state: FormActionState; debt?: DebtFormMo
       </label>
 
       <MoneyInput state={state} name="totalDebtKurus" label="Toplam borç" value={debt?.totalDebtKurus} required />
-      <MoneyInput state={state} name="balanceKurus" label="Kalan borç" value={debt?.balanceKurus} required />
-      <MoneyInput state={state} name="minimumPaymentKurus" label="Minimum ödeme" value={debt?.minimumPaymentKurus} required />
+      <BalanceMoneyInput state={state} value={balanceInput} onChange={setBalanceInput} />
+      {isCreditCard ? (
+        <label className="block">
+          <span className="text-sm font-medium text-steel">Minimum ödeme</span>
+          <input type="hidden" name="minimumPaymentKurus" value={calculatedMinimumPaymentLira} />
+          <output className="mt-2 flex min-h-10 w-full items-center rounded-md border border-line bg-surface-muted px-3 py-2 text-sm font-semibold text-ink">
+            {formatTry(calculatedMinimumPaymentKurus)}
+          </output>
+          <p className="mt-1 text-xs text-steel">Kredi kartı için kalan borcun %40’ı otomatik hesaplanır.</p>
+          <FieldError state={state} name="minimumPaymentKurus" />
+        </label>
+      ) : (
+        <MoneyInput
+          state={state}
+          name="minimumPaymentKurus"
+          label="Minimum ödeme"
+          value={debt?.minimumPaymentKurus}
+          helper="Kredi, ek hesap veya diğer borçlar için bankanın bildirdiği minimum/aylık ödeme."
+          required
+        />
+      )}
       <MoneyInput
         state={state}
         name="creditLimitKurus"
@@ -162,7 +213,7 @@ function DebtFields({ state, debt }: { state: FormActionState; debt?: DebtFormMo
       />
 
       <label className="block">
-        <span className="text-sm font-medium text-ink/70">Manuel aylık faiz (%)</span>
+        <span className="text-sm font-medium text-steel">Manuel aylık faiz (%)</span>
         <input
           name="interestRateMonthly"
           type="number"
@@ -170,10 +221,10 @@ function DebtFields({ state, debt }: { state: FormActionState; debt?: DebtFormMo
           max="25"
           step="0.01"
           defaultValue={debt?.interestRateMonthly ?? "0"}
-          className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+          className="ui-input mt-2 w-full"
         />
-        <p className="mt-1 text-xs text-ink/45">
-          Boş bırakırsanız kredi kartında sağlayıcı/cache/fallback oranı, diğer borçlarda 0% ve uyarı kullanılır.
+        <p className="mt-1 text-xs text-steel">
+          Boş bırakırsanız kredi kartında güvenli referans oranı, diğer borçlarda 0% ve uyarı kullanılır.
         </p>
         {debt ? (
           <p className="mt-1 text-xs font-medium text-steel">
@@ -184,11 +235,49 @@ function DebtFields({ state, debt }: { state: FormActionState; debt?: DebtFormMo
         <FieldError state={state} name="interestRateMonthly" />
       </label>
 
-      <NumberInput state={state} name="dueDay" label="Son ödeme günü" min={1} max={31} value={debt?.dueDay} />
-      <NumberInput state={state} name="statementDay" label="Hesap kesim günü" min={1} max={31} value={debt?.statementDay} />
+      <DaySelect state={state} name="dueDay" label="Son ödeme günü" value={debt?.dueDay} required />
+      <DaySelect
+        state={state}
+        name="statementDay"
+        label="Hesap kesim günü"
+        value={debt?.statementDay}
+        emptyLabel="Hesap kesim günü yok"
+      />
       <NumberInput state={state} name="installmentCount" label="Taksit sayısı" min={1} value={debt?.installmentCount} />
       <NumberInput state={state} name="remainingInstallments" label="Kalan taksit" min={0} value={debt?.remainingInstallments} />
     </>
+  );
+}
+
+function BalanceMoneyInput({
+  state,
+  value,
+  onChange,
+}: {
+  state: FormActionState;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="text-sm font-medium text-steel">Kalan borç</span>
+      <div className="mt-2 flex overflow-hidden rounded-md border border-line bg-surface transition focus-within:border-mint focus-within:ring-2 focus-within:ring-mint/20">
+        <span className="flex items-center border-r border-line bg-surface-muted px-3 text-sm font-semibold text-steel">₺</span>
+        <input
+          name="balanceKurus"
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          required
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="0,00"
+          className="w-full bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-steel/70"
+        />
+      </div>
+      <p className="mt-1 text-xs text-steel">Kredi kartı minimum ödemesi bu tutar üzerinden otomatik hesaplanır.</p>
+      <FieldError state={state} name="balanceKurus" />
+    </label>
   );
 }
 
@@ -199,8 +288,8 @@ function interestSourceLabel(source: string): string {
     tcmb_overdue: "TCMB gecikme",
     cached_contractual: "Önbellek akdi",
     cached_overdue: "Önbellek gecikme",
-    fallback_contractual: "Fallback/örnek",
-    fallback_overdue: "Fallback gecikme",
+    fallback_contractual: "Güvenli yedek",
+    fallback_overdue: "Güvenli yedek gecikme",
     missing: "Faiz eksik",
   };
 
@@ -224,14 +313,14 @@ function NumberInput({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-ink/70">{label}</span>
+      <span className="text-sm font-medium text-steel">{label}</span>
       <input
         name={name}
         type="number"
         min={min}
         max={max}
         defaultValue={value ?? ""}
-        className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+        className="ui-input mt-2 w-full"
       />
       <FieldError state={state} name={name} />
     </label>

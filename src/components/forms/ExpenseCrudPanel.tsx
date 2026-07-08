@@ -6,7 +6,7 @@ import { expenseCategoryOptions, getExpenseCategoryLabel } from "@/features/fina
 import type { FormActionState } from "@/lib/actions/action-state";
 import { initialFormActionState } from "@/lib/actions/action-state";
 import { createExpenseAction, deleteExpenseAction, updateExpenseAction } from "@/features/expenses/actions";
-import { ConfirmDeleteButton, FieldError, FormMessage, FormSection, MoneyInput, SubmitButton } from "./FormControls";
+import { ConfirmDeleteButton, DaySelect, FieldError, FormMessage, FormSection, MoneyInput, SubmitButton } from "./FormControls";
 
 export type ExpenseFormModel = {
   id: string;
@@ -39,7 +39,7 @@ export function ExpenseCrudPanel({ expenses }: { expenses: ExpenseFormModel[] })
 
       <div className="mt-6 grid gap-3">
         {expenses.length === 0 ? (
-          <p className="rounded-md border border-dashed border-ink/15 bg-ink/[0.02] p-4 text-sm text-ink/60">
+          <p className="rounded-md border border-dashed border-line bg-surface-muted p-4 text-sm text-steel">
             Henüz zorunlu gider kaydı yok. Gider eklediğinizde hayatta kalma bütçesi ve aylık plan güncellenecek.
           </p>
         ) : (
@@ -61,7 +61,7 @@ function ExpenseRow({ expense }: { expense: ExpenseFormModel }) {
   );
 
   return (
-    <details className="rounded-md border border-ink/10 bg-white p-4">
+    <details className="rounded-md border border-line bg-surface p-4">
       <summary className="cursor-pointer text-sm font-semibold">
         {expense.name} · {getExpenseCategoryLabel(expense.category)} · {formatTry(expense.amountKurus)}
       </summary>
@@ -86,22 +86,22 @@ function ExpenseFields({ state, expense }: { state: FormActionState; expense?: E
   return (
     <>
       <label className="block">
-        <span className="text-sm font-medium text-ink/70">Gider adı</span>
+        <span className="text-sm font-medium text-steel">Gider adı</span>
         <input
           name="name"
           type="text"
           defaultValue={expense?.name ?? ""}
-          className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+          className="ui-input mt-2 w-full"
         />
         <FieldError state={state} name="name" />
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-ink/70">Kategori</span>
+        <span className="text-sm font-medium text-steel">Kategori</span>
         <select
           name="category"
           defaultValue={expense?.category ?? "rent"}
-          className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+          className="ui-input mt-2 w-full"
         >
           {expenseCategoryOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -114,31 +114,20 @@ function ExpenseFields({ state, expense }: { state: FormActionState; expense?: E
 
       <MoneyInput state={state} name="amountKurus" label="Tutar" value={expense?.amountKurus} required />
 
-      <label className="block">
-        <span className="text-sm font-medium text-ink/70">Son ödeme günü</span>
-        <input
-          name="dueDay"
-          type="number"
-          min="1"
-          max="31"
-          defaultValue={expense?.dueDay ?? ""}
-          className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
-        />
-        <FieldError state={state} name="dueDay" />
-      </label>
+      <DaySelect state={state} name="dueDay" label="Son ödeme günü" value={expense?.dueDay} emptyLabel="Son ödeme günü yok" />
 
-      <label className="flex items-center gap-3 rounded-md border border-ink/10 px-3 py-2 text-sm font-medium text-ink/70">
+      <label className="flex items-center gap-3 rounded-md border border-line px-3 py-2 text-sm font-medium text-steel">
         <input name="isFixed" type="checkbox" defaultChecked={expense?.isFixed ?? true} className="h-4 w-4" />
         Sabit aylık gider
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium text-ink/70">Not</span>
+        <span className="text-sm font-medium text-steel">Not</span>
         <input
           name="notes"
           type="text"
           defaultValue={expense?.notes ?? ""}
-          className="mt-2 w-full rounded-md border border-ink/15 bg-white px-3 py-2 text-sm outline-none transition focus:border-mint focus:ring-2 focus:ring-mint/20"
+          className="ui-input mt-2 w-full"
         />
         <FieldError state={state} name="notes" />
       </label>
