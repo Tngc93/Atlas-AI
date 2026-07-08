@@ -68,6 +68,12 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await expect(page.getByText("Örnek E2E Kart")).toBeVisible();
 
   await page.goto("/");
+  await expect(page.getByRole("heading", { name: "Bu ayın karar özeti" })).toBeVisible();
+  await expect(page.getByText("Önce korunması gereken şey")).toBeVisible();
+  await expect(page.getByText("En önemli risk")).toBeVisible();
+  await expect(page.getByText("Sıradaki güvenli adım")).toBeVisible();
+  await expect(page.getByText("Neden?")).toBeVisible();
+  await expect(page.getByText("Bu özet hesaplama motorundan gelir; son karar sizindir.")).toBeVisible();
   await expect(page.getByText("Aylık maaş")).toBeVisible();
   await expect(page.getByText("Borç öncelik sırası")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Finansal Durum" })).toBeVisible();
