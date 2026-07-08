@@ -1,18 +1,30 @@
 import { AppShell } from "@/components/dashboard/AppShell";
 import { CoachPanel } from "@/components/dashboard/CoachPanel";
 import { PageHeader } from "@/components/ui/Primitives";
-import { buildCoachInputSummary, generateCoachInsight } from "@/features/coach/orchestrator";
+import { buildCoachContext, generateCoachInsight } from "@/features/coach/orchestrator";
 import { getMonthlyFinancePlanSnapshot } from "@/features/finance/data-service";
+import { getMemoryReportData } from "@/features/memory/repository";
+import { buildFinancialMemoryReport } from "@/features/memory/service";
+import type { FinancialMemoryReport } from "@/features/memory/types";
 import { getLatestInterestRateSnapshot } from "@/features/rates/service";
 
 export const dynamic = "force-dynamic";
 
+async function getMemoryReportSafely(): Promise<FinancialMemoryReport | null> {
+  try {
+    return buildFinancialMemoryReport(await getMemoryReportData());
+  } catch {
+    return null;
+  }
+}
+
 export default async function CoachPage() {
-  const [{ monthlyPlan }, rateSnapshot] = await Promise.all([
+  const [{ monthlyPlan }, rateSnapshot, memoryReport] = await Promise.all([
     getMonthlyFinancePlanSnapshot(12),
     getLatestInterestRateSnapshot(),
+    getMemoryReportSafely(),
   ]);
-  const coachInsight = await generateCoachInsight(buildCoachInputSummary(monthlyPlan, rateSnapshot));
+  const coachInsight = await generateCoachInsight(buildCoachContext({ monthlyPlan, rateSnapshot, memoryReport }));
 
   return (
     <AppShell>
