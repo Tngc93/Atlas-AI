@@ -17,6 +17,29 @@ function collectBrowserErrors(page: Page) {
   return errors;
 }
 
+async function assertNoHorizontalOverflow(page: Page, context: string) {
+  const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+
+  expect(hasHorizontalOverflow, `${context} yatay taşma üretmemeli`).toBe(false);
+}
+
+async function assertVisibleTexts(page: Page, texts: string[]) {
+  for (const text of texts) {
+    const matches = page.getByText(text, { exact: true });
+    const count = await matches.count();
+    let hasVisibleMatch = false;
+
+    for (let index = 0; index < count; index += 1) {
+      if (await matches.nth(index).isVisible()) {
+        hasVisibleMatch = true;
+        break;
+      }
+    }
+
+    expect(hasVisibleMatch, `"${text}" görünür olmalı`).toBe(true);
+  }
+}
+
 test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ page }) => {
   test.setTimeout(60_000);
 
@@ -69,11 +92,13 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
 
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Bu ayın karar özeti" })).toBeVisible();
-  await expect(page.getByText("Önce korunması gereken şey")).toBeVisible();
-  await expect(page.getByText("En önemli risk")).toBeVisible();
-  await expect(page.getByText("Sıradaki güvenli adım")).toBeVisible();
-  await expect(page.getByText("Neden?")).toBeVisible();
-  await expect(page.getByText("Bu özet hesaplama motorundan gelir; son karar sizindir.")).toBeVisible();
+  await assertVisibleTexts(page, [
+    "Önce korunması gereken şey",
+    "En önemli risk",
+    "Sıradaki güvenli adım",
+    "Neden?",
+    "Bu özet hesaplama motorundan gelir; son karar sizindir.",
+  ]);
   await expect(page.getByText("Aylık maaş")).toBeVisible();
   await expect(page.getByText("Borç öncelik sırası")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Finansal Durum" })).toBeVisible();
@@ -121,16 +146,52 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   expect(browserErrors).toEqual([]);
 });
 
-test("mobil görünümde ana akışlarda yatay taşma oluşmaz", async ({ page }) => {
+test("responsive smoke: ana finansal sayfalarda yatay taşma ve kritik metinler korunur", async ({ page }) => {
+  test.setTimeout(90_000);
+
   const browserErrors = collectBrowserErrors(page);
+  const viewports = [
+    { label: "mobil", width: 375, height: 812 },
+    { label: "tablet", width: 768, height: 1024 },
+    { label: "desktop", width: 1440, height: 1000 },
+  ];
+  const pages = [
+    {
+      path: "/",
+      texts: ["Bu ayın karar özeti", "Önce korunması gereken şey", "En önemli risk", "Sıradaki güvenli adım", "Neden?"],
+    },
+    {
+      path: "/coach",
+      texts: ["Bu yorum şunlara dayanıyor", "Bu ayın hesaplama özeti", "Finansal hafıza durumu", "Trendler"],
+    },
+    {
+      path: "/plan",
+      texts: ["Aylık plan"],
+    },
+    {
+      path: "/decisions",
+      texts: ["Karar Simülatörü"],
+    },
+    {
+      path: "/forecast",
+      texts: ["Finansal Tahmin"],
+    },
+    {
+      path: "/memory",
+      texts: ["Finansal Hafıza"],
+    },
+  ];
 
-  await page.setViewportSize({ width: 375, height: 812 });
+  for (const viewport of viewports) {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
 
-  for (const path of ["/", "/income", "/debts", "/expenses", "/plan", "/decisions", "/forecast", "/memory"]) {
-    await page.goto(path);
-    const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
-    expect(hasHorizontalOverflow, `${path} mobil yatay taşma üretmemeli`).toBe(false);
+    for (const item of pages) {
+      await page.goto(item.path);
+      await assertNoHorizontalOverflow(page, `${viewport.label} ${item.path}`);
+      await assertVisibleTexts(page, item.texts);
+    }
   }
+
   expect(browserErrors).toEqual([]);
 });
 
