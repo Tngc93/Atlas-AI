@@ -8,6 +8,15 @@ The product helps users understand monthly salary allocation, mandatory expenses
 
 The app is privacy-first and local-first. Treat all personal financial data as sensitive.
 
+## Product Constitution
+
+The highest authority of this repository is:
+docs/product/PRODUCT_MANIFESTO.md
+
+Every implementation, refactor, feature proposal, UI change, AI behavior, architecture decision and engineering trade-off must remain consistent with the Product Manifesto.
+
+If implementation and the manifesto conflict, the manifesto takes precedence.
+
 ## Operating Rules
 
 - Inspect the existing codebase before making changes.

@@ -14,6 +14,7 @@ import {
 import { kurusToLira } from "@/features/finance/money";
 import type { PaymentPlanMonth, SalaryAllocation } from "@/features/finance/types";
 import { trCopy } from "@/lib/copy/tr";
+import { chartLabelStyle, chartTheme, chartTooltipStyle } from "@/components/ui/chartTheme";
 
 function formatTooltipValue(value: unknown): string {
   return `${Number(value ?? 0).toLocaleString("tr-TR")} TL`;
@@ -32,11 +33,17 @@ export function SalaryWaterfall({ allocation }: { allocation: SalaryAllocation }
     <div className="h-72 min-w-0 overflow-hidden">
       <ResponsiveContainer>
         <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#dde2dc" />
-          <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} />
-          <YAxis tickLine={false} axisLine={false} fontSize={12} />
-          <Tooltip formatter={formatTooltipValue} />
-          <Bar dataKey="amount" fill="#2f8f83" radius={[6, 6, 0, 0]} />
+          <defs>
+            <linearGradient id="salaryBarGradient" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor={chartTheme.mint} stopOpacity={0.95} />
+              <stop offset="100%" stopColor={chartTheme.steel} stopOpacity={0.55} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+          <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} />
+          <YAxis tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} />
+          <Tooltip formatter={formatTooltipValue} contentStyle={chartTooltipStyle} labelStyle={chartLabelStyle} />
+          <Bar dataKey="amount" fill="url(#salaryBarGradient)" radius={[8, 8, 0, 0]} animationDuration={900} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -54,12 +61,18 @@ export function PayoffRoadmapChart({ months }: { months: PaymentPlanMonth[] }) {
     <div className="h-72 min-w-0 overflow-hidden">
       <ResponsiveContainer>
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#dde2dc" />
-          <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={12} />
-          <YAxis tickLine={false} axisLine={false} fontSize={12} />
-          <Tooltip formatter={formatTooltipValue} />
-          <Line type="monotone" dataKey="remaining" stroke="#4b6b82" strokeWidth={3} dot={false} />
-          <Line type="monotone" dataKey="interest" stroke="#c95f4f" strokeWidth={2} dot={false} />
+          <defs>
+            <linearGradient id="payoffRemainingGradient" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stopColor={chartTheme.steel} stopOpacity={0.75} />
+              <stop offset="100%" stopColor={chartTheme.mint} stopOpacity={1} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+          <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} />
+          <YAxis tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} />
+          <Tooltip formatter={formatTooltipValue} contentStyle={chartTooltipStyle} labelStyle={chartLabelStyle} />
+          <Line type="monotone" dataKey="remaining" name="Kalan borç" stroke="url(#payoffRemainingGradient)" strokeWidth={3} dot={false} animationDuration={900} />
+          <Line type="monotone" dataKey="interest" name="Faiz etkisi" stroke={chartTheme.coral} strokeWidth={2} dot={false} animationDuration={900} />
         </LineChart>
       </ResponsiveContainer>
     </div>

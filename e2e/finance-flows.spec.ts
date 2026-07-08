@@ -31,7 +31,7 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await page.goto("/income");
   await page.getByLabel("Aylık maaş").fill("85.000,50");
   await page.getByLabel("Hayatta kalma eşiği").fill("12.000");
-  await page.getByLabel("Maaş günü").first().fill("1");
+  await page.getByLabel("Maaş günü").first().selectOption("1");
   await page.getByRole("button", { name: "Gelir ekle" }).click();
   await expect(page.getByText("Gelir bilgileri kaydedildi.")).toBeVisible();
 
@@ -46,7 +46,7 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await page.getByLabel("Gider adı").fill("Örnek E2E Kira");
   await page.getByLabel("Kategori").selectOption("rent");
   await page.getByLabel("Tutar").fill("20.000");
-  await page.getByLabel("Son ödeme günü").fill("5");
+  await page.getByLabel("Son ödeme günü").selectOption("5");
   await page.getByRole("button", { name: "Gider ekle" }).click();
   await expect(page.getByText("Gider kaydı eklendi.")).toBeVisible();
   await page.reload();
@@ -59,9 +59,9 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await page.getByLabel("Durum").selectOption("active");
   await page.getByLabel("Toplam borç").fill("30.000");
   await page.getByLabel("Kalan borç").fill("18.000");
-  await page.getByLabel("Minimum ödeme").fill("2.000");
+  await expect(page.getByText("₺7.200")).toBeVisible();
   await page.getByLabel("Manuel aylık faiz (%)").fill("4.25");
-  await page.getByLabel("Son ödeme günü").fill("15");
+  await page.getByLabel("Son ödeme günü").selectOption("15");
   await page.getByRole("button", { name: "Borç ekle" }).click();
   await expect(page.getByText("Borç kaydı eklendi.")).toBeVisible();
   await page.reload();
@@ -125,6 +125,36 @@ test("mobil görünümde ana akışlarda yatay taşma oluşmaz", async ({ page }
     const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     expect(hasHorizontalOverflow, `${path} mobil yatay taşma üretmemeli`).toBe(false);
   }
+  expect(browserErrors).toEqual([]);
+});
+
+test("borç formu minimum ödeme ve gün seçici davranışlarını korur", async ({ page }) => {
+  const browserErrors = collectBrowserErrors(page);
+
+  await page.goto("/debts");
+  await page.getByRole("button", { name: "Borç ekle" }).click();
+  await expect(page.getByLabel("Banka veya alacaklı").first()).toBeFocused();
+  await expect(page.getByLabel("Banka veya alacaklı").first()).toHaveJSProperty("validity.valueMissing", true);
+
+  await page.getByLabel("Borç türü").first().selectOption("credit_card");
+  await page.getByRole("textbox", { name: /^Kalan borç/ }).first().fill("10.000");
+  await expect(page.getByText("₺4.000")).toBeVisible();
+  await expect(page.getByText("Kredi kartı için kalan borcun %40’ı otomatik hesaplanır.").first()).toBeVisible();
+  await page.getByLabel("Son ödeme günü").first().selectOption("10");
+  await page.getByLabel("Hesap kesim günü").first().selectOption("3");
+
+  await page.getByLabel("Borç türü").first().selectOption("personal_loan");
+  await page.getByLabel("Banka veya alacaklı").first().fill("Örnek E2E Finans");
+  await page.getByLabel("Borç adı").first().fill("Örnek E2E Kredi");
+  await page.getByLabel("Toplam borç").first().fill("50.000");
+  await page.getByRole("textbox", { name: /^Kalan borç/ }).first().fill("40.000");
+  await page.getByRole("textbox", { name: /^Minimum ödeme/ }).first().fill("5.000");
+  await page.getByLabel("Son ödeme günü").first().selectOption("20");
+  await page.getByRole("button", { name: "Borç ekle" }).click();
+  await expect(page.getByText("Borç kaydı eklendi.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("Örnek E2E Kredi")).toBeVisible();
+
   expect(browserErrors).toEqual([]);
 });
 

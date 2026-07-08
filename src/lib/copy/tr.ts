@@ -59,8 +59,8 @@ export const trCopy = {
   },
   coach: {
     title: "Finans koçu",
-    subtitle: "AI provider katmanı mock-first çalışır; bu fazda gerçek OpenAI veya Gemini çağrısı yapılmaz.",
-    mode: "Örnek mod",
+    subtitle: "Koç güvenli AI modunda çalışır; canlı AI etkin değilse demo yorum gösterilir.",
+    mode: "Güvenli mod",
     body:
       "Panel önce deterministik hesaplamaları kullanır. Finans koçu yorumu minimize edilmiş özetten üretilir; bu fazda finansal veri üçüncü partiye gönderilmez.",
     actions: [
@@ -149,7 +149,7 @@ export const trCopy = {
       "Mevcut gelir, gider, borç, faiz ve ödeme planına göre 3, 6, 12 ve 24 aylık deterministik projeksiyon. Bu ekran tahmin sağlar; kesin finansal tavsiye değildir.",
     setupTitle: "Tahmin için eksik bilgiler var",
     setupDescription:
-      "Anlamlı bir finansal tahmin için gelir, zorunlu gider ve en az bir aktif borç kaydı gerekir. Forecast Engine mock veri kullanmadan lokal SQLite kayıtlarını okur.",
+      "Anlamlı bir finansal tahmin için gelir, zorunlu gider ve en az bir aktif borç kaydı gerekir. Gelecek görünümü demo veri kullanmadan lokal SQLite kayıtlarını okur.",
     finalRemainingDebt: "24 ay sonu kalan borç",
     estimatedPayoffMonth: "Tahmini kapanış ayı",
     totalInterest: "Toplam tahmini faiz",

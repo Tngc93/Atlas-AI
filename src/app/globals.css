@@ -2,9 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #f7f8f3;
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #08090d;
+  --foreground: #f5f7fb;
+  --color-paper: 8 9 13;
+  --color-ink: 245 247 251;
+  --color-surface: 17 19 25;
+  --color-surface-muted: 27 31 39;
+  --color-line: 45 51 63;
+  --color-mint: 42 213 160;
+  --color-amber: 245 171 53;
+  --color-coral: 255 94 125;
+  --color-steel: 156 170 190;
+  --shadow-soft: 0 0 0;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --background: #f5f7fb;
+    --foreground: #172026;
+    --color-paper: 245 247 251;
+    --color-ink: 23 32 38;
+    --color-surface: 255 255 255;
+    --color-surface-muted: 239 243 247;
+    --color-line: 217 224 232;
+    --color-mint: 47 143 131;
+    --color-amber: 210 135 47;
+    --color-coral: 201 95 79;
+    --color-steel: 75 107 130;
+    --shadow-soft: 23 32 38;
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --background: #f5f7fb;
   --foreground: #172026;
+  --color-paper: 245 247 251;
+  --color-ink: 23 32 38;
+  --color-surface: 255 255 255;
+  --color-surface-muted: 239 243 247;
+  --color-line: 217 224 232;
+  --color-mint: 47 143 131;
+  --color-amber: 210 135 47;
+  --color-coral: 201 95 79;
+  --color-steel: 75 107 130;
+  --shadow-soft: 23 32 38;
 }
 
 body {
@@ -22,4 +68,123 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-feature-settings:
+    "cv02",
+    "cv03",
+    "cv04",
+    "tnum";
+  text-rendering: geometricPrecision;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease;
+}
+
+::selection {
+  background: rgb(var(--color-mint) / 0.28);
+}
+
+:focus-visible {
+  outline: 2px solid rgb(var(--color-mint));
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer components {
+  .ui-surface {
+    @apply border border-line/80 bg-surface text-ink shadow-panel;
+  }
+
+  .ui-card {
+    @apply rounded-xl border border-line/70 bg-surface/95 p-5 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-mint/35 hover:shadow-panel;
+  }
+
+  .ui-muted-card {
+    @apply rounded-lg border border-line/65 bg-surface-muted/75;
+  }
+
+  .ui-input {
+    @apply rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink outline-none transition placeholder:text-steel/70 hover:border-steel/60 focus:border-mint focus:ring-2 focus:ring-mint/20 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .ui-primary-button {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-mint/40 bg-gradient-to-b from-mint to-mint/80 px-4 py-2 text-sm font-semibold text-paper shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-panel active:translate-y-0 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60;
+  }
+
+  .ui-secondary-button {
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-mint/45 hover:bg-mint/10 hover:shadow-panel active:translate-y-0 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60;
+  }
+
+  .ui-skeleton {
+    @apply relative overflow-hidden rounded-md bg-surface-muted;
+  }
+
+  .ui-skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent;
+    animation: skeleton-shimmer 1.8s infinite;
+  }
+}
+
+@layer utilities {
+  .animate-enter {
+    animation: enter 420ms ease both;
+  }
+
+  .animate-enter-slow {
+    animation: enter 620ms ease both;
+  }
+
+  .ui-grid-bg {
+    background-image:
+      linear-gradient(rgb(var(--color-line) / 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--color-line) / 0.08) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes typing-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
 }
