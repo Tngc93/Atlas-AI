@@ -12,12 +12,14 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/dashboard/AppShell";
 import { CoachPanel } from "@/components/dashboard/CoachPanel";
+import { DashboardDecisionBrief } from "@/components/dashboard/DashboardDecisionBrief";
 import { DebtPriorityTable } from "@/components/dashboard/DebtPriorityTable";
 import { PayoffRoadmapChart, SalaryWaterfall } from "@/components/dashboard/DashboardCharts";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { RatePanel } from "@/components/dashboard/RatePanel";
 import { ActionBanner, ChartCard, RiskBadge, SetupStepCard, StatusPill } from "@/components/ui/Primitives";
 import { buildCoachInputSummary, generateCoachInsight } from "@/features/coach/orchestrator";
+import { buildDashboardDecisionBrief } from "@/features/finance/dashboard-brief";
 import { getMonthlyFinancePlanSnapshot } from "@/features/finance/data-service";
 import { formatTry } from "@/features/finance/money";
 import type { DebtPriority } from "@/features/finance/types";
@@ -33,6 +35,7 @@ export default async function DashboardPage() {
   ]);
   const coachInsight = await generateCoachInsight(buildCoachInputSummary(monthlyPlan, rateSnapshot));
   const allocation = monthlyPlan.cashFlow;
+  const decisionBrief = buildDashboardDecisionBrief(monthlyPlan);
   const isEmpty = !hasProfile && debts.length === 0 && expenses.length === 0;
   const setupItems = [
     {
@@ -124,6 +127,8 @@ export default async function DashboardPage() {
       />
 
       <TrustLayer />
+
+      <DashboardDecisionBrief brief={decisionBrief} />
 
       {hasIncompleteSetup ? <FirstSetupChecklist isEmpty={isEmpty} items={setupItems} /> : null}
 
