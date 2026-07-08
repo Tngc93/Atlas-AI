@@ -12,7 +12,7 @@ export function DashboardDecisionBrief({ brief }: { brief: DashboardDecisionBrie
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mint">Deterministik karar desteği</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink">Bu ayın karar özeti</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-steel">
-            Bu özet AI yorumu değildir; mevcut aylık planın hesaplanan sınırlarını sadeleştirir.
+            Bu özet koç yorumu değil; aylık planın hesaplanan sınırlarını sadeleştirir.
           </p>
         </div>
         <StatusPill tone={riskTone}>Risk: {brief.riskLabel}</StatusPill>

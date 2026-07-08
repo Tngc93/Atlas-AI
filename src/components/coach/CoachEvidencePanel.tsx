@@ -8,7 +8,7 @@ export function CoachEvidencePanel({ evidence }: { evidence: CoachEvidenceSummar
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-mint">Dayanak özeti</p>
         <h2 className="text-xl font-semibold tracking-tight text-ink">Bu yorum şunlara dayanıyor</h2>
         <p className="max-w-3xl text-sm leading-6 text-steel">
-          Koç yorumu, hesaplama motorunun ürettiği sade sinyalleri açıklar. Buradaki bilgiler karar yerine geçmez; sadece neyin dikkate alındığını görünür kılar.
+          Koç yorumu, hesaplama motorunun ürettiği kısa özetleri açıklar. Buradaki bilgiler karar yerine geçmez; sadece neyin dikkate alındığını görünür kılar.
         </p>
       </div>
 
@@ -38,7 +38,7 @@ export function CoachEvidencePanel({ evidence }: { evidence: CoachEvidenceSummar
           </ul>
         </EvidenceSection>
 
-        <EvidenceSection icon={Lightbulb} title="Güvenli öneri başlıkları">
+        <EvidenceSection icon={Lightbulb} title="Öneri başlıkları">
           {evidence.recommendationTitles.length > 0 ? (
             <ul className="space-y-2">
               {evidence.recommendationTitles.map((title) => (
@@ -48,7 +48,7 @@ export function CoachEvidencePanel({ evidence }: { evidence: CoachEvidenceSummar
               ))}
             </ul>
           ) : (
-            <p className="text-sm leading-6 text-steel">Bu ay için yeterli güvenli öneri sinyali yok.</p>
+            <p className="text-sm leading-6 text-steel">Bu ay için gösterilecek yeterli öneri başlığı yok.</p>
           )}
         </EvidenceSection>
 
