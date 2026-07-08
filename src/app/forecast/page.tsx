@@ -127,6 +127,25 @@ export default async function ForecastPage() {
             <p className="mt-2 text-sm leading-6 text-steel">Neden? {report.coachSummary.why}</p>
           </section>
 
+          <section className="mt-6 rounded-lg border border-line bg-surface p-5 shadow-sm">
+            <div className="flex flex-col gap-2">
+              <h2 className="text-lg font-semibold">Bu tahmin neye dayanıyor?</h2>
+              <p className="max-w-3xl text-sm leading-6 text-steel">
+                Bu bölüm tahmini garanti gibi değil, hesaplama motorunun kullandığı varsayımlar ve kapsam olarak okumanız için
+                hazırlanır.
+              </p>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {report.evidenceItems.map((item) => (
+                <article key={item.id} className="rounded-md border border-line bg-surface-muted p-4">
+                  <p className="text-sm font-semibold">{item.label}</p>
+                  <p className="mt-1 text-sm text-ink">{item.value}</p>
+                  <p className="mt-2 text-xs leading-5 text-steel">{item.detail}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
           <section className="mt-6">
             <h2 className="text-lg font-semibold">{trCopy.forecast.checkpointTitle}</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -201,18 +220,45 @@ export default async function ForecastPage() {
 
           <section className="mt-6 grid gap-6 xl:grid-cols-3">
             <article className="rounded-lg border border-line bg-surface p-5 shadow-sm">
-              <h2 className="text-lg font-semibold">{trCopy.forecast.cashSqueeze}</h2>
+              <h2 className="text-lg font-semibold">Risk zaman çizgisi</h2>
+              <p className="mt-2 text-sm leading-6 text-steel">
+                Nakit sıkışıklığı riski görünen aylar ve kontrol edilmesi gereken nedenler.
+              </p>
               <div className="mt-4 space-y-3">
                 {report.riskWarnings.length > 0 ? (
                   report.riskWarnings.map((warning) => (
                     <p key={warning.id} className="rounded-md border border-amber/25 bg-amber/10 p-3 text-sm leading-6 text-steel">
-                      <span className="font-semibold">{warning.month}: </span>
+                      <span className="font-semibold">
+                        {warning.month} - {visibleRiskLabel(warning.severity)} risk:
+                      </span>{" "}
                       {warning.message}
+                      <span className="mt-2 block text-xs leading-5">Neden? {warning.reason}</span>
+                      <span className="mt-1 block text-xs leading-5">Gözden geçir: {warning.reviewSuggestion}</span>
                     </p>
                   ))
                 ) : (
                   <p className="text-sm leading-6 text-steel">{trCopy.forecast.noWarnings}</p>
                 )}
+              </div>
+            </article>
+
+            <article className="rounded-lg border border-line bg-surface p-5 shadow-sm">
+              <h2 className="text-lg font-semibold">Deneyebileceğin güvenli simülasyonlar</h2>
+              <p className="mt-2 text-sm leading-6 text-steel">
+                Bunlar karar değildir; tahmini değiştirebilecek varsayımları karar simülatöründe denemek için güvenli başlangıç
+                sorularıdır.
+              </p>
+              <div className="mt-4 space-y-3">
+                {report.decisionPrompts.map((prompt) => (
+                  <Link
+                    key={prompt.id}
+                    href={prompt.href}
+                    className="block rounded-md border border-line bg-surface-muted p-3 text-sm transition hover:border-mint/40 hover:bg-mint/10"
+                  >
+                    <span className="font-semibold text-ink">{prompt.title}</span>
+                    <span className="mt-1 block leading-6 text-steel">{prompt.description}</span>
+                  </Link>
+                ))}
               </div>
             </article>
 
@@ -233,6 +279,7 @@ export default async function ForecastPage() {
 
             <article className="rounded-lg border border-line bg-surface p-5 shadow-sm">
               <h2 className="text-lg font-semibold">{trCopy.forecast.assumptions}</h2>
+              <p className="mt-2 text-sm leading-6 text-steel">{report.narrativeContext.uncertaintyNote}</p>
               <dl className="mt-4 space-y-3">
                 {report.assumptions.map((assumption) => (
                   <div key={assumption.id}>

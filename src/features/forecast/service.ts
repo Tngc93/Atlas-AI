@@ -7,8 +7,11 @@ import type {
   ForecastCheckpoint,
   ForecastCoachSummary,
   ForecastDebtPayoffMilestone,
+  ForecastDecisionPrompt,
+  ForecastEvidenceItem,
   ForecastHorizon,
   ForecastMonthlyTrend,
+  ForecastNarrativeContext,
   ForecastReport,
   ForecastRiskWarning,
 } from "./types";
@@ -82,15 +85,24 @@ function buildPayoffMilestones(months: PaymentPlanMonth[]): ForecastDebtPayoffMi
 function buildRiskWarnings(months: PaymentPlanMonth[], survivalThresholdKurus: number): ForecastRiskWarning[] {
   return months
     .filter((month) => visibleRiskLevel(month.riskLevel) === "high" || month.survivalBudgetKurus < survivalThresholdKurus)
-    .map((month, index) => ({
-      id: `forecast-risk-${index}-${month.month}`,
-      month: month.month,
-      severity: visibleRiskLevel(month.riskLevel) === "high" || month.survivalBudgetKurus < survivalThresholdKurus ? "high" : "medium",
-      message:
-        month.survivalBudgetKurus < 0
-          ? `${month.month} ayında yaşam bütçesi negatife düşüyor.`
-          : `${month.month} ayında yaşam bütçesi hedef eşiğin altında kalabilir.`,
-    }));
+    .map((month, index) => {
+      const severity = visibleRiskLevel(month.riskLevel) === "high" || month.survivalBudgetKurus < survivalThresholdKurus ? "high" : "medium";
+
+      return {
+        id: `forecast-risk-${index}-${month.month}`,
+        month: month.month,
+        severity,
+        message: month.survivalBudgetKurus < 0 ? "Yaşam bütçesi negatife düşüyor." : "Yaşam bütçesi hedef eşiğin altında kalabilir.",
+        reason:
+          month.survivalBudgetKurus < 0
+            ? "Zorunlu giderler ve minimum ödemeler sonrası ayı karşılayacak alan kalmıyor."
+            : "Plan yaşam bütçesi eşiğini korumakta zorlanıyor.",
+        reviewSuggestion:
+          month.extraDebtPaymentKurus > 0
+            ? "Ek ödeme kararını bu ay için yeniden simüle etmek faydalı olabilir."
+            : "Önce zorunlu giderler ve minimum ödemelerin güvenli şekilde karşılanıp karşılanmadığını kontrol et.",
+      };
+    });
 }
 
 function buildCheckpoints(args: {
@@ -158,6 +170,105 @@ function buildAssumptions(snapshot: FinanceSnapshot): ForecastAssumption[] {
   ];
 }
 
+function buildEvidenceItems(snapshot: FinanceSnapshot): ForecastEvidenceItem[] {
+  const activeDebtCount = snapshot.debts.filter((debt) => debt.status === "active" && debt.balanceKurus > 0).length;
+  const fallbackRateCount = snapshot.debts.filter((debt) => debt.status === "active" && debt.interestRateSource?.includes("fallback")).length;
+  const missingRateCount = snapshot.debts.filter((debt) => debt.status === "active" && debt.interestRateMonthly === 0).length;
+
+  return [
+    {
+      id: "current-plan",
+      label: "Mevcut aylık plan",
+      value: "Gelir, zorunlu giderler ve minimum ödemeler",
+      detail: "Tahmin, kayıtlı güncel planın 24 ay boyunca aynı kurallarla devam ettiği varsayımıyla üretilir.",
+    },
+    {
+      id: "active-debt-scope",
+      label: "Aktif borç kapsamı",
+      value: `${activeDebtCount} aktif borç`,
+      detail: "Pasif ve kapanmış borçlar tahmine dahil edilmez.",
+    },
+    {
+      id: "payment-strategy",
+      label: "Ödeme stratejisi",
+      value: "Minimum ödemeler önce, ek ödeme en yüksek faizli borca",
+      detail: "Yaşam bütçesi korunamıyorsa ek borç ödemesi yapılmaz.",
+    },
+    {
+      id: "interest-context",
+      label: "Faiz bağlamı",
+      value: fallbackRateCount > 0 || missingRateCount > 0 ? "Eksik veya fallback faiz sinyali var" : "Manuel veya çözümlenmiş faiz oranları",
+      detail:
+        fallbackRateCount > 0 || missingRateCount > 0
+          ? "Fallback oranlar gerçek banka oranı gibi değerlendirilmemelidir; manuel oran girilirse önceliklidir."
+          : "Tahmin, borç kayıtlarındaki mevcut faiz bilgisiyle hesaplanır.",
+    },
+  ];
+}
+
+function buildDecisionPrompts(args: {
+  riskWarnings: ForecastRiskWarning[];
+  payoffOutsideHorizon: boolean;
+  highestRiskLevel: UiRiskLevel;
+}): ForecastDecisionPrompt[] {
+  const prompts: ForecastDecisionPrompt[] = [];
+
+  if (args.riskWarnings.length > 0 || args.highestRiskLevel === "high") {
+    prompts.push({
+      id: "no-extra-payment",
+      title: "Bu ay ekstra ödeme yapmazsam ne olur?",
+      description: "Yaşam bütçesi baskısı varsa önce minimum ödemeleri ve temel giderleri koruyan senaryoyu kontrol et.",
+      href: "/decisions",
+    });
+  }
+
+  prompts.push({
+    id: "extra-debt-payment",
+    title: "Ekstra ödeme yaparsam kapanış süresi değişir mi?",
+    description: "Ek ödeme kapasitesi varsa bunun kalan borç ve risk seviyesi üzerindeki etkisini simüle et.",
+    href: "/decisions",
+  });
+
+  prompts.push({
+    id: "reduce-expenses",
+    title: "Giderleri azaltırsam yaşam bütçesi rahatlar mı?",
+    description: "Zorunlu gider baskısı yüksekse küçük bir gider azaltma senaryosunun tahmini nasıl değiştirdiğini gör.",
+    href: "/decisions",
+  });
+
+  if (args.payoffOutsideHorizon) {
+    prompts.push({
+      id: "salary-or-bonus",
+      title: "Ek gelir tahmini değiştirebilir mi?",
+      description: "Kapanış 24 ay dışında kalıyorsa maaş artışı veya tek seferlik gelir senaryosunu karşılaştır.",
+      href: "/decisions",
+    });
+  }
+
+  return prompts.slice(0, 3);
+}
+
+function buildNarrativeContext(args: {
+  finalRemainingDebtKurus: number;
+  payoffOutsideHorizon: boolean;
+  highestRiskLevel: UiRiskLevel;
+  riskWarnings: ForecastRiskWarning[];
+}): ForecastNarrativeContext {
+  const status = args.highestRiskLevel === "high" ? "strained" : args.highestRiskLevel === "medium" ? "watch" : "stable";
+
+  return {
+    status,
+    primaryRisk:
+      args.riskWarnings[0]?.message ??
+      (args.payoffOutsideHorizon ? "Borç kapanışı 24 aylık tahmin penceresinin dışında kalıyor." : "Belirgin yüksek risk sinyali yok."),
+    primaryOpportunity:
+      args.finalRemainingDebtKurus > 0
+        ? "Varsayımlar korunursa karar simülatörüyle ek ödeme veya gider azaltma etkisi güvenli şekilde incelenebilir."
+        : "Borç kapanışı tahmin penceresi içinde görünüyor; karar simülatörüyle planın sürdürülebilirliği yine de kontrol edilebilir.",
+    uncertaintyNote: "Bu anlatı kesin sonuç değil; gelir, gider, faiz ve ödeme davranışı değişirse tahmin de değişir.",
+  };
+}
+
 function buildCoachSummary(args: {
   finalRemainingDebtKurus: number;
   estimatedPayoffMonth: string | null;
@@ -220,6 +331,18 @@ export function buildForecastReport(snapshot: FinanceSnapshot, asOfDate = new Da
     payoffMilestones,
     riskWarnings,
     assumptions: buildAssumptions(snapshot),
+    evidenceItems: buildEvidenceItems(snapshot),
+    decisionPrompts: buildDecisionPrompts({
+      riskWarnings,
+      payoffOutsideHorizon,
+      highestRiskLevel,
+    }),
+    narrativeContext: buildNarrativeContext({
+      finalRemainingDebtKurus,
+      payoffOutsideHorizon,
+      highestRiskLevel,
+      riskWarnings,
+    }),
     coachSummary: buildCoachSummary({
       finalRemainingDebtKurus,
       estimatedPayoffMonth,

@@ -130,8 +130,11 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await page.goto("/forecast");
   await expect(page.getByRole("heading", { name: "Finansal Tahmin" })).toBeVisible();
   await expect(page.getByText("24 ay sonu kalan borç")).toBeVisible();
+  await expect(page.getByText("Bu tahmin neye dayanıyor?")).toBeVisible();
   await expect(page.getByText("Tahmin dönemleri")).toBeVisible();
   await expect(page.getByText("Risk trendi")).toBeVisible();
+  await expect(page.getByText("Risk zaman çizgisi")).toBeVisible();
+  await expect(page.getByText("Deneyebileceğin güvenli simülasyonlar")).toBeVisible();
   await expect(page.getByText("Forecast varsayımları")).toBeVisible();
 
   await page.goto("/memory");
@@ -174,7 +177,7 @@ test("responsive smoke: ana finansal sayfalarda yatay taşma ve kritik metinler 
     },
     {
       path: "/forecast",
-      texts: ["Finansal Tahmin"],
+      texts: ["Finansal Tahmin", "Bu tahmin neye dayanıyor?", "Deneyebileceğin güvenli simülasyonlar"],
     },
     {
       path: "/memory",

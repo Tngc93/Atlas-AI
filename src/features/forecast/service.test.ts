@@ -143,4 +143,72 @@ describe("forecast service", () => {
     expect(report.riskWarnings.length).toBeGreaterThan(0);
     expect(report.monthlyTrend[0].extraDebtPaymentKurus).toBe(0);
   });
+
+  it("builds safe evidence items without treating fallback interest as a bank rate", () => {
+    const report = buildForecastReport(
+      buildSnapshot({
+        debts: [
+          {
+            id: "forecast-fallback-card",
+            type: "credit_card",
+            name: "Örnek Fallback Kart",
+            lender: "Örnek Banka",
+            balanceKurus: liraToKurus(20_000),
+            interestRateMonthly: 4.25,
+            interestRateSource: "fallback_sample",
+            minimumPaymentKurus: liraToKurus(2_000),
+            dueDay: 15,
+            status: "active",
+          },
+        ],
+      }),
+      asOfDate,
+    );
+
+    const interestEvidence = report.evidenceItems.find((item) => item.id === "interest-context");
+    const interestAssumption = report.assumptions.find((item) => item.id === "interest-source");
+
+    expect(interestEvidence?.value).toContain("fallback");
+    expect(interestEvidence?.detail).toContain("gerçek banka oranı gibi değerlendirilmemelidir");
+    expect(interestAssumption?.value).toContain("gerçek banka oranı gibi değerlendirilmemelidir");
+  });
+
+  it("adds explainable risk timeline details for high risk months", () => {
+    const report = buildForecastReport(
+      buildSnapshot({
+        profile: {
+          id: "forecast-negative-profile",
+          currency: "TRY",
+          monthlySalaryKurus: liraToKurus(35_000),
+          survivalThresholdKurus: liraToKurus(15_000),
+        },
+      }),
+      asOfDate,
+    );
+
+    expect(report.riskWarnings[0]).toMatchObject({
+      severity: "high",
+      message: "Yaşam bütçesi negatife düşüyor.",
+      reason: "Zorunlu giderler ve minimum ödemeler sonrası ayı karşılayacak alan kalmıyor.",
+    });
+    expect(report.riskWarnings[0].reviewSuggestion).toContain("minimum ödemelerin");
+  });
+
+  it("suggests safe decision prompts without raw debt or lender details", () => {
+    const report = buildForecastReport(buildSnapshot(), asOfDate);
+    const promptText = report.decisionPrompts.map((prompt) => `${prompt.title} ${prompt.description}`).join(" ");
+
+    expect(report.decisionPrompts.length).toBeGreaterThan(0);
+    expect(promptText).toContain("Ekstra ödeme yaparsam kapanış süresi değişir mi?");
+    expect(promptText).not.toContain("Örnek Forecast Kart");
+    expect(promptText).not.toContain("Örnek Banka");
+  });
+
+  it("creates a minimized forecast narrative context without changing the finance source of truth", () => {
+    const report = buildForecastReport(buildSnapshot(), asOfDate);
+
+    expect(report.narrativeContext.uncertaintyNote).toContain("gelir, gider, faiz ve ödeme davranışı değişirse");
+    expect(report.narrativeContext.primaryOpportunity).toContain("karar simülatörü");
+    expect(["stable", "watch", "strained"]).toContain(report.narrativeContext.status);
+  });
 });

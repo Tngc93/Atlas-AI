@@ -32,6 +32,8 @@ export type ForecastRiskWarning = {
   id: string;
   month: string;
   message: string;
+  reason: string;
+  reviewSuggestion: string;
   severity: UiRiskLevel;
 };
 
@@ -39,6 +41,27 @@ export type ForecastAssumption = {
   id: string;
   label: string;
   value: string;
+};
+
+export type ForecastEvidenceItem = {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+};
+
+export type ForecastDecisionPrompt = {
+  id: string;
+  title: string;
+  description: string;
+  href: string;
+};
+
+export type ForecastNarrativeContext = {
+  status: "stable" | "watch" | "strained";
+  primaryRisk: string;
+  primaryOpportunity: string;
+  uncertaintyNote: string;
 };
 
 export type ForecastCoachSummary = {
@@ -55,6 +78,9 @@ export type ForecastReport = {
   payoffMilestones: ForecastDebtPayoffMilestone[];
   riskWarnings: ForecastRiskWarning[];
   assumptions: ForecastAssumption[];
+  evidenceItems: ForecastEvidenceItem[];
+  decisionPrompts: ForecastDecisionPrompt[];
+  narrativeContext: ForecastNarrativeContext;
   coachSummary: ForecastCoachSummary;
   totalEstimatedInterestKurus: number;
   finalRemainingDebtKurus: number;
