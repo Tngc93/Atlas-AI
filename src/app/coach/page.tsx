@@ -1,6 +1,8 @@
 import { AppShell } from "@/components/dashboard/AppShell";
 import { CoachPanel } from "@/components/dashboard/CoachPanel";
+import { CoachEvidencePanel } from "@/components/coach/CoachEvidencePanel";
 import { PageHeader } from "@/components/ui/Primitives";
+import { buildCoachEvidenceSummary } from "@/features/coach/context-evidence";
 import { buildCoachContext, generateCoachInsight } from "@/features/coach/orchestrator";
 import { getMonthlyFinancePlanSnapshot } from "@/features/finance/data-service";
 import { getMemoryReportData } from "@/features/memory/repository";
@@ -24,7 +26,9 @@ export default async function CoachPage() {
     getLatestInterestRateSnapshot(),
     getMemoryReportSafely(),
   ]);
-  const coachInsight = await generateCoachInsight(buildCoachContext({ monthlyPlan, rateSnapshot, memoryReport }));
+  const coachContext = buildCoachContext({ monthlyPlan, rateSnapshot, memoryReport });
+  const coachInsight = await generateCoachInsight(coachContext);
+  const coachEvidence = buildCoachEvidenceSummary(coachContext);
 
   return (
     <AppShell>
@@ -36,6 +40,7 @@ export default async function CoachPage() {
       <div className="mt-6">
         <CoachPanel insight={coachInsight} />
       </div>
+      <CoachEvidencePanel evidence={coachEvidence} />
     </AppShell>
   );
 }
