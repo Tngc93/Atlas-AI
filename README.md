@@ -9,6 +9,13 @@ Faz 3 itibarıyla gelir, borç ve zorunlu gider ekranları yerel SQLite veritaba
 This project is governed by the Product Manifesto:
 docs/product/PRODUCT_MANIFESTO.md
 
+## Production Readiness
+
+Vercel/production hazırlık notları:
+docs/operations/production-readiness.md
+
+Bu uygulama şu anda local-first SQLite MVP olarak konumlanır. Vercel üzerinde SQLite ile çalıştırma yalnızca boş/demo veriyle preview veya teknik smoke test olarak değerlendirilmelidir. Gerçek kişisel finans verisiyle production kullanım için önce PostgreSQL veya eşdeğer kalıcı veritabanı, authentication ve kullanıcı bazlı veri izolasyonu gerekir.
+
 ## Teknoloji Yığını
 
 - Next.js App Router
@@ -61,6 +68,7 @@ Gemini sağlayıcısı şu şekilde çalışır:
 
 Önemli notlar:
 
+- `DATABASE_URL` lokal `.env.local` içinde açıkça tanımlanmalıdır. Production ortamında sessiz SQLite fallback davranışına güvenilmemelidir.
 - API anahtarlarını istemci tarafı koda koymayın.
 - Anahtarı `NEXT_PUBLIC_` ile başlatmayın.
 - AI provider kodu server-only çalışır.
@@ -86,6 +94,7 @@ Gemini sağlayıcısı şu şekilde çalışır:
 - Prisma şeması `prisma/schema.prisma` içinde tanımlıdır.
 - Yerel SQLite dosyaları git dışında bırakılır.
 - `.env.local` git dışında bırakılır.
+- SQLite local-first MVP için uygundur; Vercel/serverless production ortamında kalıcı ve çok kullanıcılı veritabanı olarak kullanılmamalıdır.
 - Banka senkronizasyonu, otomatik ödeme veya bulut kalıcılığı dahil değildir.
 - API anahtarları, SQLite veritabanı dosyaları ve yedekler commit edilmemelidir.
 - Testlerde, mock verilerde ve dokümantasyon örneklerinde gerçek finansal veri kullanılmamalıdır.
@@ -183,6 +192,14 @@ Playwright raporu ve test sonuçları GitHub Actions artifact olarak 14 gün sak
 - `main`: PR zorunlu, CI required check, force push kapalı.
 - `develop`: CI required check, doğrudan push yerine PR tercih edilir.
 - Merge öncesi CI yeşil olmalıdır.
+
+## Vercel / Production Öncesi Notlar
+
+- Bu repo henüz gerçek production deploy için hazır kabul edilmez.
+- SQLite ile Vercel preview yalnızca demo/teknik doğrulama için düşünülmelidir.
+- Gerçek kişisel finans verisiyle production kullanım için PostgreSQL veya eşdeğer kalıcı veritabanı, authentication, authorization ve veri sahipliği modeli gerekir.
+- Production benzeri bir denemeden önce `docs/operations/production-readiness.md` içindeki checklist uygulanmalıdır.
+- Demo/preview ortamlarında `AI_PROVIDER=mock` tercih edilmelidir; gerçek API key'ler yalnızca server-side environment variable olarak yönetilmelidir.
 
 ## GitHub ve Release Akışı
 

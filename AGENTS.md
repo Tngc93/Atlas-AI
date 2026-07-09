@@ -195,6 +195,16 @@ Git safety rules:
 - Do not push directly to GitHub until validation and secret/local-data checks are complete.
 - Prefer PR-based merges after CI passes; branch protection should require CI checks on `main` and `develop`.
 
+## Production and Deployment Safety
+
+- Treat the current app as a local-first SQLite MVP unless a later approved phase explicitly adds production database, authentication, and user-level data isolation.
+- Do not present Vercel + SQLite as production-ready for real personal financial data.
+- Vercel preview may be used only for demo, empty-data, or technical smoke-test scenarios until PostgreSQL or an equivalent durable database and Auth are implemented.
+- Before any release or deploy attempt, review `docs/operations/production-readiness.md`.
+- Production-like validation must include `npm run security:secrets`, `npm run security:audit`, `npx prisma generate`, `npm run lint`, `npm run test`, `npm run build`, and `npm run test:e2e`.
+- Keep `.env.local`, real API keys, SQLite DB files, backups, exports, build artifacts, Playwright artifacts, and logs out of git.
+- Real production usage requires explicit decisions for database durability, migration deploy strategy, authentication, authorization, data ownership, monitoring, rollback, and secret management.
+
 ## Security and Privacy Checklist
 
 Before completing security-sensitive work, verify:

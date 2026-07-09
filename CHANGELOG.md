@@ -4,6 +4,15 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Sprint 5 - Production Hardening
+
+- Vercel/production hazırlığı için operasyon dokümantasyonu eklendi.
+- SQLite’ın local-first MVP sınırları ve Vercel/serverless production riskleri açıklandı.
+- Environment variable sözleşmesi, server-only AI key yönetimi ve `.env.local` güvenliği netleştirildi.
+- Prisma local/CI/future production akışları ayrıştırıldı.
+- Deploy öncesi secret scan, audit, Prisma generate, lint, test, build ve E2E checklist’i belgelendi.
+- PostgreSQL, authentication, deploy workflow, yeni dependency veya ürün davranışı eklenmedi.
+
 ### Sprint 4 - Notification & Reminder Engine
 
 - Lokal-first Reminder Engine eklendi.
