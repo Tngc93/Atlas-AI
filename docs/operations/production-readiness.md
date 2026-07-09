@@ -79,6 +79,8 @@ Production veya multi-user kullanım için mevcut riskler:
 
 Bu nedenle gerçek production için önce authentication, authorization ve veri sahipliği modeli tasarlanmalıdır.
 
+Hedef user ownership sınırları, user-owned/shared tablo ayrımı, repository sözleşmesi ve migration sırası `docs/architecture/user-ownership.md` içinde tanımlanmıştır. Bu doküman hedef mimaridir; mevcut Prisma schema veya runtime davranışını değiştirmez.
+
 ## Deploy Öncesi Checklist
 
 Her release veya deploy denemesi öncesi:

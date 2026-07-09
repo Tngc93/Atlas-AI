@@ -4,6 +4,13 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Phase 2 Milestone D - User Ownership Architecture
+
+- Gelecekteki Auth ve PostgreSQL yapısı için user-owned ve shared veri sınırları dokümante edildi.
+- Profile, core finance, Financial Memory, Reminder ve Coach kayıtlarının hedef ownership ilişkileri tanımlandı.
+- Repository owner context sözleşmesi, user-scoped unique constraint'ler, migration sırası ve cross-user test kriterleri belgelendi.
+- Kod, Prisma schema, migration, Auth, PostgreSQL provider veya runtime davranışı değiştirilmedi.
+
 ### Phase 2 Milestone B - PostgreSQL Provider and Connection Strategy
 
 - Production PostgreSQL için önerilen sağlayıcı Neon Postgres via Vercel Marketplace olarak dokümante edildi.

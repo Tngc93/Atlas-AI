@@ -14,6 +14,9 @@ docs/product/PRODUCT_MANIFESTO.md
 Vercel/production hazırlık notları:
 docs/operations/production-readiness.md
 
+Gelecekteki Auth ve çok kullanıcılı veri sahipliği mimarisi:
+docs/architecture/user-ownership.md
+
 Bu uygulama şu anda local-first SQLite MVP olarak konumlanır. Vercel üzerinde SQLite ile çalıştırma yalnızca boş/demo veriyle preview veya teknik smoke test olarak değerlendirilmelidir. Gerçek kişisel finans verisiyle production kullanım için önce PostgreSQL veya eşdeğer kalıcı veritabanı, authentication ve kullanıcı bazlı veri izolasyonu gerekir.
 
 ## Teknoloji Yığını
