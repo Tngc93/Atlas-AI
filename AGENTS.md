@@ -206,6 +206,8 @@ Git safety rules:
 - Real production usage requires explicit decisions for database durability, migration deploy strategy, authentication, authorization, data ownership, monitoring, rollback, and secret management.
 - Before any Vercel preview or release PR, verify that local `main`/`develop` branch state is aligned with the intended remote base and that no stale feature branch is used for deployment.
 - If a Vercel preview is created before PostgreSQL and Auth, it must be treated as build/render smoke only and must not contain real financial data.
+- Do not apply existing SQLite migration SQL directly to a production PostgreSQL database; PostgreSQL requires a separate reviewed baseline and `prisma migrate deploy` runbook.
+- PostgreSQL alone is not sufficient for public beta; Auth, authorization, and user/account ownership checks are required before real user data is accepted.
 
 ## Security and Privacy Checklist
 

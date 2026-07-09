@@ -235,6 +235,148 @@ Auth olmadan kalan blocker'lar:
 
 Deployment veya release branch'i seçmeden önce local `main`, `develop` ve remote branch hizası kontrol edilmelidir.
 
+## PostgreSQL Migration Plan
+
+Bu bölüm Phase 2 Milestone A itibarıyla SQLite local-first MVP'den gelecekteki production PostgreSQL yapısına geçiş planını tanımlar. Bu plan migration üretmez, provider seçmez, Auth eklemez ve deploy yapmaz.
+
+### Mevcut SQLite Bağımlılıkları
+
+- Prisma datasource şu anda `provider = "sqlite"` kullanır.
+- Lokal varsayılan `DATABASE_URL` örneği `file:./dev.db` şeklindedir.
+- Mevcut migration SQL'leri SQLite biçimindedir: `TEXT`, `INTEGER`, `DATETIME`, `BOOLEAN`, `DECIMAL`, `CURRENT_TIMESTAMP` ve SQLite foreign key/index syntax.
+- Integration testler migration SQL'lerini `sqlite3` CLI ile izole `.db` dosyalarına uygular.
+- Playwright E2E webserver `prisma db push --skip-generate` ile izole SQLite DB kurar.
+- `src/lib/db/prisma.ts` içinde `process.env.DATABASE_URL ?? "file:./dev.db"` fallback'i bulunur.
+- Local DB, test DB, `.next`, `test-results` ve `playwright-report` çıktıları git dışında tutulur.
+
+### PostgreSQL'e Geçince Değişecek Noktalar
+
+- Prisma datasource `postgresql` provider'a taşınır.
+- Migration SQL'leri PostgreSQL uyumlu baseline olarak yeniden üretilir.
+- Production migration komutu `prisma migrate deploy` olur.
+- Production ortamında `DATABASE_URL` zorunlu olur; SQLite fallback kullanılmaz.
+- Test setup'ları SQLite migration SQL'lerine bağlı kalmamalı; PostgreSQL test stratejisi ayrıca kurulmalıdır.
+
+### Değişmeyecek Noktalar
+
+- Repository pattern korunur.
+- Finance engine deterministik doğruluk kaynağı olarak kalır.
+- Para alanları integer kuruş olarak kalır.
+- AI raw finansal veri görmez.
+- Kullanıcıya görünen risk dili `Düşük`, `Orta`, `Yüksek` olarak kalır.
+- Reminder içerikleri veritabanına yazılmaz; yalnızca reminder state saklanır.
+
+### Prisma Migration Stratejisi
+
+SQLite migration geçmişi production PostgreSQL'e doğrudan uygulanmamalıdır.
+
+Güvenli sıra:
+
+1. Mevcut Prisma schema PostgreSQL uyumluluğu açısından incelenir.
+2. Ayrı bir PostgreSQL migration baseline hazırlanır.
+3. Boş PostgreSQL DB üzerinde `prisma migrate deploy` doğrulanır.
+4. SQLite local-first geliştirme akışı korunacaksa environment bazlı migration runbook ayrılır.
+5. Production ortamında eksik `DATABASE_URL` için açık guard eklenir.
+
+Reminder migration özel notu:
+
+- `ReminderState.reminderKey` unique yapısı PostgreSQL'e kavramsal olarak taşınabilir.
+- `status`, `snoozedUntil`, `lastSeenAt`, `dismissedAt` alanları provider değişiminde korunmalıdır.
+- Reminder content kalıcılaşmadığı için data migration riski düşüktür.
+
+### Veri Taşıma Stratejisi
+
+İlk production PostgreSQL geçişi için varsayılan öneri boş DB ile başlamaktır.
+
+Gerçek lokal kullanıcı verisi taşınacaksa ayrı, opt-in export/import milestone'u gerekir.
+
+Taşınabilir veri sınıfları:
+
+- Core finance data: `Profile`, `SalaryRecord`, `DebtAccount`, `MandatoryExpense`
+- Derived/local history: `FinancialMemorySnapshot`, `FinancialMemoryCategoryTotal`
+- Cache/state: `CoachInsight`, `InterestRateSnapshot`, `ReminderState`
+- Projection tables: `PaymentPlanMonth`, `DebtProjection`
+
+Varsayılan taşıma ilkesi:
+
+- Core finance data taşınabilir.
+- Forecast/payment projection verileri yeniden üretilebilir kabul edilir.
+- AI cache ve reminder state opsiyonel kabul edilir.
+- Gerçek veri taşıma öncesi backup, redaction ve no-secret checklist zorunludur.
+
+### Development, Preview ve Production Akışı
+
+Development:
+
+- SQLite local-first akış korunur.
+- `npm run prisma:migrate`, `npm run prisma:generate`, unit/integration testler ve E2E mevcut şekilde çalışır.
+
+Preview:
+
+- PostgreSQL eklenmeden Vercel preview yalnızca build/render smoke için kullanılabilir.
+- PostgreSQL preview DB eklenirse boş veya demo veri kullanılmalıdır.
+- Gerçek finansal veri kullanılmaz.
+
+Production:
+
+- PostgreSQL veya eşdeğer kalıcı production DB zorunludur.
+- `prisma migrate deploy` runbook'u zorunludur.
+- Auth ve user ownership olmadan public beta açılmaz.
+- `AI_PROVIDER=mock` güvenli default olarak kalır; gerçek Gemini key ayrı server-side env kararı gerektirir.
+
+### En Düşük Riskli Migration Sırası
+
+1. Production `DATABASE_URL` guard planı uygulanır.
+2. PostgreSQL uyumluluk audit'i yapılır: Decimal, DateTime, enum, cascade, unique index ve default değerler.
+3. PostgreSQL baseline migration planı hazırlanır.
+4. Boş PostgreSQL DB üzerinde migration deploy dry-run doğrulanır.
+5. Repository/integration testleri DB-provider bağımlılıklarından ayrıştırılır.
+6. Opsiyonel data export/import ayrı milestone olarak tasarlanır.
+7. Auth ve user ownership modeli tasarlanır.
+8. PostgreSQL, Auth ve owner checks tamamlandıktan sonra public beta değerlendirilir.
+
+### PostgreSQL Hazırlık Test Stratejisi
+
+Mevcut SQLite doğrulaması korunur:
+
+```bash
+npm run security:secrets
+npm run security:audit
+npx prisma generate
+npm run lint
+npm run test
+npm run build
+npm run test:e2e
+```
+
+PostgreSQL hazırlık fazında eklenecek doğrulamalar:
+
+- Boş PostgreSQL DB'ye `prisma migrate deploy`
+- Repository integration smoke
+- Gelir, borç ve gider CRUD smoke
+- Finance snapshot generation
+- Memory snapshot upsert
+- Reminder state upsert
+- CoachInsight cache write/read
+
+Data migration fazı ayrıca test edilmelidir:
+
+- Export schema validation
+- Import idempotency
+- Money integer preservation
+- Date/Decimal precision
+- Gerçek veri içermeyen fixture doğrulaması
+
+### PostgreSQL Migration Riskleri
+
+- SQLite migration SQL'leri PostgreSQL'e doğrudan taşınamaz.
+- `DATABASE_URL` fallback'i production'da yanlışlıkla SQLite runtime'a düşebilir.
+- Testler SQLite CLI ve `.db` dosyalarına bağlıdır; PostgreSQL provider testleri ayrıca tasarlanmalıdır.
+- Auth yokken PostgreSQL'e geçmek veri izolasyonu sağlamaz.
+- Derived tabloları taşımak stale veri riski yaratabilir.
+- Decimal ve DateTime davranışları provider değişiminde ayrıca doğrulanmalıdır.
+- PostgreSQL provider seçimi, bağlantı havuzu, SSL ve region/latency kararları sonraki milestone'a bırakılır.
+
 ## Operasyon Notları
 
 - Lokal SQLite dosyası gerçek veri içeriyorsa migration öncesi kullanıcı manuel yedek almalıdır.

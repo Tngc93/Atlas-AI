@@ -4,6 +4,14 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Phase 2 Milestone A - PostgreSQL Migration Planning
+
+- SQLite local-first MVP'den gelecekteki production PostgreSQL yapısına geçiş planı belgelendi.
+- Mevcut SQLite bağımlılıkları, provider değişiminde korunacak/değişecek noktalar ve migration riskleri netleştirildi.
+- PostgreSQL baseline migration, `prisma migrate deploy`, veri taşıma ve test stratejisi dokümante edildi.
+- Auth ve user ownership olmadan PostgreSQL'e geçmenin public beta için yeterli olmadığı vurgulandı.
+- Kod, Prisma migration, PostgreSQL provider seçimi, Auth, deploy veya yeni dependency eklenmedi.
+
 ### Sprint 5.2 - Deployment Readiness Plan
 
 - Vercel deployment öncesi minimum proje ayarları, env değişkenleri ve validation kapıları belgelendi.
