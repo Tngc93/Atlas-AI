@@ -4,6 +4,14 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Phase 2 Milestone B - PostgreSQL Provider and Connection Strategy
+
+- Production PostgreSQL için önerilen sağlayıcı Neon Postgres via Vercel Marketplace olarak dokümante edildi.
+- Neon, Supabase, Railway ve Render seçenekleri avantaj/dezavantaj ve MVP uygunluğu açısından karşılaştırıldı.
+- Pooled `DATABASE_URL`, direct `DIRECT_URL`, `sslmode=require`, connection pooling, Prisma Accelerate kararı ve preview/production ortam akışı netleştirildi.
+- Backup, disaster recovery, maliyet varsayımları ve en düşük riskli PostgreSQL altyapı sırası belgelendi.
+- Kod, Prisma datasource, migration, provider provision, deploy, Auth veya yeni dependency eklenmedi.
+
 ### Phase 2 Milestone A - PostgreSQL Migration Planning
 
 - SQLite local-first MVP'den gelecekteki production PostgreSQL yapısına geçiş planı belgelendi.
