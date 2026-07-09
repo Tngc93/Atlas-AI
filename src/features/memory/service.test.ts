@@ -71,6 +71,27 @@ describe("financial memory service", () => {
     );
   });
 
+  it("uses the UTC ISO month when deriving periodMonth from capturedAt", () => {
+    const financeSnapshot: FinanceSnapshot = {
+      hasProfile: true,
+      profile: sampleProfile,
+      debts: sampleDebts,
+      expenses: sampleExpenses,
+    };
+    const monthlyPlan = buildMonthlyFinancePlan(sampleProfile, sampleDebts, sampleExpenses, {
+      asOfDate: new Date("2026-06-30T23:30:00.000Z"),
+      horizonMonths: 3,
+    });
+    const snapshot = captureFinancialMemorySnapshot(
+      financeSnapshot,
+      monthlyPlan,
+      "manual_refresh",
+      new Date("2026-06-30T23:30:00.000Z"),
+    );
+
+    expect(snapshot.periodMonth).toBe("2026-06");
+  });
+
   it("compares 3 month windows and calculates trend deltas", () => {
     const snapshots = [
       makeSnapshot({ periodMonth: "2026-05", totalDebtKurus: 120_000_00, survivalBudgetKurus: 30_000_00 }),

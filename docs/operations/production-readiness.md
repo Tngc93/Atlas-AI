@@ -553,6 +553,43 @@ npm run test:e2e
 - Railway pricing: https://railway.com/pricing
 - Render pricing: https://render.com/pricing
 
+## Date and Decimal Readiness Notes
+
+Bu bölüm Phase 2 Milestone C2 itibarıyla PostgreSQL migration öncesi tarih ve decimal davranışlarını belgelemek için eklenmiştir. Bu milestone Prisma schema, migration, provider, API, UI veya runtime davranışı değiştirmez.
+
+### Date ve Date-Only Davranışları
+
+- `YYYY-MM-DD` değerleri kullanıcıdan gelen date-only input veya hesaplama çıktısı olarak ele alınır.
+- `YYYY-MM` değerleri aylık snapshot/key formatıdır; özellikle `FinancialMemorySnapshot.periodMonth` için kullanılır.
+- `DateTime` alanları gerçek timestamp olarak ele alınır ve Prisma tarafından `Date` nesnesi olarak okunur.
+- `toISOString()` çıktıları UTC temellidir. Bu nedenle `periodMonth` gibi ISO üzerinden türetilen değerler yerel saat dilimi değil UTC ayını temsil eder.
+- `T12:00:00.000Z` kullanımı, date-only değerleri UI/hatırlatma hesaplarında gün kaymasını azaltmak için bilinçli bir orta-gün yorumudur.
+
+PostgreSQL öncesi dikkat edilmesi gereken alanlar:
+
+- `SalaryRecord.effectiveDate`: formdan `YYYY-MM-DD` gelir, repository içinde `new Date(value)` ile DateTime'a çevrilir. Bu mevcut davranış korunur; ileride date-only semantik netleştirilebilir.
+- `FinancialMemorySnapshot.periodMonth`: `capturedAt.toISOString().slice(0, 7)` ile UTC ayından türetilir. Yerel ay sınırına yakın zamanlarda bu davranış bilinçli olarak testle korunmalıdır.
+- `FinancialMemorySnapshot.capturedAt`: gerçek snapshot timestamp'idir; monthly key yerine geçmez.
+- `InterestRateSnapshot.retrievedAt`: sağlayıcıdan verinin ne zaman alındığını gösteren timestamp'tir; `effectiveDate` ise kaynak dönem bilgisidir ve string olarak kalır.
+
+### Decimal Davranışları
+
+Faiz oranları para alanı değildir. Para alanları integer kuruş olarak saklanmaya devam eder.
+
+Decimal alanlar:
+
+- `DebtAccount.interestRateMonthly`
+- `DebtAccount.interestRateAnnual`
+- `DebtAccount.manualInterestRateMonthly`
+- `DebtAccount.resolvedInterestRateMonthly`
+- `InterestRateSnapshot.referenceRate`
+- `InterestRateSnapshot.maxContractualRate`
+- `InterestRateSnapshot.maxOverdueRate`
+
+Mevcut repository ve mapper katmanları Prisma Decimal değerlerini domain tarafında number'a dönüştürür. Bu davranış PostgreSQL migration öncesi testle korunmalıdır.
+
+PostgreSQL baseline migration sırasında decimal alanlar için açık precision/scale kararı verilmelidir. Bu karar bu milestone kapsamında uygulanmaz.
+
 ## Operasyon Notları
 
 - Lokal SQLite dosyası gerçek veri içeriyorsa migration öncesi kullanıcı manuel yedek almalıdır.
