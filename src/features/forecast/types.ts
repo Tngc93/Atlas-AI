@@ -126,6 +126,24 @@ export type ForecastScenarioExplanation = {
   why: string;
 };
 
+export type ForecastScenarioComparisonTone = "positive" | "negative" | "neutral" | "watch";
+
+export type ForecastScenarioComparisonItem = {
+  id: string;
+  title: string;
+  description: string;
+  tone: ForecastScenarioComparisonTone;
+};
+
+export type ForecastScenarioComparison = {
+  summary: string;
+  improvements: ForecastScenarioComparisonItem[];
+  worsenings: ForecastScenarioComparisonItem[];
+  tradeOffs: ForecastScenarioComparisonItem[];
+  riskImpact: string;
+  paymentCapacityImpact: string;
+};
+
 export type ForecastScenarioResult = {
   input: ForecastScenarioInput;
   title: string;
@@ -134,4 +152,5 @@ export type ForecastScenarioResult = {
   delta: ForecastScenarioDelta;
   warnings: ForecastScenarioWarning[];
   explanation: ForecastScenarioExplanation;
+  comparison: ForecastScenarioComparison;
 };

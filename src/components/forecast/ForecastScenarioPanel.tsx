@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { simulateForecastScenarioAction, type ForecastScenarioActionState } from "@/features/forecast/actions";
-import type { ForecastScenarioType } from "@/features/forecast/types";
+import type { ForecastScenarioComparisonItem, ForecastScenarioType } from "@/features/forecast/types";
 import { formatTry } from "@/features/finance/money";
 import type { UiRiskLevel } from "@/features/finance/types";
 import { FieldError, FormMessage, MoneyInput } from "@/components/forms/FormControls";
@@ -228,6 +228,20 @@ function ForecastScenarioResult({ state, showResult }: { state: ForecastScenario
         </span>
       </div>
 
+      <div className="mt-5 rounded-md border border-line bg-surface p-4">
+        <h4 className="text-sm font-semibold">Karşılaştırma özeti</h4>
+        <p className="mt-2 text-sm leading-6 text-steel">{result.comparison.summary}</p>
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+          <ScenarioInsightList title="İyileşen taraflar" items={result.comparison.improvements} emptyText="Belirgin bir iyileşme sinyali görünmüyor." />
+          <ScenarioInsightList title="Zorlaşan taraflar" items={result.comparison.worsenings} emptyText="Belirgin bir zorlaşma sinyali görünmüyor." />
+          <ScenarioInsightList title="Trade-off" items={result.comparison.tradeOffs} emptyText="Belirgin bir trade-off görünmüyor." />
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <ScenarioImpact label="Risk etkisi" value={result.comparison.riskImpact} />
+          <ScenarioImpact label="Ödeme kapasitesi etkisi" value={result.comparison.paymentCapacityImpact} />
+        </div>
+      </div>
+
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <ScenarioMetric
           label="24 ay sonu kalan borç farkı"
@@ -273,6 +287,59 @@ function ForecastScenarioResult({ state, showResult }: { state: ForecastScenario
         Bu karşılaştırma geçici varsayımdır; kayıtlı gelir, gider, borç ve hafıza verilerinizi değiştirmez.
       </p>
     </div>
+  );
+}
+
+function insightToneClass(tone: ForecastScenarioComparisonItem["tone"]): string {
+  if (tone === "positive") {
+    return "border-mint/25 bg-mint/10";
+  }
+
+  if (tone === "negative") {
+    return "border-coral/25 bg-coral/10";
+  }
+
+  if (tone === "watch") {
+    return "border-amber/25 bg-amber/10";
+  }
+
+  return "border-line bg-surface-muted";
+}
+
+function ScenarioInsightList({
+  title,
+  items,
+  emptyText,
+}: {
+  title: string;
+  items: ForecastScenarioComparisonItem[];
+  emptyText: string;
+}) {
+  return (
+    <section className="rounded-md border border-line bg-surface-muted p-3">
+      <h5 className="text-xs font-semibold uppercase tracking-[0.12em] text-steel">{title}</h5>
+      {items.length > 0 ? (
+        <ul className="mt-3 space-y-2">
+          {items.slice(0, 3).map((item) => (
+            <li key={item.id} className={`rounded-md border p-3 ${insightToneClass(item.tone)}`}>
+              <p className="text-sm font-semibold text-ink">{item.title}</p>
+              <p className="mt-1 text-xs leading-5 text-steel">{item.description}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 text-sm leading-6 text-steel">{emptyText}</p>
+      )}
+    </section>
+  );
+}
+
+function ScenarioImpact({ label, value }: { label: string; value: string }) {
+  return (
+    <article className="rounded-md border border-line bg-surface-muted p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-steel">{label}</p>
+      <p className="mt-2 text-sm leading-6 text-steel">{value}</p>
+    </article>
   );
 }
 

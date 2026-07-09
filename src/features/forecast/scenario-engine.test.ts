@@ -15,6 +15,40 @@ function makeSnapshot(): FinanceSnapshot {
   };
 }
 
+function makeLongDebtSnapshot(): FinanceSnapshot {
+  return {
+    hasProfile: true,
+    profile: {
+      id: "scenario-test-profile",
+      currency: "TRY",
+      monthlySalaryKurus: liraToKurus(47_000),
+      survivalThresholdKurus: liraToKurus(12_000),
+    },
+    debts: [
+      {
+        id: "scenario-test-debt",
+        type: "credit_card",
+        name: "Örnek Uzun Vadeli Borç",
+        lender: "Örnek Kurum",
+        balanceKurus: liraToKurus(500_000),
+        interestRateMonthly: 2,
+        minimumPaymentKurus: liraToKurus(5_000),
+        dueDay: 15,
+        status: "active",
+      },
+    ],
+    expenses: [
+      {
+        id: "scenario-test-expense",
+        name: "Örnek Gider",
+        category: "Yaşam",
+        amountKurus: liraToKurus(30_000),
+        isFixed: true,
+      },
+    ],
+  };
+}
+
 describe("forecast scenario engine", () => {
   it("simulates salary increase and improves the debt forecast without mutating the source snapshot", () => {
     const snapshot = makeSnapshot();
@@ -23,6 +57,7 @@ describe("forecast scenario engine", () => {
 
     expect(result.delta.finalRemainingDebtDeltaKurus).toBeLessThanOrEqual(0);
     expect(result.delta.totalInterestDeltaKurus).toBeLessThanOrEqual(0);
+    expect(result.comparison.improvements.length).toBeGreaterThan(0);
     expect(snapshot.profile.monthlySalaryKurus).toBe(originalSalary);
   });
 
@@ -30,6 +65,8 @@ describe("forecast scenario engine", () => {
     const result = simulateForecastScenario(makeSnapshot(), { type: "salary_decrease", amountKurus: liraToKurus(50_000) }, asOfDate);
 
     expect(result.delta.averageLivingBudgetDeltaKurus).toBeLessThan(0);
+    expect(result.comparison.worsenings.map((item) => item.id)).toContain("living-budget-tighter");
+    expect(result.comparison.riskImpact).toContain("yükselebilir");
     expect(result.warnings.map((warning) => warning.id)).toContain("high-risk-scenario");
   });
 
@@ -45,7 +82,18 @@ describe("forecast scenario engine", () => {
     const result = simulateForecastScenario(makeSnapshot(), { type: "extra_debt_payment", amountKurus: liraToKurus(8_000) }, asOfDate);
 
     expect(result.delta.finalRemainingDebtDeltaKurus).toBeLessThanOrEqual(0);
+    expect(result.comparison.tradeOffs.length).toBeGreaterThan(0);
     expect(result.explanation.why).toContain("mevcut veriyi değiştirmez");
+  });
+
+  it("classifies lower remaining debt with tighter living budget as a trade-off", () => {
+    const result = simulateForecastScenario(makeLongDebtSnapshot(), { type: "extra_debt_payment", amountKurus: liraToKurus(10_000) }, asOfDate);
+
+    expect(result.delta.finalRemainingDebtDeltaKurus).toBeLessThan(0);
+    expect(result.delta.averageLivingBudgetDeltaKurus).toBeLessThan(0);
+    expect(result.comparison.improvements.map((item) => item.id)).toContain("remaining-debt-lower");
+    expect(result.comparison.worsenings.map((item) => item.id)).toContain("living-budget-tighter");
+    expect(result.comparison.tradeOffs.map((item) => item.id)).toContain("debt-down-budget-tight");
   });
 
   it("adds temporary new debt only to the scenario forecast", () => {
@@ -64,17 +112,38 @@ describe("forecast scenario engine", () => {
     expect(snapshot.debts.length).toBe(originalDebtCount);
     expect(result.delta.totalInterestDeltaKurus).toBeGreaterThanOrEqual(0);
     expect(result.delta.averageLivingBudgetDeltaKurus).toBeLessThanOrEqual(0);
+    expect(result.comparison.tradeOffs.map((item) => item.id)).toContain("temporary-new-debt");
     expect(result.warnings.map((warning) => warning.id)).toContain("new-debt-missing-rate");
+  });
+
+  it("keeps uncertain payoff differences conditional instead of exact", () => {
+    const result = simulateForecastScenario(makeSnapshot(), { type: "new_debt", amountKurus: liraToKurus(25_000), minimumPaymentKurus: liraToKurus(2_000) }, asOfDate);
+
+    if (result.delta.payoffMonthDelta === null) {
+      expect(result.comparison.tradeOffs.map((item) => item.id)).toContain("payoff-outside-horizon");
+      expect(result.comparison.tradeOffs.map((item) => item.description).join(" ")).toContain("kesin tarih gibi okunmamalıdır");
+    }
   });
 
   it("keeps scenario explanation free from raw lender and card names", () => {
     const result = simulateForecastScenario(makeSnapshot(), { type: "expense_decrease", percent: 5 }, asOfDate);
-    const publicText = `${result.explanation.summary} ${result.explanation.why} ${result.warnings
+    const comparisonText = [
+      result.comparison.summary,
+      result.comparison.riskImpact,
+      result.comparison.paymentCapacityImpact,
+      ...result.comparison.improvements.map((item) => `${item.title} ${item.description}`),
+      ...result.comparison.worsenings.map((item) => `${item.title} ${item.description}`),
+      ...result.comparison.tradeOffs.map((item) => `${item.title} ${item.description}`),
+    ].join(" ");
+    const publicText = `${result.explanation.summary} ${result.explanation.why} ${comparisonText} ${result.warnings
       .map((warning) => warning.message)
       .join(" ")}`;
 
     expect(publicText).not.toContain("Banka");
     expect(publicText).not.toContain("Kart");
     expect(publicText).not.toContain("IBAN");
+    expect(publicText).not.toContain("forecast-temporary-scenario-debt");
+    expect(publicText).not.toContain("provider");
+    expect(publicText).not.toContain("cache");
   });
 });

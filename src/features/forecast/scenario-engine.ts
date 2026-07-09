@@ -4,6 +4,8 @@ import type { DebtAccount, MandatoryExpense, MonthlyFinancePlanOptions, Profile,
 import { buildForecastReport } from "./service";
 import type {
   ForecastReport,
+  ForecastScenarioComparison,
+  ForecastScenarioComparisonItem,
   ForecastScenarioDelta,
   ForecastScenarioExplanation,
   ForecastScenarioInput,
@@ -36,6 +38,16 @@ function averageLivingBudget(report: ForecastReport): number {
 
   return Math.round(
     report.monthlyTrend.reduce((total, month) => total + month.livingBudgetKurus, 0) / report.monthlyTrend.length,
+  );
+}
+
+function averageExtraDebtPayment(report: ForecastReport): number {
+  if (report.monthlyTrend.length === 0) {
+    return 0;
+  }
+
+  return Math.round(
+    report.monthlyTrend.reduce((total, month) => total + month.extraDebtPaymentKurus, 0) / report.monthlyTrend.length,
   );
 }
 
@@ -133,6 +145,247 @@ function applyScenario(snapshot: FinanceSnapshot, input: ForecastScenarioInput):
 
 function riskRank(riskLevel: UiRiskLevel): number {
   return { low: 1, medium: 2, high: 3 }[riskLevel];
+}
+
+function absoluteTry(value: number): string {
+  return formatTry(Math.abs(value));
+}
+
+function addComparisonItem(items: ForecastScenarioComparisonItem[], item: ForecastScenarioComparisonItem) {
+  items.push(item);
+}
+
+function buildRiskImpact(delta: ForecastScenarioDelta): string {
+  const baselineRank = riskRank(delta.baselineRiskLevel);
+  const scenarioRank = riskRank(delta.scenarioRiskLevel);
+
+  if (scenarioRank > baselineRank) {
+    return "Risk seviyesi bu senaryoda yükselebilir; bu sonuç daha dikkatli okunmalıdır.";
+  }
+
+  if (scenarioRank < baselineRank) {
+    return "Risk seviyesi bu senaryoda düşebilir; nakit akışı daha dayanıklı görünebilir.";
+  }
+
+  if (delta.riskWarningCountDelta > 0) {
+    return "Risk seviyesi aynı kalsa da riskli ay sayısı artabilir.";
+  }
+
+  if (delta.riskWarningCountDelta < 0) {
+    return "Risk seviyesi aynı kalsa da riskli ay sayısı azalabilir.";
+  }
+
+  return "Risk seviyesi bu senaryoda belirgin şekilde değişmiyor.";
+}
+
+function buildPaymentCapacityImpact(paymentCapacityDeltaKurus: number): string {
+  if (paymentCapacityDeltaKurus > 0) {
+    return `Tahmin boyunca ortalama ek ödeme alanı ${absoluteTry(paymentCapacityDeltaKurus)} genişleyebilir.`;
+  }
+
+  if (paymentCapacityDeltaKurus < 0) {
+    return `Tahmin boyunca ortalama ek ödeme alanı ${absoluteTry(paymentCapacityDeltaKurus)} daralabilir.`;
+  }
+
+  return "Tahmin boyunca ortalama ek ödeme alanı belirgin şekilde değişmiyor.";
+}
+
+function buildComparisonSummary(args: {
+  improvements: ForecastScenarioComparisonItem[];
+  worsenings: ForecastScenarioComparisonItem[];
+  tradeOffs: ForecastScenarioComparisonItem[];
+}): string {
+  if (args.improvements.length > 0 && args.worsenings.length > 0) {
+    return "Bu senaryo bazı alanları rahatlatırken bazı alanlarda dikkat gerektiren bir karşılık oluşturabilir.";
+  }
+
+  if (args.improvements.length > 0) {
+    return "Bu senaryo mevcut tahmine göre bazı alanlarda rahatlama işaret ediyor; yine de sonuç geçici varsayımdır.";
+  }
+
+  if (args.worsenings.length > 0) {
+    return "Bu senaryo mevcut tahmine göre bazı alanlarda baskıyı artırabilir; sonuç karar değil, karşılaştırma bilgisidir.";
+  }
+
+  if (args.tradeOffs.length > 0) {
+    return "Bu senaryo belirgin bir trade-off gösteriyor; mevcut veri değişmeden yalnızca olası etkiyi görünür kılar.";
+  }
+
+  return "Bu senaryo mevcut tahmine göre belirgin bir fark üretmiyor.";
+}
+
+function buildScenarioComparison(args: {
+  input: ForecastScenarioInput;
+  baselineReport: ForecastReport;
+  scenarioReport: ForecastReport;
+  delta: ForecastScenarioDelta;
+}): ForecastScenarioComparison {
+  const improvements: ForecastScenarioComparisonItem[] = [];
+  const worsenings: ForecastScenarioComparisonItem[] = [];
+  const tradeOffs: ForecastScenarioComparisonItem[] = [];
+  const paymentCapacityDeltaKurus = averageExtraDebtPayment(args.scenarioReport) - averageExtraDebtPayment(args.baselineReport);
+
+  if (args.delta.finalRemainingDebtDeltaKurus < 0) {
+    addComparisonItem(improvements, {
+      id: "remaining-debt-lower",
+      title: "Kalan borç baskısı azalabilir",
+      description: `24 ay sonu kalan borç mevcut tahmine göre ${absoluteTry(args.delta.finalRemainingDebtDeltaKurus)} daha düşük görünüyor.`,
+      tone: "positive",
+    });
+  }
+
+  if (args.delta.finalRemainingDebtDeltaKurus > 0) {
+    addComparisonItem(worsenings, {
+      id: "remaining-debt-higher",
+      title: "Kalan borç baskısı artabilir",
+      description: `24 ay sonu kalan borç mevcut tahmine göre ${absoluteTry(args.delta.finalRemainingDebtDeltaKurus)} daha yüksek görünüyor.`,
+      tone: "negative",
+    });
+  }
+
+  if (args.delta.totalInterestDeltaKurus < 0) {
+    addComparisonItem(improvements, {
+      id: "interest-lower",
+      title: "Faiz etkisi azalabilir",
+      description: `Tahmini toplam faiz etkisi ${absoluteTry(args.delta.totalInterestDeltaKurus)} daha düşük görünüyor.`,
+      tone: "positive",
+    });
+  }
+
+  if (args.delta.totalInterestDeltaKurus > 0) {
+    addComparisonItem(worsenings, {
+      id: "interest-higher",
+      title: "Faiz etkisi artabilir",
+      description: `Tahmini toplam faiz etkisi ${absoluteTry(args.delta.totalInterestDeltaKurus)} daha yüksek görünüyor.`,
+      tone: "negative",
+    });
+  }
+
+  if (args.delta.averageLivingBudgetDeltaKurus > 0) {
+    addComparisonItem(improvements, {
+      id: "living-budget-wider",
+      title: "Yaşam bütçesi rahatlayabilir",
+      description: `Ortalama yaşam bütçesi ${absoluteTry(args.delta.averageLivingBudgetDeltaKurus)} genişleyebilir.`,
+      tone: "positive",
+    });
+  }
+
+  if (args.delta.averageLivingBudgetDeltaKurus < 0) {
+    addComparisonItem(worsenings, {
+      id: "living-budget-tighter",
+      title: "Yaşam bütçesi daralabilir",
+      description: `Ortalama yaşam bütçesi ${absoluteTry(args.delta.averageLivingBudgetDeltaKurus)} daralabilir.`,
+      tone: "negative",
+    });
+  }
+
+  if (args.delta.payoffMonthDelta !== null && args.delta.payoffMonthDelta > 0) {
+    addComparisonItem(improvements, {
+      id: "payoff-earlier",
+      title: "Kapanış tahmini öne gelebilir",
+      description: `Tahmini borç kapanışı ${args.delta.payoffMonthDelta} ay öne gelebilir.`,
+      tone: "positive",
+    });
+  }
+
+  if (args.delta.payoffMonthDelta !== null && args.delta.payoffMonthDelta < 0) {
+    addComparisonItem(worsenings, {
+      id: "payoff-later",
+      title: "Kapanış tahmini gecikebilir",
+      description: `Tahmini borç kapanışı ${Math.abs(args.delta.payoffMonthDelta)} ay gecikebilir.`,
+      tone: "negative",
+    });
+  }
+
+  if (riskRank(args.delta.scenarioRiskLevel) < riskRank(args.delta.baselineRiskLevel) || args.delta.riskWarningCountDelta < 0) {
+    addComparisonItem(improvements, {
+      id: "risk-pressure-lower",
+      title: "Risk baskısı azalabilir",
+      description: "Risk seviyesi veya riskli ay sayısı mevcut tahmine göre daha düşük görünebilir.",
+      tone: "positive",
+    });
+  }
+
+  if (riskRank(args.delta.scenarioRiskLevel) > riskRank(args.delta.baselineRiskLevel) || args.delta.riskWarningCountDelta > 0) {
+    addComparisonItem(worsenings, {
+      id: "risk-pressure-higher",
+      title: "Risk baskısı artabilir",
+      description: "Risk seviyesi veya riskli ay sayısı mevcut tahmine göre daha yüksek görünebilir.",
+      tone: "negative",
+    });
+  }
+
+  if (paymentCapacityDeltaKurus > 0) {
+    addComparisonItem(improvements, {
+      id: "payment-capacity-wider",
+      title: "Ek ödeme alanı genişleyebilir",
+      description: buildPaymentCapacityImpact(paymentCapacityDeltaKurus),
+      tone: "positive",
+    });
+  }
+
+  if (paymentCapacityDeltaKurus < 0) {
+    addComparisonItem(worsenings, {
+      id: "payment-capacity-tighter",
+      title: "Ek ödeme alanı daralabilir",
+      description: buildPaymentCapacityImpact(paymentCapacityDeltaKurus),
+      tone: "negative",
+    });
+  }
+
+  if (args.delta.finalRemainingDebtDeltaKurus < 0 && args.delta.averageLivingBudgetDeltaKurus < 0) {
+    addComparisonItem(tradeOffs, {
+      id: "debt-down-budget-tight",
+      title: "Borç baskısı azalırken yaşam bütçesi daralabilir",
+      description: "Bu senaryo borcu azaltmayı desteklerken ay içi hareket alanını daha sıkı hale getirebilir.",
+      tone: "watch",
+    });
+  }
+
+  if (args.delta.averageLivingBudgetDeltaKurus > 0 && args.delta.finalRemainingDebtDeltaKurus > 0) {
+    addComparisonItem(tradeOffs, {
+      id: "budget-wide-debt-up",
+      title: "Yaşam bütçesi rahatlayırken borç baskısı artabilir",
+      description: "Bu senaryo ay içi rahatlama sağlasa da 24 ay sonu borç baskısını artırabilir.",
+      tone: "watch",
+    });
+  }
+
+  if (args.delta.totalInterestDeltaKurus < 0 && riskRank(args.delta.scenarioRiskLevel) > riskRank(args.delta.baselineRiskLevel)) {
+    addComparisonItem(tradeOffs, {
+      id: "interest-down-risk-up",
+      title: "Faiz etkisi azalırken risk artabilir",
+      description: "Uzun vadeli faiz etkisi azalabilir; buna karşılık tahmin penceresinde risk baskısı yükselebilir.",
+      tone: "watch",
+    });
+  }
+
+  if (args.input.type === "new_debt") {
+    addComparisonItem(tradeOffs, {
+      id: "temporary-new-debt",
+      title: "Yeni borç tahmini yük ekleyebilir",
+      description: "Bu geçici borç senaryosu mevcut kayıtları değiştirmez; yalnızca ek yükün tahmine etkisini gösterir.",
+      tone: "watch",
+    });
+  }
+
+  if (args.delta.payoffMonthDelta === null) {
+    addComparisonItem(tradeOffs, {
+      id: "payoff-outside-horizon",
+      title: "Kapanış farkı netleşmiyor",
+      description: "Kapanış farkı 24 aylık pencere içinde netleşmediği için kesin tarih gibi okunmamalıdır.",
+      tone: "neutral",
+    });
+  }
+
+  return {
+    summary: buildComparisonSummary({ improvements, worsenings, tradeOffs }),
+    improvements,
+    worsenings,
+    tradeOffs,
+    riskImpact: buildRiskImpact(args.delta),
+    paymentCapacityImpact: buildPaymentCapacityImpact(paymentCapacityDeltaKurus),
+  };
 }
 
 function buildWarnings(args: {
@@ -243,5 +496,6 @@ export function simulateForecastScenario(
     delta,
     warnings,
     explanation: buildExplanation(delta, warnings),
+    comparison: buildScenarioComparison({ input, baselineReport, scenarioReport, delta }),
   };
 }

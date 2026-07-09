@@ -142,6 +142,12 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await page.getByRole("button", { name: "Karşılaştır" }).click();
   await expect(page.getByText("Geçici senaryo sonucu")).toBeVisible();
   await expect(page.getByText("Mevcut veri değişmedi")).toBeVisible();
+  await expect(page.getByText("Karşılaştırma özeti")).toBeVisible();
+  await expect(page.getByText("İyileşen taraflar")).toBeVisible();
+  await expect(page.getByText("Zorlaşan taraflar")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Trade-off" })).toBeVisible();
+  await expect(page.getByText("Risk etkisi")).toBeVisible();
+  await expect(page.getByText("Ödeme kapasitesi etkisi")).toBeVisible();
   await expect(page.getByText("Geçici senaryo karşılaştırıldı. Mevcut verileriniz değişmedi.")).toBeVisible();
 
   await page.goto("/memory");
