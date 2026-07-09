@@ -4,12 +4,22 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
+export function resolveDatabaseUrl(): string {
+  const databaseUrl = process.env.DATABASE_URL?.trim();
+
+  if (process.env.NODE_ENV === "production" && !databaseUrl) {
+    throw new Error("DATABASE_URL must be set in production.");
+  }
+
+  return databaseUrl || "file:./dev.db";
+}
+
 export function getPrisma(): PrismaClient {
   if (!globalForPrisma.prisma) {
     globalForPrisma.prisma = new PrismaClient({
       datasources: {
         db: {
-          url: process.env.DATABASE_URL ?? "file:./dev.db",
+          url: resolveDatabaseUrl(),
         },
       },
     });

@@ -85,20 +85,35 @@ export async function upsertMemorySnapshot(input: FinancialMemorySnapshotInput):
   const { categoryTotals, ...snapshotInput } = input;
   const prisma = getPrisma();
 
-  const snapshot = await prisma.financialMemorySnapshot.upsert({
-    where: { periodMonth: snapshotInput.periodMonth },
-    create: snapshotInput,
-    update: snapshotInput,
+  const record = await prisma.$transaction(async (tx) => {
+    const snapshot = await tx.financialMemorySnapshot.upsert({
+      where: { periodMonth: snapshotInput.periodMonth },
+      create: snapshotInput,
+      update: snapshotInput,
+    });
+
+    await tx.financialMemoryCategoryTotal.deleteMany({ where: { snapshotId: snapshot.id } });
+
+    if (categoryTotals.length > 0) {
+      await tx.financialMemoryCategoryTotal.createMany({
+        data: categoryTotals.map((category) => ({
+          snapshotId: snapshot.id,
+          ...category,
+        })),
+      });
+    }
+
+    return tx.financialMemorySnapshot.findUnique({
+      where: { periodMonth: snapshot.periodMonth },
+      include: { categoryTotals: true },
+    });
   });
 
-  await replaceMemoryCategoryTotals(snapshot.id, categoryTotals);
-
-  const record = await getMemorySnapshotByMonth(snapshot.periodMonth);
   if (!record) {
     throw new Error("Financial memory snapshot could not be read after upsert.");
   }
 
-  return record;
+  return mapSnapshot(record);
 }
 
 export async function getMemoryReportData(): Promise<FinancialMemorySnapshotRecord[]> {
