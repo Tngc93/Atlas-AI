@@ -1,7 +1,7 @@
 import { buildMonthlyFinancePlan } from "@/features/finance/calculations";
 import type { FinanceSnapshot } from "@/features/finance/data-service";
 import { formatTry } from "@/features/finance/money";
-import type { PaymentPlanMonth, RiskLevel, UiRiskLevel } from "@/features/finance/types";
+import type { MonthlyFinancePlanOptions, PaymentPlanMonth, RiskLevel, UiRiskLevel } from "@/features/finance/types";
 import type {
   ForecastAssumption,
   ForecastCheckpoint,
@@ -300,10 +300,15 @@ function buildCoachSummary(args: {
   };
 }
 
-export function buildForecastReport(snapshot: FinanceSnapshot, asOfDate = new Date()): ForecastReport {
+export function buildForecastReport(
+  snapshot: FinanceSnapshot,
+  asOfDate = new Date(),
+  options: Pick<MonthlyFinancePlanOptions, "extraDebtPaymentOverrideKurus" | "extraPaymentTargetDebtId"> = {},
+): ForecastReport {
   const monthlyPlan = buildMonthlyFinancePlan(snapshot.profile, snapshot.debts, snapshot.expenses, {
     asOfDate,
     horizonMonths: FORECAST_HORIZON_MONTHS,
+    ...options,
   });
   const months = monthlyPlan.payoffForecast;
   const monthlyTrend = buildMonthlyTrend(months);

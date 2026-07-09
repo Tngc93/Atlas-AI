@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppShell } from "@/components/dashboard/AppShell";
 import { ForecastDebtTrendChart, ForecastLivingBudgetChart } from "@/components/forecast/ForecastCharts";
+import { ForecastScenarioPanel } from "@/components/forecast/ForecastScenarioPanel";
 import { getFinanceSnapshot } from "@/features/finance/data-service";
 import { formatTry } from "@/features/finance/money";
 import type { RiskLevel, UiRiskLevel } from "@/features/finance/types";
@@ -145,6 +146,8 @@ export default async function ForecastPage() {
               ))}
             </div>
           </section>
+
+          <ForecastScenarioPanel />
 
           <section className="mt-6">
             <h2 className="text-lg font-semibold">{trCopy.forecast.checkpointTitle}</h2>

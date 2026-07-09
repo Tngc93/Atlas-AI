@@ -131,11 +131,18 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await expect(page.getByRole("heading", { name: "Finansal Tahmin" })).toBeVisible();
   await expect(page.getByText("24 ay sonu kalan borç")).toBeVisible();
   await expect(page.getByText("Bu tahmin neye dayanıyor?")).toBeVisible();
+  await expect(page.getByText("Senaryo karşılaştır")).toBeVisible();
   await expect(page.getByText("Tahmin dönemleri")).toBeVisible();
   await expect(page.getByText("Risk trendi")).toBeVisible();
   await expect(page.getByText("Risk zaman çizgisi")).toBeVisible();
   await expect(page.getByText("Deneyebileceğin güvenli simülasyonlar")).toBeVisible();
   await expect(page.getByText("Forecast varsayımları")).toBeVisible();
+  await page.getByLabel("Senaryo türü").selectOption("salary_increase");
+  await page.getByLabel("Tutar").fill("5.000");
+  await page.getByRole("button", { name: "Karşılaştır" }).click();
+  await expect(page.getByText("Geçici senaryo sonucu")).toBeVisible();
+  await expect(page.getByText("Mevcut veri değişmedi")).toBeVisible();
+  await expect(page.getByText("Geçici senaryo karşılaştırıldı. Mevcut verileriniz değişmedi.")).toBeVisible();
 
   await page.goto("/memory");
   await expect(page.getByRole("heading", { name: "Finansal Hafıza" })).toBeVisible();
@@ -177,7 +184,7 @@ test("responsive smoke: ana finansal sayfalarda yatay taşma ve kritik metinler 
     },
     {
       path: "/forecast",
-      texts: ["Finansal Tahmin", "Bu tahmin neye dayanıyor?", "Deneyebileceğin güvenli simülasyonlar"],
+      texts: ["Finansal Tahmin", "Bu tahmin neye dayanıyor?", "Senaryo karşılaştır", "Deneyebileceğin güvenli simülasyonlar"],
     },
     {
       path: "/memory",

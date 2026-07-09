@@ -88,3 +88,50 @@ export type ForecastReport = {
   payoffOutsideHorizon: boolean;
   highestRiskLevel: UiRiskLevel;
 };
+
+export type ForecastScenarioType =
+  | "salary_increase"
+  | "salary_decrease"
+  | "expense_decrease"
+  | "expense_increase"
+  | "extra_debt_payment"
+  | "new_debt";
+
+export type ForecastScenarioInput = {
+  type: ForecastScenarioType;
+  amountKurus?: number;
+  percent?: number;
+  minimumPaymentKurus?: number;
+  interestRateMonthly?: number;
+};
+
+export type ForecastScenarioDelta = {
+  finalRemainingDebtDeltaKurus: number;
+  totalInterestDeltaKurus: number;
+  averageLivingBudgetDeltaKurus: number;
+  payoffMonthDelta: number | null;
+  baselineRiskLevel: UiRiskLevel;
+  scenarioRiskLevel: UiRiskLevel;
+  riskWarningCountDelta: number;
+};
+
+export type ForecastScenarioWarning = {
+  id: string;
+  severity: UiRiskLevel;
+  message: string;
+};
+
+export type ForecastScenarioExplanation = {
+  summary: string;
+  why: string;
+};
+
+export type ForecastScenarioResult = {
+  input: ForecastScenarioInput;
+  title: string;
+  baselineReport: ForecastReport;
+  scenarioReport: ForecastReport;
+  delta: ForecastScenarioDelta;
+  warnings: ForecastScenarioWarning[];
+  explanation: ForecastScenarioExplanation;
+};
