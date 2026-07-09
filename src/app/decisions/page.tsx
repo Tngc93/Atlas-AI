@@ -35,7 +35,7 @@ export default async function DecisionsPage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-steel">Decision Intelligence Engine</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-steel">Karar desteği</p>
         <h1 className="max-w-4xl text-3xl font-semibold tracking-tight sm:text-4xl">{trCopy.decisions.title}</h1>
         <p className="max-w-3xl text-sm leading-6 text-steel">{trCopy.decisions.description}</p>
       </div>

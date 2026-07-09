@@ -124,7 +124,7 @@ export function DecisionSimulatorPanel({
     <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
       <section className="ui-card">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mint">Deterministik simülasyon</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mint">Geçici simülasyon</p>
           <h2 className="mt-2 text-lg font-semibold">“Şunu yaparsam ne olur?” senaryosu</h2>
           <p className="mt-2 text-sm leading-6 text-steel">
             Bu form gerçek kayıtlarınızı değiştirmez. Sonuçlar mevcut finans motorundan üretilir ve yalnızca karar desteği
@@ -299,8 +299,8 @@ function ScenarioResult({ state }: { state: DecisionActionState }) {
       </div>
 
       <div className="mt-5">
-        <h3 className="text-sm font-semibold">Hesaplanan farklar</h3>
-        <p className="mt-1 text-xs leading-5 text-steel">Bu metrikler yukarıdaki karar özetini destekleyen deterministik farklardır.</p>
+        <h3 className="text-sm font-semibold">Detay farklar</h3>
+        <p className="mt-1 text-xs leading-5 text-steel">Bu farklar hesaplama motorundan gelir ve karar özetini destekler.</p>
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -338,8 +338,17 @@ function ScenarioResult({ state }: { state: DecisionActionState }) {
         />
       </div>
 
+      <div className="mt-3 grid gap-3 text-sm text-steel sm:grid-cols-2">
+        <p className="rounded-md border border-line bg-surface-muted p-3">
+          Günlük limit farkı: <span className="font-semibold">{signedTry(result.delta.dailyLimitDeltaKurus)}</span>
+        </p>
+        <p className="rounded-md border border-line bg-surface-muted p-3">
+          Haftalık limit farkı: <span className="font-semibold">{signedTry(result.delta.weeklyLimitDeltaKurus)}</span>
+        </p>
+      </div>
+
       <div className="mt-5 rounded-md border border-mint/20 bg-mint/10 p-4">
-        <h3 className="text-sm font-semibold text-mint">Deterministik yorum</h3>
+        <h3 className="text-sm font-semibold text-mint">Kısa yorum</h3>
         <p className="mt-2 text-sm leading-6 text-steel">{result.coachComment.summary}</p>
       </div>
 
@@ -359,14 +368,6 @@ function ScenarioResult({ state }: { state: DecisionActionState }) {
         </div>
       ) : null}
 
-      <div className="mt-4 grid gap-3 text-sm text-steel sm:grid-cols-2">
-        <p className="rounded-md border border-line bg-surface-muted p-3">
-          Günlük limit farkı: <span className="font-semibold">{signedTry(result.delta.dailyLimitDeltaKurus)}</span>
-        </p>
-        <p className="rounded-md border border-line bg-surface-muted p-3">
-          Haftalık limit farkı: <span className="font-semibold">{signedTry(result.delta.weeklyLimitDeltaKurus)}</span>
-        </p>
-      </div>
     </div>
   );
 }
