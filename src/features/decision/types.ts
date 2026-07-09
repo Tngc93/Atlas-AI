@@ -26,6 +26,55 @@ export type DecisionCoachComment = {
   why: string;
 };
 
+export type DecisionFrameItem = {
+  label: string;
+  value: string;
+};
+
+export type DecisionFrame = {
+  currentReality: string;
+  protectedConstraint: string;
+  openOption: string;
+  riskToReview: string;
+  deferral: string;
+  sequence: DecisionFrameItem[];
+};
+
+export type DecisionTradeoffItem = {
+  id: string;
+  title: string;
+  description: string;
+  tone: "positive" | "negative" | "watch" | "neutral";
+};
+
+export type DecisionTradeoffSummary = {
+  summary: string;
+  improvements: DecisionTradeoffItem[];
+  worsenings: DecisionTradeoffItem[];
+  tradeOffs: DecisionTradeoffItem[];
+  riskImpact: string;
+  livingBudgetImpact: string;
+  decisionNote: string;
+};
+
+export type DecisionHorizonLens = {
+  currentMonthImpact: string;
+  horizonImpact: string;
+  payoffImpact: string;
+  spendingLimitImpact: string;
+};
+
+export type DecisionExplanationContext = {
+  version: "decision-explanation-context-v1";
+  scenarioType: DecisionScenarioType;
+  riskDirection: "lower" | "higher" | "same";
+  livingBudgetDirection: "wider" | "tighter" | "same";
+  debtDirection: "lower" | "higher" | "same";
+  hasWarnings: boolean;
+  tradeoffCount: number;
+  userDecisionBoundary: string;
+};
+
 export type DecisionScenarioDelta = {
   firstMonthRemainingDebtDeltaKurus: number;
   horizonRemainingDebtDeltaKurus: number;
@@ -50,5 +99,9 @@ export type DecisionScenarioResult = {
   activeDebts: Pick<DebtAccount, "id" | "name" | "status">[];
   delta: DecisionScenarioDelta;
   warnings: DecisionScenarioWarning[];
+  frame: DecisionFrame;
+  tradeoffSummary: DecisionTradeoffSummary;
+  horizonLens: DecisionHorizonLens;
+  explanationContext: DecisionExplanationContext;
   coachComment: DecisionCoachComment;
 };

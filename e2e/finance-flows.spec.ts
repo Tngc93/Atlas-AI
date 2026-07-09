@@ -118,6 +118,10 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await page.getByLabel("Tutar").fill("3.000");
   await page.getByRole("button", { name: "Simüle Et" }).click();
   await expect(page.getByText("Senaryo hesaplandı.")).toBeVisible();
+  await expect(page.getByText("Karar çerçevesi")).toBeVisible();
+  await expect(page.getByText("Trade-off özeti")).toBeVisible();
+  await expect(page.getByText("Kısa ve uzun vade etkisi")).toBeVisible();
+  await expect(page.getByText("Son karar sizindir")).toBeVisible();
   await expect(page.getByText("İlk ay kalan borç farkı")).toBeVisible();
   await expect(page.getByText("Neden?")).toBeVisible();
 

@@ -11,10 +11,15 @@ import type {
 import { formatTry } from "@/features/finance/money";
 import type {
   DecisionCoachComment,
+  DecisionExplanationContext,
+  DecisionFrame,
+  DecisionHorizonLens,
   DecisionScenarioDelta,
   DecisionScenarioInput,
   DecisionScenarioResult,
   DecisionScenarioWarning,
+  DecisionTradeoffItem,
+  DecisionTradeoffSummary,
 } from "./types";
 
 const DECISION_HORIZON_MONTHS = 24;
@@ -34,6 +39,10 @@ function riskRank(riskLevel: UiRiskLevel): number {
 
 function maxRisk(...levels: UiRiskLevel[]): UiRiskLevel {
   return levels.reduce((highest, current) => (riskRank(current) > riskRank(highest) ? current : highest), "low");
+}
+
+function riskLabel(riskLevel: UiRiskLevel): string {
+  return { low: "Düşük", medium: "Orta", high: "Yüksek" }[riskLevel];
 }
 
 function cloneDebts(debts: DebtAccount[]): DebtAccount[] {
@@ -195,6 +204,306 @@ function buildCoachComment(delta: DecisionScenarioDelta, warnings: DecisionScena
   };
 }
 
+function buildDecisionFrame(args: {
+  input: DecisionScenarioInput;
+  baselinePlan: MonthlyFinancePlan;
+  scenarioPlan: MonthlyFinancePlan;
+  delta: DecisionScenarioDelta;
+  warnings: DecisionScenarioWarning[];
+}): DecisionFrame {
+  const hasHighRisk = args.delta.scenarioRiskLevel === "high" || args.warnings.some((warning) => warning.severity === "high");
+  const livingBudgetTight = args.scenarioPlan.livingBudget.remainingForMonthKurus < args.baselinePlan.cashFlow.emergencyBufferKurus;
+  const currentReality =
+    args.baselinePlan.cashFlow.minimumPaymentsCovered && args.baselinePlan.livingBudget.remainingForMonthKurus >= 0
+      ? "Mevcut planda zorunlu ödemeler karşılanıyor; karar alanı yaşam bütçesi ve borç hızında oluşuyor."
+      : "Mevcut planda önce zorunlu ödemeler ve yaşam bütçesi baskısı anlaşılmalı.";
+  const protectedConstraint =
+    args.scenarioPlan.livingBudget.remainingForMonthKurus < 0
+      ? "Bu senaryoda ay sonu yaşam bütçesi negatif görünüyor."
+      : livingBudgetTight
+        ? "Bu senaryoda yaşam bütçesi koruma alanı daralıyor."
+        : "Yaşam bütçesi kararın ana güvenlik sınırı olarak korunuyor.";
+  const openOption =
+    args.input.type === "no_extra_payment"
+      ? "Açık seçenek, bu ay yalnızca minimum ödemelerle ilerlemeyi incelemek."
+      : "Açık seçenek, bu senaryonun borç hızı ve nakit alanı üzerindeki etkisini incelemek.";
+  const riskToReview =
+    args.delta.scenarioRiskLevel === args.delta.baselineRiskLevel
+      ? `Risk seviyesi ${riskLabel(args.delta.scenarioRiskLevel)} çizgisinde kalıyor.`
+      : `Risk seviyesi ${riskLabel(args.delta.baselineRiskLevel)} → ${riskLabel(args.delta.scenarioRiskLevel)} olarak değişiyor.`;
+  const deferral = hasHighRisk
+    ? "Erteleme geçerli bir sonuçtur; risk yüksekken daha fazla kanıt toplamak veya tutarı küçültmek düşünülebilir."
+    : "Erteleme hâlâ geçerli bir sonuçtur; bu ekran karar baskısı değil karşılaştırma sağlar.";
+
+  return {
+    currentReality,
+    protectedConstraint,
+    openOption,
+    riskToReview,
+    deferral,
+    sequence: [
+      { label: "Gerçeklik", value: currentReality },
+      { label: "Kısıt", value: protectedConstraint },
+      { label: "Seçenek", value: openOption },
+      { label: "Risk", value: riskToReview },
+      { label: "Kullanıcı kararı", value: deferral },
+    ],
+  };
+}
+
+function absoluteTry(value: number): string {
+  return formatTry(Math.abs(value));
+}
+
+function addTradeoffItem(items: DecisionTradeoffItem[], item: DecisionTradeoffItem) {
+  items.push(item);
+}
+
+function buildRiskImpact(delta: DecisionScenarioDelta): string {
+  if (riskRank(delta.scenarioRiskLevel) > riskRank(delta.baselineRiskLevel)) {
+    return "Risk seviyesi bu senaryoda yükselebilir; sonuç daha dikkatli okunmalıdır.";
+  }
+
+  if (riskRank(delta.scenarioRiskLevel) < riskRank(delta.baselineRiskLevel)) {
+    return "Risk seviyesi bu senaryoda düşebilir; yine de karar kullanıcının değerlendirmesine kalır.";
+  }
+
+  return "Risk seviyesi bu senaryoda belirgin şekilde değişmiyor.";
+}
+
+function buildLivingBudgetImpact(delta: DecisionScenarioDelta): string {
+  if (delta.livingBudgetDeltaKurus > 0) {
+    return `Yaşam bütçesi ${absoluteTry(delta.livingBudgetDeltaKurus)} genişleyebilir.`;
+  }
+
+  if (delta.livingBudgetDeltaKurus < 0) {
+    return `Yaşam bütçesi ${absoluteTry(delta.livingBudgetDeltaKurus)} daralabilir.`;
+  }
+
+  return "Yaşam bütçesi belirgin şekilde değişmiyor.";
+}
+
+function buildTradeoffSummary(delta: DecisionScenarioDelta, warnings: DecisionScenarioWarning[]): DecisionTradeoffSummary {
+  const improvements: DecisionTradeoffItem[] = [];
+  const worsenings: DecisionTradeoffItem[] = [];
+  const tradeOffs: DecisionTradeoffItem[] = [];
+
+  if (delta.firstMonthRemainingDebtDeltaKurus < 0) {
+    addTradeoffItem(improvements, {
+      id: "first-month-debt-lower",
+      title: "Bu ay borç baskısı azalabilir",
+      description: `İlk ay kalan borç mevcut plana göre ${absoluteTry(delta.firstMonthRemainingDebtDeltaKurus)} daha düşük görünüyor.`,
+      tone: "positive",
+    });
+  }
+
+  if (delta.firstMonthRemainingDebtDeltaKurus > 0) {
+    addTradeoffItem(worsenings, {
+      id: "first-month-debt-higher",
+      title: "Bu ay borç baskısı artabilir",
+      description: `İlk ay kalan borç mevcut plana göre ${absoluteTry(delta.firstMonthRemainingDebtDeltaKurus)} daha yüksek görünüyor.`,
+      tone: "negative",
+    });
+  }
+
+  if (delta.horizonRemainingDebtDeltaKurus < 0) {
+    addTradeoffItem(improvements, {
+      id: "horizon-debt-lower",
+      title: "24 ay sonunda borç daha düşük olabilir",
+      description: `24 ay sonu kalan borç ${absoluteTry(delta.horizonRemainingDebtDeltaKurus)} daha düşük görünüyor.`,
+      tone: "positive",
+    });
+  }
+
+  if (delta.horizonRemainingDebtDeltaKurus > 0) {
+    addTradeoffItem(worsenings, {
+      id: "horizon-debt-higher",
+      title: "24 ay sonunda borç daha yüksek olabilir",
+      description: `24 ay sonu kalan borç ${absoluteTry(delta.horizonRemainingDebtDeltaKurus)} daha yüksek görünüyor.`,
+      tone: "negative",
+    });
+  }
+
+  if (delta.livingBudgetDeltaKurus > 0) {
+    addTradeoffItem(improvements, {
+      id: "living-budget-wider",
+      title: "Yaşam bütçesi rahatlayabilir",
+      description: buildLivingBudgetImpact(delta),
+      tone: "positive",
+    });
+  }
+
+  if (delta.livingBudgetDeltaKurus < 0) {
+    addTradeoffItem(worsenings, {
+      id: "living-budget-tighter",
+      title: "Yaşam bütçesi daralabilir",
+      description: buildLivingBudgetImpact(delta),
+      tone: "negative",
+    });
+  }
+
+  if (riskRank(delta.scenarioRiskLevel) < riskRank(delta.baselineRiskLevel)) {
+    addTradeoffItem(improvements, {
+      id: "risk-lower",
+      title: "Risk baskısı azalabilir",
+      description: buildRiskImpact(delta),
+      tone: "positive",
+    });
+  }
+
+  if (riskRank(delta.scenarioRiskLevel) > riskRank(delta.baselineRiskLevel)) {
+    addTradeoffItem(worsenings, {
+      id: "risk-higher",
+      title: "Risk baskısı artabilir",
+      description: buildRiskImpact(delta),
+      tone: "negative",
+    });
+  }
+
+  if (delta.firstMonthRemainingDebtDeltaKurus < 0 && delta.livingBudgetDeltaKurus < 0) {
+    addTradeoffItem(tradeOffs, {
+      id: "debt-down-budget-tight",
+      title: "Borç azalırken yaşam bütçesi daralabilir",
+      description: "Bu senaryo borç hızını desteklerken ay içi nakit alanını daha sıkı hale getirebilir.",
+      tone: "watch",
+    });
+  }
+
+  if (delta.firstMonthRemainingDebtDeltaKurus > 0 && delta.livingBudgetDeltaKurus > 0) {
+    addTradeoffItem(tradeOffs, {
+      id: "budget-wide-debt-up",
+      title: "Yaşam bütçesi rahatlayırken borç yavaşlayabilir",
+      description: "Bu senaryo ay içi hareket alanını artırırken borç kapatma hızını azaltabilir.",
+      tone: "watch",
+    });
+  }
+
+  if (delta.payoffMonthDelta === null) {
+    addTradeoffItem(tradeOffs, {
+      id: "payoff-outside-horizon",
+      title: "Kapanış farkı netleşmiyor",
+      description: "Kapanış farkı 24 aylık pencerede netleşmediği için kesin tarih gibi okunmamalıdır.",
+      tone: "neutral",
+    });
+  }
+
+  if (warnings.length > 0) {
+    addTradeoffItem(tradeOffs, {
+      id: "warnings-present",
+      title: "Uyarılar kararın parçası olarak okunmalı",
+      description: warnings[0].message,
+      tone: warnings[0].severity === "high" ? "negative" : "watch",
+    });
+  }
+
+  const summary =
+    improvements.length > 0 && worsenings.length > 0
+      ? "Bu senaryo bazı alanları rahatlatırken bazı alanlarda dikkat gerektiren bir karşılık oluşturabilir."
+      : improvements.length > 0
+        ? "Bu senaryo mevcut plana göre bazı alanlarda rahatlama işaret ediyor; yine de karar değildir."
+        : worsenings.length > 0
+          ? "Bu senaryo mevcut plana göre bazı alanlarda baskıyı artırabilir; sonuç yalnızca karar desteğidir."
+          : "Bu senaryo mevcut plana göre belirgin bir fark üretmiyor.";
+
+  return {
+    summary,
+    improvements,
+    worsenings,
+    tradeOffs,
+    riskImpact: buildRiskImpact(delta),
+    livingBudgetImpact: buildLivingBudgetImpact(delta),
+    decisionNote: "Bu özet karar vermez; son karar sizindir.",
+  };
+}
+
+function payoffImpactText(delta: DecisionScenarioDelta): string {
+  if (delta.payoffMonthDelta === null) {
+    return "Kapanış süresi farkı 24 aylık pencerede netleşmiyor.";
+  }
+
+  if (delta.payoffMonthDelta > 0) {
+    return `Tahmini kapanış ${delta.payoffMonthDelta} ay öne gelebilir.`;
+  }
+
+  if (delta.payoffMonthDelta < 0) {
+    return `Tahmini kapanış ${Math.abs(delta.payoffMonthDelta)} ay gecikebilir.`;
+  }
+
+  return "Tahmini kapanış süresi değişmiyor.";
+}
+
+function buildHorizonLens(delta: DecisionScenarioDelta): DecisionHorizonLens {
+  return {
+    currentMonthImpact:
+      delta.firstMonthRemainingDebtDeltaKurus === 0
+        ? "Bu ay kalan borç üzerinde belirgin fark görünmüyor."
+        : `Bu ay kalan borç farkı ${formatTry(delta.firstMonthRemainingDebtDeltaKurus)} görünüyor.`,
+    horizonImpact:
+      delta.horizonRemainingDebtDeltaKurus === 0
+        ? "24 ay sonunda kalan borç üzerinde belirgin fark görünmüyor."
+        : `24 ay sonu kalan borç farkı ${formatTry(delta.horizonRemainingDebtDeltaKurus)} görünüyor.`,
+    payoffImpact: payoffImpactText(delta),
+    spendingLimitImpact:
+      delta.dailyLimitDeltaKurus === 0 && delta.weeklyLimitDeltaKurus === 0
+        ? "Günlük ve haftalık limitlerde belirgin fark görünmüyor."
+        : `Günlük limit farkı ${formatTry(delta.dailyLimitDeltaKurus)}, haftalık limit farkı ${formatTry(delta.weeklyLimitDeltaKurus)}.`,
+  };
+}
+
+function directionFromDelta(value: number): "lower" | "higher" | "same" {
+  if (value < 0) {
+    return "lower";
+  }
+
+  if (value > 0) {
+    return "higher";
+  }
+
+  return "same";
+}
+
+function budgetDirectionFromDelta(value: number): "wider" | "tighter" | "same" {
+  if (value > 0) {
+    return "wider";
+  }
+
+  if (value < 0) {
+    return "tighter";
+  }
+
+  return "same";
+}
+
+function riskDirectionFromDelta(delta: DecisionScenarioDelta): "lower" | "higher" | "same" {
+  if (riskRank(delta.scenarioRiskLevel) < riskRank(delta.baselineRiskLevel)) {
+    return "lower";
+  }
+
+  if (riskRank(delta.scenarioRiskLevel) > riskRank(delta.baselineRiskLevel)) {
+    return "higher";
+  }
+
+  return "same";
+}
+
+function buildExplanationContext(args: {
+  input: DecisionScenarioInput;
+  delta: DecisionScenarioDelta;
+  warnings: DecisionScenarioWarning[];
+  tradeoffSummary: DecisionTradeoffSummary;
+}): DecisionExplanationContext {
+  return {
+    version: "decision-explanation-context-v1",
+    scenarioType: args.input.type,
+    riskDirection: riskDirectionFromDelta(args.delta),
+    livingBudgetDirection: budgetDirectionFromDelta(args.delta.livingBudgetDeltaKurus),
+    debtDirection: directionFromDelta(args.delta.firstMonthRemainingDebtDeltaKurus),
+    hasWarnings: args.warnings.length > 0,
+    tradeoffCount: args.tradeoffSummary.tradeOffs.length,
+    userDecisionBoundary: "AI veya sistem karar vermez; deterministik çıktılar yalnızca açıklama ve değerlendirme desteğidir.",
+  };
+}
+
 function buildScenarioPlan(
   profile: Profile,
   debts: DebtAccount[],
@@ -269,6 +578,10 @@ export function simulateDecisionScenario(
     scenarioDebts,
     scenarioRiskLevel,
   });
+  const frame = buildDecisionFrame({ input, baselinePlan, scenarioPlan, delta, warnings });
+  const tradeoffSummary = buildTradeoffSummary(delta, warnings);
+  const horizonLens = buildHorizonLens(delta);
+  const explanationContext = buildExplanationContext({ input, delta, warnings, tradeoffSummary });
 
   return {
     input,
@@ -280,6 +593,10 @@ export function simulateDecisionScenario(
       .map((debt) => ({ id: debt.id, name: debt.name, status: debt.status })),
     delta,
     warnings,
+    frame,
+    tradeoffSummary,
+    horizonLens,
+    explanationContext,
     coachComment: buildCoachComment(delta, warnings),
   };
 }

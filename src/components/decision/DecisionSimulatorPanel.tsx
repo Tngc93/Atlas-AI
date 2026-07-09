@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { simulateDecisionScenarioAction, type DecisionActionState } from "@/features/decision/actions";
-import type { DecisionScenarioType } from "@/features/decision/types";
+import type { DecisionScenarioType, DecisionTradeoffItem } from "@/features/decision/types";
 import { formatTry } from "@/features/finance/money";
 import type { UiRiskLevel } from "@/features/finance/types";
 import { FieldError, FormMessage, MoneyInput } from "@/components/forms/FormControls";
@@ -249,6 +249,60 @@ function ScenarioResult({ state }: { state: DecisionActionState }) {
         </span>
       </div>
 
+      <div className="mt-5 rounded-md border border-line bg-surface-muted p-4">
+        <h3 className="text-sm font-semibold">Karar çerçevesi</h3>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {result.frame.sequence.map((item) => (
+            <article key={item.label} className="rounded-md border border-line bg-surface p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-steel">{item.label}</p>
+              <p className="mt-2 text-sm leading-6 text-steel">{item.value}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-5 rounded-md border border-line bg-surface p-4">
+        <h3 className="text-sm font-semibold">Trade-off özeti</h3>
+        <p className="mt-2 text-sm leading-6 text-steel">{result.tradeoffSummary.summary}</p>
+        <div className="mt-4 grid gap-3 lg:grid-cols-3">
+          <TradeoffList
+            title="İyileşen taraflar"
+            items={result.tradeoffSummary.improvements}
+            emptyText="Belirgin bir iyileşme sinyali görünmüyor."
+          />
+          <TradeoffList
+            title="Zorlaşan taraflar"
+            items={result.tradeoffSummary.worsenings}
+            emptyText="Belirgin bir zorlaşma sinyali görünmüyor."
+          />
+          <TradeoffList
+            title="Trade-off"
+            items={result.tradeoffSummary.tradeOffs}
+            emptyText="Belirgin bir trade-off görünmüyor."
+          />
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <DecisionImpact label="Risk etkisi" value={result.tradeoffSummary.riskImpact} />
+          <DecisionImpact label="Yaşam bütçesi etkisi" value={result.tradeoffSummary.livingBudgetImpact} />
+        </div>
+        <p className="mt-4 text-xs leading-5 text-steel">{result.tradeoffSummary.decisionNote}</p>
+      </div>
+
+      <div className="mt-5 rounded-md border border-line bg-surface-muted p-4">
+        <h3 className="text-sm font-semibold">Kısa ve uzun vade etkisi</h3>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <DecisionImpact label="Bu ay etkisi" value={result.horizonLens.currentMonthImpact} />
+          <DecisionImpact label="24 ay etkisi" value={result.horizonLens.horizonImpact} />
+          <DecisionImpact label="Kapanış süresi" value={result.horizonLens.payoffImpact} />
+          <DecisionImpact label="Harcama limitleri" value={result.horizonLens.spendingLimitImpact} />
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <h3 className="text-sm font-semibold">Hesaplanan farklar</h3>
+        <p className="mt-1 text-xs leading-5 text-steel">Bu metrikler yukarıdaki karar özetini destekleyen deterministik farklardır.</p>
+      </div>
+
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <ResultMetric
           label="İlk ay kalan borç farkı"
@@ -285,7 +339,7 @@ function ScenarioResult({ state }: { state: DecisionActionState }) {
       </div>
 
       <div className="mt-5 rounded-md border border-mint/20 bg-mint/10 p-4">
-        <h3 className="text-sm font-semibold text-mint">Koç yorumu</h3>
+        <h3 className="text-sm font-semibold text-mint">Deterministik yorum</h3>
         <p className="mt-2 text-sm leading-6 text-steel">{result.coachComment.summary}</p>
       </div>
 
@@ -333,6 +387,51 @@ function ResultMetric({
       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-steel">{label}</p>
       <p className={`mt-2 text-lg font-semibold ${tone}`}>{value}</p>
       {helper ? <p className="mt-1 text-xs text-steel">{helper}</p> : null}
+    </article>
+  );
+}
+
+function tradeoffToneClass(tone: DecisionTradeoffItem["tone"]): string {
+  if (tone === "positive") {
+    return "border-mint/25 bg-mint/10";
+  }
+
+  if (tone === "negative") {
+    return "border-coral/25 bg-coral/10";
+  }
+
+  if (tone === "watch") {
+    return "border-amber/25 bg-amber/10";
+  }
+
+  return "border-line bg-surface-muted";
+}
+
+function TradeoffList({ title, items, emptyText }: { title: string; items: DecisionTradeoffItem[]; emptyText: string }) {
+  return (
+    <section className="rounded-md border border-line bg-surface-muted p-3">
+      <h4 className="text-xs font-semibold uppercase tracking-[0.12em] text-steel">{title}</h4>
+      {items.length > 0 ? (
+        <ul className="mt-3 space-y-2">
+          {items.slice(0, 3).map((item) => (
+            <li key={item.id} className={`rounded-md border p-3 ${tradeoffToneClass(item.tone)}`}>
+              <p className="text-sm font-semibold text-ink">{item.title}</p>
+              <p className="mt-1 text-xs leading-5 text-steel">{item.description}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 text-sm leading-6 text-steel">{emptyText}</p>
+      )}
+    </section>
+  );
+}
+
+function DecisionImpact({ label, value }: { label: string; value: string }) {
+  return (
+    <article className="rounded-md border border-line bg-surface p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-steel">{label}</p>
+      <p className="mt-2 text-sm leading-6 text-steel">{value}</p>
     </article>
   );
 }
