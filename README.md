@@ -199,6 +199,7 @@ Playwright raporu ve test sonuçları GitHub Actions artifact olarak 14 gün sak
 - SQLite ile Vercel preview yalnızca demo/teknik doğrulama için düşünülmelidir.
 - Gerçek kişisel finans verisiyle production kullanım için PostgreSQL veya eşdeğer kalıcı veritabanı, authentication, authorization ve veri sahipliği modeli gerekir.
 - Production benzeri bir denemeden önce `docs/operations/production-readiness.md` içindeki checklist uygulanmalıdır.
+- Minimum Vercel ayarları, env listesi, SQLite preview sınırları ve PostgreSQL/Auth geçiş sırası aynı operasyon dokümanında tanımlıdır.
 - Demo/preview ortamlarında `AI_PROVIDER=mock` tercih edilmelidir; gerçek API key'ler yalnızca server-side environment variable olarak yönetilmelidir.
 
 ## GitHub ve Release Akışı

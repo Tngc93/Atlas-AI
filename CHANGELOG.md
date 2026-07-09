@@ -4,6 +4,14 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Sprint 5.2 - Deployment Readiness Plan
+
+- Vercel deployment öncesi minimum proje ayarları, env değişkenleri ve validation kapıları belgelendi.
+- SQLite ile Vercel preview denenirse hangi akışların güvenilir olmayacağı netleştirildi.
+- PostgreSQL geçişi, Auth/veri sahipliği ve public beta için güvenli sıra tanımlandı.
+- Auth olmadan yalnızca gerçek veri içermeyen private/demo preview yapılabileceği kayda geçirildi.
+- Deploy, PostgreSQL, Auth, yeni dependency veya kod davranışı eklenmedi.
+
 ### Sprint 5 - Production Hardening
 
 - Vercel/production hazırlığı için operasyon dokümantasyonu eklendi.

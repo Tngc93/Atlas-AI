@@ -204,6 +204,8 @@ Git safety rules:
 - Production-like validation must include `npm run security:secrets`, `npm run security:audit`, `npx prisma generate`, `npm run lint`, `npm run test`, `npm run build`, and `npm run test:e2e`.
 - Keep `.env.local`, real API keys, SQLite DB files, backups, exports, build artifacts, Playwright artifacts, and logs out of git.
 - Real production usage requires explicit decisions for database durability, migration deploy strategy, authentication, authorization, data ownership, monitoring, rollback, and secret management.
+- Before any Vercel preview or release PR, verify that local `main`/`develop` branch state is aligned with the intended remote base and that no stale feature branch is used for deployment.
+- If a Vercel preview is created before PostgreSQL and Auth, it must be treated as build/render smoke only and must not contain real financial data.
 
 ## Security and Privacy Checklist
 
