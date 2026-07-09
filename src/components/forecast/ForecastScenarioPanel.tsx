@@ -134,8 +134,8 @@ export function ForecastScenarioPanel() {
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mint">Geçici senaryo</p>
           <h2 className="mt-2 text-lg font-semibold">Senaryo karşılaştır</h2>
           <p className="mt-2 text-sm leading-6 text-steel">
-            Bu alan mevcut verilerinizi değiştirmez, DB’ye yazmaz ve Financial Memory’ye kaydetmez. Yalnızca mevcut tahminle
-            geçici bir varsayımı karşılaştırır.
+            Bu alan kayıtlı verilerinizi değiştirmez ve geçmişe kaydedilmez. Yalnızca mevcut tahminle geçici bir varsayımı
+            karşılaştırır.
           </p>
 
           <form key={resetKey} action={formAction} className="mt-5 space-y-4">
@@ -242,7 +242,12 @@ function ForecastScenarioResult({ state, showResult }: { state: ForecastScenario
         </div>
       </div>
 
-      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      <div className="mt-5">
+        <h4 className="text-sm font-semibold">Detay farklar</h4>
+        <p className="mt-1 text-xs leading-5 text-steel">Bu metrikler karşılaştırma özetini destekleyen hesaplanmış farklardır.</p>
+      </div>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <ScenarioMetric
           label="24 ay sonu kalan borç farkı"
           value={signedTry(result.delta.finalRemainingDebtDeltaKurus)}
@@ -268,7 +273,6 @@ function ForecastScenarioResult({ state, showResult }: { state: ForecastScenario
 
       <div className="mt-5 rounded-md border border-line bg-surface p-4">
         <h4 className="text-sm font-semibold">Neden?</h4>
-        <p className="mt-2 text-sm leading-6 text-steel">{result.explanation.summary}</p>
         <p className="mt-2 text-sm leading-6 text-steel">{result.explanation.why}</p>
       </div>
 
@@ -284,7 +288,7 @@ function ForecastScenarioResult({ state, showResult }: { state: ForecastScenario
       ) : null}
 
       <p className="mt-4 text-xs leading-5 text-steel">
-        Bu karşılaştırma geçici varsayımdır; kayıtlı gelir, gider, borç ve hafıza verilerinizi değiştirmez.
+        Bu karşılaştırma geçici varsayımdır; kayıtlı gelir, gider, borç ve geçmiş verilerinizi değiştirmez.
       </p>
     </div>
   );

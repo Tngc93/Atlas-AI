@@ -121,13 +121,6 @@ export default async function ForecastPage() {
             ))}
           </section>
 
-          <section className="mt-6 rounded-lg border border-mint/20 bg-mint/10 p-5">
-            <p className="text-sm font-semibold text-mint">{trCopy.forecast.coachTitle}</p>
-            <h2 className="mt-2 text-xl font-semibold">{report.coachSummary.title}</h2>
-            <p className="mt-2 text-sm leading-6 text-steel">{report.coachSummary.body}</p>
-            <p className="mt-2 text-sm leading-6 text-steel">Neden? {report.coachSummary.why}</p>
-          </section>
-
           <section className="mt-6 rounded-lg border border-line bg-surface p-5 shadow-sm">
             <div className="flex flex-col gap-2">
               <h2 className="text-lg font-semibold">Bu tahmin neye dayanıyor?</h2>
@@ -145,6 +138,13 @@ export default async function ForecastPage() {
                 </article>
               ))}
             </div>
+          </section>
+
+          <section className="mt-6 rounded-lg border border-mint/20 bg-mint/10 p-5">
+            <p className="text-sm font-semibold text-mint">Tahminin kısa okuması</p>
+            <h2 className="mt-2 text-xl font-semibold">{report.coachSummary.title}</h2>
+            <p className="mt-2 text-sm leading-6 text-steel">{report.coachSummary.body}</p>
+            <p className="mt-2 text-sm leading-6 text-steel">Neden? {report.coachSummary.why}</p>
           </section>
 
           <ForecastScenarioPanel />
@@ -225,7 +225,7 @@ export default async function ForecastPage() {
             <article className="rounded-lg border border-line bg-surface p-5 shadow-sm">
               <h2 className="text-lg font-semibold">Risk zaman çizgisi</h2>
               <p className="mt-2 text-sm leading-6 text-steel">
-                Nakit sıkışıklığı riski görünen aylar ve kontrol edilmesi gereken nedenler.
+                Risk görünen aylar, nedenleri ve gözden geçirilecek noktalar.
               </p>
               <div className="mt-4 space-y-3">
                 {report.riskWarnings.length > 0 ? (
@@ -246,10 +246,9 @@ export default async function ForecastPage() {
             </article>
 
             <article className="rounded-lg border border-line bg-surface p-5 shadow-sm">
-              <h2 className="text-lg font-semibold">Deneyebileceğin güvenli simülasyonlar</h2>
+              <h2 className="text-lg font-semibold">İstersen deneyebileceğin senaryolar</h2>
               <p className="mt-2 text-sm leading-6 text-steel">
-                Bunlar karar değildir; tahmini değiştirebilecek varsayımları karar simülatöründe denemek için güvenli başlangıç
-                sorularıdır.
+                Bunlar karar değildir; yalnızca tahmini değiştirebilecek varsayımları keşfetmek için başlangıç sorularıdır.
               </p>
               <div className="mt-4 space-y-3">
                 {report.decisionPrompts.map((prompt) => (
