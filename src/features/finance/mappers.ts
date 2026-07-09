@@ -10,6 +10,7 @@ export const emptyProfile: Profile = {
   currency: "TRY",
   monthlySalaryKurus: 0,
   survivalThresholdKurus: 0,
+  salaryDay: undefined,
 };
 
 function mapDebtType(type: PrismaDebtAccount["type"]): DebtType {
@@ -34,6 +35,7 @@ export function mapProfileToDomain(profile: PrismaProfile | null): Profile {
     currency: "TRY",
     monthlySalaryKurus: profile.monthlySalaryKurus,
     survivalThresholdKurus: profile.survivalThresholdKurus,
+    salaryDay: profile.salaryDay ?? undefined,
   };
 }
 

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
+  BellRing,
   Bot,
   CalendarCheck,
   ChevronLeft,
@@ -37,6 +38,7 @@ const navGroups = [
     label: "Detay",
     items: [
       { href: "/decisions", label: "Kararlar", icon: Split },
+      { href: "/reminders", label: trCopy.nav.reminders, icon: BellRing },
     ],
   },
   {

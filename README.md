@@ -75,6 +75,7 @@ Gemini sağlayıcısı şu şekilde çalışır:
 - `/expenses` zorunlu giderler CRUD
 - `/plan` SQLite verisine dayalı deterministik aylık borç kapatma yol haritası
 - `/decisions` gerçek kayıtları değiştirmeyen deterministik karar simülatörü
+- `/reminders` yaklaşan ödeme, maaş günü, risk ve eksik kayıt sinyalleri için uygulama içi hatırlatmalar
 - `/forecast` 3, 6, 12 ve 24 aylık deterministik finansal tahmin ekranı
 - `/memory` lokal SQLite snapshot’larından finansal davranış ve trend hafızası
 
@@ -129,6 +130,15 @@ Bu oranlar yasal azami bağlamdır; sizin kartınıza uygulanan kesin oran olmay
 - Kullanıcı `/memory` üzerinde `Hafızayı güncelle` butonuyla manuel snapshot oluşturabilir.
 - Trendler için en az iki aylık geçmiş gerekir; geçmiş azsa ekran açıkça `Yeterli geçmiş yok` der.
 - Financial Memory AI/OpenAI/Gemini çağrısı yapmaz ve üçüncü partiye finansal veri göndermez.
+
+## Reminder Engine
+
+`/reminders` sayfası ve dashboard hatırlatma paneli, mevcut finans motoru çıktılarından uygulama içi hatırlatmalar üretir.
+
+- Hatırlatmalar yalnızca uygulama içinde görünür; push notification, e-posta, SMS veya dış servis yoktur.
+- Reminder içeriği veritabanına yazılmaz; SQLite yalnızca `Görüldü`, `Ertele` ve `Gizle` durumlarını saklar.
+- Yaklaşan borç son ödeme tarihleri, maaş günü, zorunlu gider tarihi, yüksek risk, eksik kayıt ve eksik faiz sinyalleri deterministik olarak üretilir.
+- Hatırlatmalar ödeme yapmaz, veri değiştirmez ve kesin finansal tavsiye değildir.
 
 ## Coach Context Builder
 

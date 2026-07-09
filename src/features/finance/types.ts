@@ -13,6 +13,7 @@ export type Profile = {
   currency: CurrencyCode;
   monthlySalaryKurus: number;
   survivalThresholdKurus: number;
+  salaryDay?: number;
 };
 
 export type DebtAccount = {

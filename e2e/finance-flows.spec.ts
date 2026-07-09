@@ -91,6 +91,9 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await expect(page.getByText("Örnek E2E Kart")).toBeVisible();
 
   await page.goto("/");
+  await expect(page.getByRole("heading", { level: 2, name: "Hatırlatmalar" })).toBeVisible();
+  await expect(page.getByText("Dikkat gerektirenler")).toBeVisible();
+  await expect(page.getByText("Tümünü aç")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Bu ayın karar özeti" })).toBeVisible();
   await assertVisibleTexts(page, [
     "Önce korunması gereken şey",
@@ -111,6 +114,10 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await expect(page.getByText("Bu ayın aksiyon planı")).toBeVisible();
   await expect(page.getByText("Bu ay önerilen ödemeler")).toBeVisible();
   await expect(page.getByText("Örnek E2E Kart", { exact: true })).toBeVisible();
+
+  await page.goto("/reminders");
+  await expect(page.getByRole("heading", { level: 1, name: "Hatırlatmalar" })).toBeVisible();
+  await expect(page.getByText("Dış bildirim, e-posta veya SMS gönderilmez.")).toBeVisible();
 
   await page.goto("/decisions");
   await expect(page.getByRole("heading", { name: "Karar Simülatörü" })).toBeVisible();
@@ -194,6 +201,10 @@ test("responsive smoke: ana finansal sayfalarda yatay taşma ve kritik metinler 
     {
       path: "/decisions",
       texts: ["Karar Simülatörü"],
+    },
+    {
+      path: "/reminders",
+      texts: ["Uygulama içi hatırlatma", "Hatırlatmalar"],
     },
     {
       path: "/forecast",

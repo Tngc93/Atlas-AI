@@ -4,6 +4,14 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Sprint 4 - Notification & Reminder Engine
+
+- Lokal-first Reminder Engine eklendi.
+- Yaklaşan borç son ödeme tarihi, maaş günü, zorunlu gider tarihi, yüksek risk, eksik veri ve eksik faiz sinyallerinden uygulama içi hatırlatmalar üretildi.
+- `ReminderState` modeliyle yalnızca kullanıcı durumları (`Görüldü`, `Ertele`, `Gizle`) saklanır; reminder içeriği veritabanına yazılmaz.
+- Dashboard üzerinde top-3 hatırlatma paneli ve `/reminders` sayfası eklendi.
+- Push notification, e-posta, SMS, AI veya dış servis entegrasyonu eklenmedi.
+
 ### Faz 12B Sprint 3 - Goal & Recommendation Intelligence
 
 - Deterministik recommendation analyzer eklendi.

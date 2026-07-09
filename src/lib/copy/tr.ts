@@ -19,6 +19,7 @@ export const trCopy = {
     decisions: "Kararlar",
     forecast: "Tahmin",
     memory: "Hafıza",
+    reminders: "Hatırlatmalar",
     mainAria: "Ana gezinme",
     mobileAria: "Mobil gezinme",
   },

@@ -9,4 +9,5 @@ export function revalidateFinancePages() {
   revalidatePath("/decisions");
   revalidatePath("/forecast");
   revalidatePath("/memory");
+  revalidatePath("/reminders");
 }
