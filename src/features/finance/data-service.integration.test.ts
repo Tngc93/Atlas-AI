@@ -1,10 +1,8 @@
-import { execFileSync } from "node:child_process";
-import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createPostgresTestContext, type PostgresTestContext } from "@/test/postgres-test-context";
 
-describe("SQLite-backed finance data flow", () => {
-  const dbFileName = `qa-${Date.now()}-${process.pid}.db`;
+describe("PostgreSQL-backed finance data flow", () => {
+  let postgresContext: PostgresTestContext;
   let disconnectPrismaForTests: () => Promise<void>;
   let createDebt: typeof import("@/features/debts/repository").createDebt;
   let updateDebt: typeof import("@/features/debts/repository").updateDebt;
@@ -22,13 +20,7 @@ describe("SQLite-backed finance data flow", () => {
   let buildForecastReport: typeof import("@/features/forecast/service").buildForecastReport;
 
   beforeAll(async () => {
-    const migrationsPath = join(process.cwd(), "prisma/migrations");
-    const migrationSql = readdirSync(migrationsPath)
-      .sort()
-      .map((folder) => readFileSync(join(migrationsPath, folder, "migration.sql"), "utf8"))
-      .join("\n");
-    execFileSync("sqlite3", [join(process.cwd(), "prisma", dbFileName)], { input: migrationSql });
-    process.env.DATABASE_URL = `file:./${dbFileName}`;
+    postgresContext = await createPostgresTestContext("finance-data");
 
     ({ disconnectPrismaForTests } = await import("@/lib/db/prisma"));
     ({ createDebt, updateDebt, deleteDebt } = await import("@/features/debts/repository"));
@@ -40,7 +32,8 @@ describe("SQLite-backed finance data flow", () => {
   });
 
   afterAll(async () => {
-    await disconnectPrismaForTests();
+    await disconnectPrismaForTests?.();
+    await postgresContext?.cleanup();
   });
 
   it("creates, updates and deletes salary history records", async () => {
@@ -164,7 +157,7 @@ describe("SQLite-backed finance data flow", () => {
     expect(updatedSnapshot.monthlyPlan.debtPriorities).toHaveLength(0);
   });
 
-  it("builds a deterministic forecast report from the SQLite finance snapshot", async () => {
+  it("builds a deterministic forecast report from the PostgreSQL finance snapshot", async () => {
     await upsertProfileIncome({
       monthlySalaryKurus: 120_000_00,
       survivalThresholdKurus: 12_000_00,

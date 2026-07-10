@@ -1,8 +1,6 @@
-import { execFileSync } from "node:child_process";
-import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { initialFormActionState } from "@/lib/actions/action-state";
+import { createPostgresTestContext, type PostgresTestContext } from "@/test/postgres-test-context";
 
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
@@ -19,7 +17,7 @@ function makeFormData(entries: Record<string, string>) {
 }
 
 describe("finance server actions", () => {
-  const dbFileName = `qa-actions-${Date.now()}-${process.pid}.db`;
+  let postgresContext: PostgresTestContext;
   let disconnectPrismaForTests: () => Promise<void>;
   let saveProfileIncomeAction: typeof import("@/features/income/actions").saveProfileIncomeAction;
   let createSalaryRecordAction: typeof import("@/features/income/actions").createSalaryRecordAction;
@@ -33,13 +31,7 @@ describe("finance server actions", () => {
   let listExpenses: typeof import("@/features/expenses/repository").listExpenses;
 
   beforeAll(async () => {
-    const migrationsPath = join(process.cwd(), "prisma/migrations");
-    const migrationSql = readdirSync(migrationsPath)
-      .sort()
-      .map((folder) => readFileSync(join(migrationsPath, folder, "migration.sql"), "utf8"))
-      .join("\n");
-    execFileSync("sqlite3", [join(process.cwd(), "prisma", dbFileName)], { input: migrationSql });
-    process.env.DATABASE_URL = `file:./${dbFileName}`;
+    postgresContext = await createPostgresTestContext("server-actions");
 
     ({ disconnectPrismaForTests } = await import("@/lib/db/prisma"));
     ({ saveProfileIncomeAction, createSalaryRecordAction } = await import("@/features/income/actions"));
@@ -50,7 +42,8 @@ describe("finance server actions", () => {
   });
 
   afterAll(async () => {
-    await disconnectPrismaForTests();
+    await disconnectPrismaForTests?.();
+    await postgresContext?.cleanup();
   });
 
   it("returns Turkish validation errors for invalid income form data", async () => {

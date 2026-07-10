@@ -1,8 +1,10 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-const trackedFiles = execFileSync("git", ["ls-files"], { encoding: "utf8" })
-  .split("\n")
+const repositoryFiles = [
+  ...execFileSync("git", ["ls-files"], { encoding: "utf8" }).split("\n"),
+  ...execFileSync("git", ["ls-files", "--others", "--exclude-standard"], { encoding: "utf8" }).split("\n"),
+]
   .map((file) => file.trim())
   .filter(Boolean);
 
@@ -47,7 +49,7 @@ const secretPatterns = [
 
 const findings = [];
 
-for (const file of trackedFiles) {
+for (const file of repositoryFiles) {
   for (const pattern of forbiddenTrackedFiles) {
     if (pattern.test(file)) {
       findings.push(`${file}: git'e girmemesi gereken dosya izleniyor`);

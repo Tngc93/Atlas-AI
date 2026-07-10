@@ -1,14 +1,37 @@
 # Production Readiness
 
-Bu doküman Sprint 5 itibarıyla uygulamanın Vercel/production hazırlığı için operasyon notlarını özetler.
+Bu doküman uygulamanın Vercel/production hazırlığı ve PostgreSQL geçişi için operasyon notlarını özetler.
 
-Durum: hazırlık ve risk azaltma dokümanı. Bu sprintte Vercel deploy, PostgreSQL geçişi veya authentication eklenmemiştir.
+Durum: PostgreSQL provider ve çevrimdışı baseline hazırlanmıştır. Production Neon branch'e migration uygulanmamış, Vercel deploy veya authentication eklenmemiştir.
 
 ## Kapsam
 
-Uygulama şu anda local-first SQLite MVP olarak tasarlanmıştır. Lokal masaüstü geliştirme, demo ve kişisel test akışları için uygundur.
+Uygulamanın Prisma datasource'u PostgreSQL'e geçirilmiştir. Mevcut SQLite migration geçmişi yalnız arşiv olarak korunur ve PostgreSQL'e uygulanmaz.
 
-Vercel üzerinde SQLite ile çalıştırma ancak geçici preview/demo denemesi olarak değerlendirilmelidir. Gerçek kişisel finans verisiyle production kullanım için önce kalıcı production veritabanı, authentication ve kullanıcı bazlı veri izolasyonu gerekir.
+PostgreSQL doğrulaması production'dan ayrılmış Neon `test-preview` branch'inde yapılmalıdır. Gerçek kişisel finans verisiyle production kullanım için authentication ve kullanıcı bazlı veri izolasyonu hâlâ gerekir.
+
+## PostgreSQL Test Branch ve Baseline
+
+- Production Neon branch boş ve migration uygulanmamış kalır.
+- Integration ve E2E testleri yalnız `test-preview` branch'in pooled/direct endpoint'lerini kullanır.
+- Lokal test credential'ları `.env.test.local` içinde tutulur ve git'e gönderilmez.
+- Test harness yalnız endpoint kimliği doğrulanan Neon bağlantılarını ve `sslmode=require` URL'lerini kabul eder.
+- Her integration suite `pfc_it_*`, her E2E koşusu `pfc_e2e_*` adlı geçici schema kullanır.
+- `public`, `preview_app` ve boş schema adları otomatik cleanup hedefi olamaz.
+- Existing SQLite migration SQL'leri `prisma/migrations-sqlite` altında içerik değiştirilmeden korunur.
+- Aktif `prisma/migrations` yalnız çevrimdışı üretilmiş PostgreSQL baseline ve `provider = "postgresql"` lock dosyasını içerir.
+- Baseline bu milestone'da hiçbir Neon branch'e uygulanmamıştır.
+
+Test ortamı değişkenleri:
+
+| Değişken | Amaç |
+| --- | --- |
+| `TEST_DATABASE_URL` | `test-preview` pooled bağlantısı |
+| `TEST_DIRECT_URL` | Aynı branch direct bağlantısı |
+| `TEST_NEON_ENDPOINT_ID` | Pooled/direct endpoint eşleşme guard'ı |
+| `TEST_DATABASE_RESET_CONFIRM` | Yalnız `test-preview` cleanup onayı |
+
+Unit testler DB credential gerektirmez. `npm run test:integration` ve `npm run test:e2e` eksik test env durumunda skip edilmez, açık hata verir.
 
 ## Ortam Değişkenleri
 

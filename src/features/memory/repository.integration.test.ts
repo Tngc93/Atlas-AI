@@ -1,30 +1,23 @@
-import { execFileSync } from "node:child_process";
-import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createPostgresTestContext, type PostgresTestContext } from "@/test/postgres-test-context";
 
 describe("financial memory repository", () => {
-  const dbFileName = `qa-memory-${Date.now()}-${process.pid}.db`;
+  let postgresContext: PostgresTestContext;
   let disconnectPrismaForTests: () => Promise<void>;
   let upsertMemorySnapshot: typeof import("./repository").upsertMemorySnapshot;
   let getMemorySnapshotByMonth: typeof import("./repository").getMemorySnapshotByMonth;
   let getMemoryReportData: typeof import("./repository").getMemoryReportData;
 
   beforeAll(async () => {
-    const migrationsPath = join(process.cwd(), "prisma/migrations");
-    const migrationSql = readdirSync(migrationsPath)
-      .sort()
-      .map((folder) => readFileSync(join(migrationsPath, folder, "migration.sql"), "utf8"))
-      .join("\n");
-    execFileSync("sqlite3", [join(process.cwd(), "prisma", dbFileName)], { input: migrationSql });
-    process.env.DATABASE_URL = `file:./${dbFileName}`;
+    postgresContext = await createPostgresTestContext("memory");
 
     ({ disconnectPrismaForTests } = await import("@/lib/db/prisma"));
     ({ upsertMemorySnapshot, getMemorySnapshotByMonth, getMemoryReportData } = await import("./repository"));
   });
 
   afterAll(async () => {
-    await disconnectPrismaForTests();
+    await disconnectPrismaForTests?.();
+    await postgresContext?.cleanup();
   });
 
   it("upserts one canonical monthly snapshot and replaces category totals", async () => {

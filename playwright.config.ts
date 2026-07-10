@@ -20,9 +20,6 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: false,
     timeout: 120_000,
-    env: {
-      DATABASE_URL: "file:./e2e.db",
-    },
   },
   projects: [
     {

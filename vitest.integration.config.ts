@@ -9,6 +9,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    exclude: ["e2e/**", "**/*.integration.test.ts", "node_modules/**", "dist/**", ".next/**"],
+    include: ["src/**/*.integration.test.ts"],
+    fileParallelism: false,
+    maxWorkers: 1,
   },
 });
