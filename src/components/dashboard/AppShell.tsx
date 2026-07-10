@@ -188,8 +188,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     OS
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">Lokal Finans Profili</p>
-                    <p className="text-xs text-steel">Veri cihazınızda tutulur</p>
+                    <p className="truncate text-sm font-semibold">Finans Profili</p>
+                    <p className="text-xs text-steel">Test ve preview sürümü</p>
                   </div>
                 </div>
               </div>

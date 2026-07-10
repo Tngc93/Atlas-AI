@@ -63,7 +63,8 @@ const child = spawn(command, args, {
 
 child.on("exit", (code, signal) => {
   if (signal) {
-    process.kill(process.pid, signal);
+    console.error(`Test komutu beklenmedik biçimde ${signal} sinyaliyle kapandı.`);
+    process.exit(1);
     return;
   }
 

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildSchemaDatabaseUrl, validatePostgresTestEnvironment } from "./postgres-test-context";
+import {
+  buildPreviewSchemaDatabaseUrl,
+  buildSchemaDatabaseUrl,
+  validateBaselineDeployEnvironment,
+  validatePostgresTestEnvironment,
+} from "./postgres-test-context";
 
 const pooledUrl =
   "postgresql://test_user:test_password@ep-test-preview-pooler.us-east-2.aws.neon.tech/testdb?sslmode=require";
@@ -45,5 +50,17 @@ describe("PostgreSQL test context guardrails", () => {
 
     expect(result.searchParams.get("schema")).toBe("pfc_it_finance_run1");
     expect(result.searchParams.get("sslmode")).toBe("require");
+  });
+
+  it("requires a separate explicit confirmation for the persistent preview baseline", () => {
+    expect(() => validateBaselineDeployEnvironment(makeEnv())).toThrow("baseline deploy");
+
+    const result = validateBaselineDeployEnvironment(
+      makeEnv({ TEST_BASELINE_DEPLOY_CONFIRM: "test-preview:preview_app" }),
+    );
+    const previewUrl = new URL(buildPreviewSchemaDatabaseUrl(result.directUrl));
+
+    expect(result.schemaName).toBe("preview_app");
+    expect(previewUrl.searchParams.get("schema")).toBe("preview_app");
   });
 });

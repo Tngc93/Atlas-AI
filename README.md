@@ -1,6 +1,6 @@
 # Kişisel Finans Koçu Paneli
 
-Türkiye / TRY odağında maaş planlama, kredi kartı borcu kapatma, zorunlu gider takibi, nakit akışı riski ve eğitim amaçlı finans koçu yorumları için yerel öncelikli bir kontrol paneli.
+Türkiye / TRY odağında maaş planlama, kredi kartı borcu kapatma, zorunlu gider takibi, nakit akışı riski ve eğitim amaçlı finans koçu yorumları için gizlilik odaklı bir kontrol paneli.
 
 Uygulama PostgreSQL geçiş hazırlığındadır. Prisma provider PostgreSQL olarak ayarlanmış, production Neon branch ise boş ve dokunulmamış bırakılmıştır. Başlangıçta gerçek veri veya otomatik seed yoktur.
 
@@ -75,7 +75,7 @@ Gemini sağlayıcısı şu şekilde çalışır:
 - Anahtarı `NEXT_PUBLIC_` ile başlatmayın.
 - AI provider kodu server-only çalışır.
 - `/api/coach` client payload'a güvenmez; server tarafında mevcut aylık plan snapshot'ından minimize edilmiş özet üretir.
-- Finansal raw veri üçüncü parti AI sağlayıcısına gönderilmez.
+- Canlı AI sağlayıcısı seçiliyse yalnız minimize edilmiş finans özeti gönderilebilir; ham Prisma kayıtları, isim, IBAN, kart numarası, işlem açıklaması ve kişisel notlar gönderilmez.
 
 ## Mevcut Sayfalar
 
@@ -104,7 +104,7 @@ Gemini sağlayıcısı şu şekilde çalışır:
 
 ## Faz 3 CRUD Notları
 
-- Authentication yoktur; uygulama tek lokal kullanıcı varsayımıyla çalışır.
+- Authentication yoktur; uygulama tek kullanıcı varsayımıyla çalışır ve public beta için hazır değildir.
 - Gelir yönetimi `Profile` üzerinde güncel maaşı, `SalaryRecord` üzerinde maaş geçmişini tutar.
 - Maaş güncellemesi otomatik maaş geçmişi kaydı oluşturmaz.
 - Borç silme ve gider silme bu fazda hard delete olarak uygulanır.
@@ -155,7 +155,7 @@ Bu oranlar yasal azami bağlamdır; sizin kartınıza uygulanan kesin oran olmay
 
 AI koç katmanı `src/features/coach/context-builder.ts` üzerinden oluşturulan `CoachContext` nesnesini kullanır.
 
-- `CoachContext`, deterministik finans motorundan gelen minimize finans özetini ve lokal Financial Memory sinyallerini tek yerde toplar.
+- `CoachContext`, deterministik finans motorundan gelen minimize finans özetini ve Financial Memory sinyallerini tek yerde toplar.
 - Trend Intelligence katmanı Financial Memory snapshot’larından gelir, gider, borç, yaşam bütçesi, minimum ödeme yükü, risk, borç kapatma hızı ve nakit sıkışıklığı trendlerini minimize sinyallere dönüştürür.
 - Goal & Recommendation Intelligence katmanı mevcut summary, memory ve trend sinyallerinden hedef benzeri deterministic öneriler üretir; öneriler öncelik, kategori, neden, beklenen etki ve kaynak sinyalleriyle taşınır.
 - Prompt builder yalnızca bu context katmanını görür; raw Prisma kayıtları, kullanıcı notları, IBAN, kart numarası veya ham banka hareketi prompt’a taşınmaz.
@@ -176,9 +176,21 @@ TEST_DATABASE_URL=
 TEST_DIRECT_URL=
 TEST_NEON_ENDPOINT_ID=
 TEST_DATABASE_RESET_CONFIRM=test-preview
+TEST_BASELINE_DEPLOY_CONFIRM=
 ```
 
 Test harness her suite için geçici `pfc_it_*` veya `pfc_e2e_*` schema oluşturur ve test sonunda siler. `public`, `preview_app` ve production endpoint'leri cleanup hedefi olamaz.
+
+Onaylı `test-preview` branch'inde kalıcı `preview_app` schema baseline'ı şu sırayla uygulanır:
+
+```bash
+npm run prisma:baseline:check
+TEST_BASELINE_DEPLOY_CONFIRM=test-preview:preview_app npm run prisma:baseline:deploy:test
+npm run test:integration
+npm run test:e2e
+```
+
+Baseline deploy komutu yalnız `TEST_DATABASE_URL` ve `TEST_DIRECT_URL` kullanır. Normal `DATABASE_URL`/`DIRECT_URL` değerlerine veya production branch'e fallback yapmaz. Aynı komut ikinci kez çalıştırıldığında Prisma migrate no-op olmalıdır.
 
 Yarım kalmış tek bir test schema'sı yalnız exact adı verilerek temizlenebilir:
 
@@ -225,7 +237,7 @@ Playwright raporu ve test sonuçları GitHub Actions artifact olarak 14 gün sak
 - Vercel preview yalnız `test-preview` branch veya ayrı güvenli preview veritabanıyla düşünülmelidir.
 - Gerçek kişisel finans verisiyle production kullanım için PostgreSQL veya eşdeğer kalıcı veritabanı, authentication, authorization ve veri sahipliği modeli gerekir.
 - Production benzeri bir denemeden önce `docs/operations/production-readiness.md` içindeki checklist uygulanmalıdır.
-- Minimum Vercel ayarları, env listesi, SQLite preview sınırları ve PostgreSQL/Auth geçiş sırası aynı operasyon dokümanında tanımlıdır.
+- Minimum Vercel ayarları, env listesi, PostgreSQL test-preview sınırları ve Auth geçiş sırası aynı operasyon dokümanında tanımlıdır.
 - PostgreSQL migration planı aynı dokümandaki `PostgreSQL Migration Plan` bölümünde tutulur; mevcut SQLite migration geçmişi production PostgreSQL'e doğrudan uygulanmamalıdır.
 - Demo/preview ortamlarında `AI_PROVIDER=mock` tercih edilmelidir; gerçek API key'ler yalnızca server-side environment variable olarak yönetilmelidir.
 

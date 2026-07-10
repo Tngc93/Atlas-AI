@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 
 const ALLOWED_SCHEMA_PREFIXES = ["pfc_it_", "pfc_e2e_"];
 const REQUIRED_CONFIRMATION = "test-preview";
+const PREVIEW_SCHEMA_NAME = "preview_app";
+const BASELINE_DEPLOY_CONFIRMATION = "test-preview:preview_app";
 
 function parseDatabaseUrl(value, variableName) {
   if (!value) {
@@ -78,6 +80,19 @@ export function validatePostgresTestEnvironment(env = process.env) {
   };
 }
 
+export function validateBaselineDeployEnvironment(env = process.env) {
+  const testEnvironment = validatePostgresTestEnvironment(env);
+
+  if (env.TEST_BASELINE_DEPLOY_CONFIRM !== BASELINE_DEPLOY_CONFIRMATION) {
+    throw new Error("PostgreSQL baseline deploy için açık test-preview:preview_app onayı eksik.");
+  }
+
+  return {
+    ...testEnvironment,
+    schemaName: PREVIEW_SCHEMA_NAME,
+  };
+}
+
 function assertSafeSchemaName(schemaName) {
   const hasAllowedPrefix = ALLOWED_SCHEMA_PREFIXES.some((prefix) => schemaName.startsWith(prefix));
 
@@ -90,6 +105,12 @@ export function buildSchemaDatabaseUrl(databaseUrl, schemaName) {
   assertSafeSchemaName(schemaName);
   const parsed = new URL(databaseUrl);
   parsed.searchParams.set("schema", schemaName);
+  return parsed.toString();
+}
+
+export function buildPreviewSchemaDatabaseUrl(databaseUrl) {
+  const parsed = new URL(databaseUrl);
+  parsed.searchParams.set("schema", PREVIEW_SCHEMA_NAME);
   return parsed.toString();
 }
 
@@ -138,11 +159,14 @@ export async function createPostgresTestContext(suiteName, kind = "integration")
   const previousDirectUrl = process.env.DIRECT_URL;
   const admin = createAdminClient(testEnvironment.directUrl);
   let schemaCreated = false;
+  let preparationStage = "schema bağlantısı";
 
   try {
+    preparationStage = "geçici schema oluşturma";
     await admin.$executeRawUnsafe(`CREATE SCHEMA "${schemaName}"`);
     schemaCreated = true;
 
+    preparationStage = "PostgreSQL baseline migration";
     execFileSync("npx", ["prisma", "migrate", "deploy"], {
       cwd: process.cwd(),
       env: {
@@ -160,7 +184,7 @@ export async function createPostgresTestContext(suiteName, kind = "integration")
       await dropTestSchema(admin, schemaName);
     }
     await admin.$disconnect();
-    throw new Error("İzole PostgreSQL test schema'sı hazırlanamadı.");
+    throw new Error(`İzole PostgreSQL test schema'sı hazırlanamadı: ${preparationStage}.`);
   }
 
   let cleanedUp = false;

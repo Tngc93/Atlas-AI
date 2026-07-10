@@ -38,7 +38,7 @@ export function DebtCrudPanel({ debts }: { debts: DebtFormModel[] }) {
   return (
     <FormSection
       title="Borç yönetimi"
-      description="Kredi kartı, ihtiyaç kredisi, ek hesap ve diğer borçları yerel SQLite veritabanında yönetin."
+      description="Kredi kartı, ihtiyaç kredisi, ek hesap ve diğer borçları aylık planınız için yönetin."
     >
       <form action={createAction} className="grid gap-4 xl:grid-cols-4">
         <DebtFields state={createState} />
@@ -51,7 +51,7 @@ export function DebtCrudPanel({ debts }: { debts: DebtFormModel[] }) {
       <div className="mt-6 space-y-3">
         {debts.length === 0 ? (
           <p className="rounded-md border border-dashed border-line bg-surface-muted p-4 text-sm text-steel">
-            Henüz borç kaydı yok. İlk borcunuzu eklediğinizde panel ve aylık plan SQLite verisiyle güncellenecek.
+            Henüz borç kaydı yok. İlk borcunuzu eklediğinizde panel ve aylık plan kayıtlı bilgilerle güncellenecek.
           </p>
         ) : (
           debts.map((debt) => <DebtRow key={debt.id} debt={debt} />)

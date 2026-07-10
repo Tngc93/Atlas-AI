@@ -27,7 +27,7 @@ export function ExpenseCrudPanel({ expenses }: { expenses: ExpenseFormModel[] })
   return (
     <FormSection
       title="Zorunlu gider yönetimi"
-      description="Kira, market, faturalar ve diğer zorunlu giderleri yerel SQLite veritabanında yönetin."
+      description="Kira, market, faturalar ve diğer zorunlu giderleri aylık planınız için yönetin."
     >
       <form action={createAction} className="grid gap-4 lg:grid-cols-3">
         <ExpenseFields state={createState} />

@@ -16,7 +16,8 @@
     "security:audit": "npm audit --omit=dev --audit-level=high",
     "ci": "npm run security:secrets && npm run security:audit && npx prisma generate && npm run lint && npm run test && npm run build && npm run test:e2e",
     "prisma:generate": "prisma generate",
-    "prisma:baseline:check": "node scripts/check-postgresql-baseline.mjs"
+    "prisma:baseline:check": "node scripts/check-postgresql-baseline.mjs",
+    "prisma:baseline:deploy:test": "node scripts/run-with-test-env.mjs node scripts/deploy-postgresql-baseline.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.0.0",

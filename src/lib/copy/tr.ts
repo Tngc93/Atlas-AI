@@ -3,12 +3,12 @@ import type { RiskLevel } from "@/features/finance/types";
 export const trCopy = {
   app: {
     title: "Kişisel Finans Koçu",
-    description: "Yerel öncelikli TRY bütçe, borç kapatma ve finans koçu paneli.",
+    description: "TRY odaklı bütçe, borç kapatma ve finans koçu paneli.",
     brandKicker: "TRY koçu",
     brandName: "Finans kontrol paneli",
     mobileBrand: "Finans koçum",
     sidebarNote:
-      "Gelir, borç ve gider kayıtları yerel SQLite veritabanında saklanır. API anahtarları ve gerçek finansal veriler istemci koduna yazılmamalıdır.",
+      "Bu sürüm test ve preview aşamasındadır. Auth ve kullanıcı bazlı veri izolasyonu tamamlanmadan gerçek finansal veriyle public kullanım için hazır değildir.",
   },
   nav: {
     dashboard: "Panel",
@@ -24,12 +24,12 @@ export const trCopy = {
     mobileAria: "Mobil gezinme",
   },
   dashboard: {
-    kicker: "Yerel finans işletim sistemi",
+    kicker: "Finans işletim sistemi",
     title: "Maaşını ayır, riskli ayları gör, borç kapatma planını netleştir.",
     intro:
-      "Bu panel yerel SQLite veritabanındaki gelir, borç ve zorunlu gider kayıtlarını kullanır. Veriler cihazınızda kalır; AI ve TCMB entegrasyonları bu fazda çalıştırılmaz.",
+      "Bu panel kayıtlı gelir, borç ve zorunlu gider bilgilerini kullanır. Bu sürüm Auth ve kullanıcı bazlı veri izolasyonu tamamlanmadan production veya public beta için hazır değildir.",
     monthlySalary: "Aylık maaş",
-    monthlySalaryHelper: "Yerel SQLite profilinizdeki güncel maaş.",
+    monthlySalaryHelper: "Kayıtlı profilinizdeki güncel maaş.",
     mandatoryExpenses: "Zorunlu giderler",
     mandatoryExpensesHelper: "Kira, faturalar, temel gıda ve ulaşım.",
     minimumPayments: "Asgari ödemeler",
@@ -63,7 +63,7 @@ export const trCopy = {
     subtitle: "Koç güvenli AI modunda çalışır; canlı AI etkin değilse demo yorum gösterilir.",
     mode: "Güvenli mod",
     body:
-      "Panel önce deterministik hesaplamaları kullanır. Finans koçu yorumu minimize edilmiş özetten üretilir; bu fazda finansal veri üçüncü partiye gönderilmez.",
+      "Panel önce deterministik hesaplamaları kullanır. Canlı AI sağlayıcısı seçiliyse yalnız minimize edilmiş finans özeti gönderilebilir; ham finans kayıtları ve kişisel notlar gönderilmez.",
     actions: [
       "Zorunlu giderleri ve asgari ödemeleri önce güvenceye al.",
       "Hayatta kalma eşiği korunduktan sonra ek nakdi en yüksek aylık faizli karta yönlendir.",
@@ -109,13 +109,12 @@ export const trCopy = {
   },
   forms: {
     incomeTitle: "Gelir ayarları",
-    incomeDescription:
-      "Şimdilik yalnızca yerel örnek durum kullanılır. Kalıcı kayıtlar sonraki adımda SQLite + Prisma ile bağlanacak.",
+    incomeDescription: "Gelir ve korunan bütçe eşiği kayıtlarını güncel finans planı için yönetin.",
     monthlySalary: "Aylık maaş",
     survivalThreshold: "Hayatta kalma bütçesi eşiği",
     preview: "Önizleme: maaş {salary}, korunan tampon {threshold}",
     debtsTitle: "Borçlar ve kartlar",
-    debtsDescription: "Örnek kartlar daha sonra Prisma destekli formlarla düzenlenebilir.",
+    debtsDescription: "Borç ve kart kayıtlarını aylık plan hesaplamaları için yönetin.",
     balance: "Bakiye",
     min: "Asgari",
     dueDay: "Son ödeme günü",
@@ -150,7 +149,7 @@ export const trCopy = {
       "Mevcut gelir, gider, borç, faiz ve ödeme planına göre 3, 6, 12 ve 24 aylık deterministik projeksiyon. Bu ekran tahmin sağlar; kesin finansal tavsiye değildir.",
     setupTitle: "Tahmin için eksik bilgiler var",
     setupDescription:
-      "Anlamlı bir finansal tahmin için gelir, zorunlu gider ve en az bir aktif borç kaydı gerekir. Gelecek görünümü demo veri kullanmadan lokal SQLite kayıtlarını okur.",
+      "Anlamlı bir finansal tahmin için gelir, zorunlu gider ve en az bir aktif borç kaydı gerekir. Gelecek görünümü demo veri kullanmadan kayıtlı finans bilgilerini okur.",
     finalRemainingDebt: "24 ay sonu kalan borç",
     estimatedPayoffMonth: "Tahmini kapanış ayı",
     totalInterest: "Toplam tahmini faiz",
@@ -172,7 +171,7 @@ export const trCopy = {
     kicker: "Financial Memory",
     title: "Finansal Hafıza",
     description:
-      "Bu analiz sadece lokal SQLite verinize dayanır. Üçüncü partiye finansal veri gönderilmez; OpenAI veya Gemini çağrısı yapılmaz.",
+      "Bu analiz kayıtlı finansal hafıza snapshot’larına dayanır. Financial Memory kendi başına OpenAI veya Gemini çağrısı yapmaz; koç katmanı yalnız minimize edilmiş özetleri kullanabilir.",
     refresh: "Hafızayı güncelle",
     emptyTitle: "Henüz finansal hafıza yok",
     emptyDescription:
