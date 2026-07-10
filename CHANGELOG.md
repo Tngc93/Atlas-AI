@@ -12,6 +12,21 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 - Unit ve integration test komutları ayrıldı; CI yalnız test branch secret'larını integration/E2E job'larına verir.
 - Production Neon branch'e migration uygulanmadı; gerçek veri, Auth veya user ownership eklenmedi.
 
+### Phase 2 Milestone D - User Ownership Architecture
+
+- Gelecekteki Auth ve PostgreSQL yapısı için user-owned ve shared veri sınırları dokümante edildi.
+- Profile, core finance, Financial Memory, Reminder ve Coach kayıtlarının hedef ownership ilişkileri tanımlandı.
+- Repository owner context sözleşmesi, user-scoped unique constraint'ler, migration sırası ve cross-user test kriterleri belgelendi.
+- Kod, Prisma schema, migration, Auth, PostgreSQL provider veya runtime davranışı değiştirilmedi.
+
+### Phase 2 Milestone B - PostgreSQL Provider and Connection Strategy
+
+- Production PostgreSQL için önerilen sağlayıcı Neon Postgres via Vercel Marketplace olarak dokümante edildi.
+- Neon, Supabase, Railway ve Render seçenekleri avantaj/dezavantaj ve MVP uygunluğu açısından karşılaştırıldı.
+- Pooled `DATABASE_URL`, direct `DIRECT_URL`, `sslmode=require`, connection pooling, Prisma Accelerate kararı ve preview/production ortam akışı netleştirildi.
+- Backup, disaster recovery, maliyet varsayımları ve en düşük riskli PostgreSQL altyapı sırası belgelendi.
+- Kod, Prisma datasource, migration, provider provision, deploy, Auth veya yeni dependency eklenmedi.
+
 ### Phase 2 Milestone A - PostgreSQL Migration Planning
 
 - SQLite local-first MVP'den gelecekteki production PostgreSQL yapısına geçiş planı belgelendi.

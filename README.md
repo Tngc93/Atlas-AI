@@ -16,6 +16,9 @@ docs/operations/production-readiness.md
 
 PostgreSQL baseline ve test altyapısı yalnız izole Neon `test-preview` branch'i için hazırlanmıştır. Production branch'e migration uygulanmamıştır. Gerçek kişisel finans verisiyle production kullanım için authentication ve kullanıcı bazlı veri izolasyonu hâlâ zorunludur.
 
+Gelecekteki Auth ve çok kullanıcılı veri sahipliği mimarisi:
+docs/architecture/user-ownership.md
+
 ## Teknoloji Yığını
 
 - Next.js App Router
@@ -239,6 +242,7 @@ Playwright raporu ve test sonuçları GitHub Actions artifact olarak 14 gün sak
 - Production benzeri bir denemeden önce `docs/operations/production-readiness.md` içindeki checklist uygulanmalıdır.
 - Minimum Vercel ayarları, env listesi, PostgreSQL test-preview sınırları ve Auth geçiş sırası aynı operasyon dokümanında tanımlıdır.
 - PostgreSQL migration planı aynı dokümandaki `PostgreSQL Migration Plan` bölümünde tutulur; mevcut SQLite migration geçmişi production PostgreSQL'e doğrudan uygulanmamalıdır.
+- Production PostgreSQL için önerilen sağlayıcı stratejisi aynı dokümandaki `PostgreSQL Provider and Connection Strategy` bölümünde tutulur. Varsayılan öneri Neon Postgres via Vercel Marketplace, pooled `DATABASE_URL`, direct `DIRECT_URL` ve `sslmode=require` sözleşmesidir.
 - Demo/preview ortamlarında `AI_PROVIDER=mock` tercih edilmelidir; gerçek API key'ler yalnızca server-side environment variable olarak yönetilmelidir.
 
 ## GitHub ve Release Akışı

@@ -20,7 +20,7 @@ describe("finance prisma mappers", () => {
       balanceKurus: 80_000_00,
       creditLimitKurus: null,
       interestRateMonthly: new Prisma.Decimal(3.5),
-      interestRateAnnual: null,
+      interestRateAnnual: new Prisma.Decimal(42),
       manualInterestRateMonthly: new Prisma.Decimal(3.5),
       resolvedInterestRateMonthly: new Prisma.Decimal(3.5),
       interestRateSource: "manual",
@@ -43,6 +43,9 @@ describe("finance prisma mappers", () => {
 
     expect(debt.type).toBe("loan");
     expect(debt.interestRateMonthly).toBe(3.5);
+    expect(debt.interestRateAnnual).toBe(42);
+    expect(debt.manualInterestRateMonthly).toBe(3.5);
+    expect(debt.resolvedInterestRateMonthly).toBe(3.5);
     expect(debt.interestRateSource).toBe("manual");
     expect(debt.remainingInstallments).toBe(8);
   });

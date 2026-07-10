@@ -129,6 +129,8 @@ Production veya multi-user kullanım için mevcut riskler:
 
 Bu nedenle gerçek production için önce authentication, authorization ve veri sahipliği modeli tasarlanmalıdır.
 
+Hedef user ownership sınırları, user-owned/shared tablo ayrımı, repository sözleşmesi ve migration sırası `docs/architecture/user-ownership.md` içinde tanımlanmıştır. Bu doküman hedef mimaridir; mevcut Prisma schema veya runtime davranışını değiştirmez.
+
 ## Deploy Öncesi Checklist
 
 Her release veya deploy denemesi öncesi:
@@ -425,7 +427,220 @@ Data migration fazı ayrıca test edilmelidir:
 - Auth yokken PostgreSQL'e geçmek veri izolasyonu sağlamaz.
 - Derived tabloları taşımak stale veri riski yaratabilir.
 - Decimal ve DateTime davranışları provider değişiminde ayrıca doğrulanmalıdır.
-- PostgreSQL provider seçimi, bağlantı havuzu, SSL ve region/latency kararları sonraki milestone'a bırakılır.
+
+## PostgreSQL Provider and Connection Strategy
+
+Bu bölüm Phase 2 Milestone B itibarıyla production PostgreSQL sağlayıcı ve bağlantı stratejisini tanımlar. Bu karar dokümantasyon düzeyindedir; bu milestone'da kod yazılmaz, Prisma provider değiştirilmez, migration yapılmaz, Neon/Supabase/Railway/Render kaynağı oluşturulmaz ve deploy yapılmaz.
+
+### Sağlayıcı Kararı
+
+En düşük riskli production PostgreSQL seçimi: Neon Postgres via Vercel Marketplace.
+
+Bu proje Vercel hedefli, Prisma tabanlı, tek geliştiricili ve beta aşamasında olduğu için Neon'un serverless Postgres yaklaşımı, Vercel Marketplace uyumu, branching modeli, pooled/direct connection ayrımı ve düşük başlangıç maliyeti MVP için en iyi dengeyi verir.
+
+Gerçek finansal veriyle beta için ücretsiz plan yerine paid/Launch veya eşdeğer production plan önerilir. Auth ve user/account ownership tamamlanmadan public beta açılmamalıdır.
+
+### Provider Karşılaştırması
+
+| Provider | Avantaj | Dezavantaj | MVP Uygunluğu |
+| --- | --- | --- | --- |
+| Neon | Vercel Marketplace uyumu, serverless scale-to-zero, branching, pooled/direct connection ayrımı, düşük başlangıç maliyeti, built-in connection pooling | Cold start riski, provider-specific branching modeli öğrenilmeli, gerçek production için restore window/plan seçimi önemli | Vercel-first MVP için önerilen seçenek |
+| Supabase | Managed Postgres + Auth/RLS/Storage ekosistemi, pooler seçenekleri, paid planlarda backup desteği, ileride Auth/RLS için güçlü platform | Vercel Marketplace/branching akışı Neon kadar yalın değil; platform kapsamı bu proje için fazla genişleyebilir | Auth/RLS stratejisi Supabase platformuna bağlanacaksa güçlü alternatif |
+| Railway | Basit developer experience, Postgres + app hosting, düşük giriş maliyeti, backup seçenekleri | Vercel hedef platformuyla marketplace/env entegrasyonu Neon kadar doğal değil; production DB governance daha manuel | Hızlı prototip için iyi, Vercel-first production için ikinci planda |
+| Render | Managed Postgres, predictable tiers, PITR/backup özellikleri, full-stack hosting seçeneği | Vercel hedefiyle ek platform yönetimi doğurur; ücretsiz Postgres sınırlı/deneysel, paid tiers daha hızlı maliyetlenir | Vercel yerine Render'a taşınma düşünülürse uygun |
+
+Karar: Vercel hedef platform korunacaksa Neon seçilmelidir. Supabase yalnızca Auth/RLS'in Supabase platformuna bağlanması yönünde ayrı bir ürün/mimari kararı alınırsa yeniden değerlendirilmelidir.
+
+### Önerilen Bağlantı Mimarisi
+
+Runtime:
+
+- `DATABASE_URL`: pooled PostgreSQL connection string.
+- `DIRECT_URL`: direct PostgreSQL connection string; yalnız Prisma CLI, migration, introspection, logical backup ve yönetim işleri için.
+- SSL zorunlu olmalıdır; connection string `sslmode=require` içermelidir.
+
+Prisma:
+
+- Mevcut Prisma 6.19.3 ile production PostgreSQL fazına geçildiğinde datasource şu sözleşmeye hazırlanmalıdır:
+
+```prisma
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+```
+
+- Prisma 7 veya driver adapter geçişi ayrı dependency/upgrade milestone olarak ele alınmalıdır.
+- Bu doküman mevcut `provider = "sqlite"` davranışını değiştirmez.
+
+Connection pooling:
+
+- Vercel Serverless runtime pooled URL kullanmalıdır.
+- Migration, introspection, `pg_dump` ve yönetim işleri direct URL kullanmalıdır.
+- İlk beta için connection ayarları düşük ve kontrollü başlamalıdır. Referans başlangıç: `connection_limit=5`, `pool_timeout=15`, `connect_timeout=15`.
+- Gerçek değerler seçilen Neon planı, Vercel runtime davranışı ve ölçülen traffic'e göre production öncesi doğrulanmalıdır.
+
+Prisma Accelerate:
+
+- Bu aşamada gerekli değildir.
+- İlk çözüm provider pooler + doğru `DATABASE_URL`/`DIRECT_URL` ayrımı olmalıdır.
+- Yüksek traffic, global read latency veya connection saturation gözlenirse ileride opsiyonel olarak değerlendirilebilir.
+
+### Environment ve Ortam Akışı
+
+Development:
+
+- SQLite local-first akış korunur.
+- PostgreSQL local development zorunlu değildir.
+- `.env.local` içinde `DATABASE_URL="file:./dev.db"` kullanılmaya devam edebilir.
+
+Preview:
+
+- Neon branch veya ayrı preview database kullanılmalıdır.
+- Preview DB boş veya demo veriyle çalışmalıdır.
+- Gerçek finansal veri kullanılmamalıdır.
+- Vercel preview environment için önerilen değerler:
+  - `DATABASE_URL`: pooled preview database URL
+  - `DIRECT_URL`: direct preview database URL
+  - `AI_PROVIDER=mock`
+
+Production:
+
+- Neon primary branch/database kullanılmalıdır.
+- `prisma migrate deploy` direct URL ile çalıştırılmalıdır.
+- `AI_PROVIDER=mock` güvenli default olarak kalır; gerçek Gemini key ayrı server-side env kararı gerektirir.
+- Auth ve user/account ownership olmadan public beta açılmaz.
+
+Minimum production env seti:
+
+- `DATABASE_URL`
+- `DIRECT_URL`
+- `AI_PROVIDER=mock`
+- `AI_DAILY_REQUEST_LIMIT`
+- `AI_MONTHLY_BUDGET_LIMIT_TRY`
+- `AI_MAX_INPUT_SUMMARY_CHARS`
+
+Opsiyonel ve yalnız server-side:
+
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
+- `GEMINI_TIMEOUT_MS`
+- `GEMINI_RETRY_COUNT`
+- `OPENAI_API_KEY`
+- `OPENAI_MODEL`
+
+### Backup ve Disaster Recovery
+
+MVP beta için önerilen minimum:
+
+- Neon paid/Launch veya eşdeğer restore window sunan plan kullanılmalıdır.
+- Production migration öncesi manuel logical backup alınmalıdır.
+- Haftalık `pg_dump` tabanlı encrypted/offsite backup prosedürü ayrı ops milestone olarak planlanmalıdır.
+- Restore drill ayda bir boş staging/preview DB üzerinde denenmelidir.
+
+Recovery hedefleri:
+
+- RPO: ilk beta için 24 saat kabul edilebilir başlangıç hedefidir.
+- RTO: ilk beta için 4-8 saat kabul edilebilir başlangıç hedefidir.
+
+Derived data politikası:
+
+- Core finance data restore edilir.
+- Forecast/payment projection verileri yeniden üretilebilir kabul edilir.
+- AI cache ve reminder state restore edilmesi zorunlu değildir.
+
+### Maliyet Notları
+
+- Neon Free: private preview/dev için uygun olabilir; gerçek finansal beta için restore/limit nedeniyle tek başına önerilmez.
+- Neon Launch: küçük ve aralıklı MVP workload için yaklaşık 15 USD/ay referans alınabilir; storage ve compute kullanıma göre değişir.
+- Supabase: free/dev mümkün; paid compute ve backup ihtiyaçlarıyla maliyet artar, Micro compute yaklaşık 10 USD/ay seviyesinden başlayabilir; platform planı satın alma öncesi doğrulanmalıdır.
+- Railway Hobby: yaklaşık 5 USD minimum kullanım/ay; prototip için ucuz ama Vercel-first governance daha zayıftır.
+- Render Postgres: free sınırlı; Starter yaklaşık 10 USD/ay, daha güçlü tier'lar hızlı maliyetlenebilir.
+
+Provider fiyatları ve plan limitleri değişebilir. Satın alma, branch oluşturma veya beta açma öncesi resmi fiyat sayfaları tekrar kontrol edilmelidir.
+
+### En Düşük Riskli PostgreSQL Altyapı Sırası
+
+1. Neon via Vercel Marketplace seçimi mimari karar olarak tutulur.
+2. `DATABASE_URL`/`DIRECT_URL` env sözleşmesi production dokümantasyonuna ve future `.env.example` kararına hazırlanır.
+3. Production `DATABASE_URL` guard milestone'u uygulanır.
+4. PostgreSQL schema compatibility audit yapılır.
+5. PostgreSQL baseline migration oluşturulur.
+6. Boş Neon preview branch üzerinde `prisma migrate deploy` doğrulanır.
+7. Repository integration smoke testleri PostgreSQL'e karşı çalıştırılır.
+8. Auth ve user/account ownership modeli eklenir.
+9. Backup/restore drill tamamlanmadan gerçek kullanıcı verisi kabul edilmez.
+10. Public beta yalnız PostgreSQL, Auth, owner checks ve restore drill sonrası değerlendirilir.
+
+### Kabul Kriterleri
+
+Production PostgreSQL hazırlık kabul kriterleri:
+
+- `prisma migrate deploy` boş PostgreSQL DB'de geçer.
+- Gelir, borç ve gider CRUD smoke geçer.
+- Finance snapshot, Memory snapshot, ReminderState ve CoachInsight write/read smoke geçer.
+- Runtime pooled URL, migration direct URL ile çalışır.
+- Production ortamında eksik `DATABASE_URL` açık hata verir.
+- Gerçek API key, `.env.local`, SQLite DB veya gerçek finansal veri repo içinde bulunmaz.
+
+Mevcut local-first gate korunur:
+
+```bash
+npm run security:secrets
+npm run security:audit
+npx prisma generate
+npm run lint
+npm run test
+npm run build
+npm run test:e2e
+```
+
+### Kaynaklar
+
+- Neon pricing ve pooling: https://neon.com/pricing, https://neon.com/docs/connect/connection-pooling
+- Neon + Prisma setup: https://neon.com/docs/guides/prisma
+- Prisma connection pooling / PgBouncer: https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/connection-pool, https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections/pgbouncer
+- Supabase compute, backups, poolers: https://supabase.com/docs/guides/platform/compute-and-disk, https://supabase.com/docs/guides/platform/backups, https://supabase.com/docs/guides/database/connecting-to-postgres
+- Railway pricing: https://railway.com/pricing
+- Render pricing: https://render.com/pricing
+
+## Date and Decimal Readiness Notes
+
+Bu bölüm Phase 2 Milestone C2 itibarıyla PostgreSQL migration öncesi tarih ve decimal davranışlarını belgelemek için eklenmiştir. Bu milestone Prisma schema, migration, provider, API, UI veya runtime davranışı değiştirmez.
+
+### Date ve Date-Only Davranışları
+
+- `YYYY-MM-DD` değerleri kullanıcıdan gelen date-only input veya hesaplama çıktısı olarak ele alınır.
+- `YYYY-MM` değerleri aylık snapshot/key formatıdır; özellikle `FinancialMemorySnapshot.periodMonth` için kullanılır.
+- `DateTime` alanları gerçek timestamp olarak ele alınır ve Prisma tarafından `Date` nesnesi olarak okunur.
+- `toISOString()` çıktıları UTC temellidir. Bu nedenle `periodMonth` gibi ISO üzerinden türetilen değerler yerel saat dilimi değil UTC ayını temsil eder.
+- `T12:00:00.000Z` kullanımı, date-only değerleri UI/hatırlatma hesaplarında gün kaymasını azaltmak için bilinçli bir orta-gün yorumudur.
+
+PostgreSQL öncesi dikkat edilmesi gereken alanlar:
+
+- `SalaryRecord.effectiveDate`: formdan `YYYY-MM-DD` gelir, repository içinde `new Date(value)` ile DateTime'a çevrilir. Bu mevcut davranış korunur; ileride date-only semantik netleştirilebilir.
+- `FinancialMemorySnapshot.periodMonth`: `capturedAt.toISOString().slice(0, 7)` ile UTC ayından türetilir. Yerel ay sınırına yakın zamanlarda bu davranış bilinçli olarak testle korunmalıdır.
+- `FinancialMemorySnapshot.capturedAt`: gerçek snapshot timestamp'idir; monthly key yerine geçmez.
+- `InterestRateSnapshot.retrievedAt`: sağlayıcıdan verinin ne zaman alındığını gösteren timestamp'tir; `effectiveDate` ise kaynak dönem bilgisidir ve string olarak kalır.
+
+### Decimal Davranışları
+
+Faiz oranları para alanı değildir. Para alanları integer kuruş olarak saklanmaya devam eder.
+
+Decimal alanlar:
+
+- `DebtAccount.interestRateMonthly`
+- `DebtAccount.interestRateAnnual`
+- `DebtAccount.manualInterestRateMonthly`
+- `DebtAccount.resolvedInterestRateMonthly`
+- `InterestRateSnapshot.referenceRate`
+- `InterestRateSnapshot.maxContractualRate`
+- `InterestRateSnapshot.maxOverdueRate`
+
+Mevcut repository ve mapper katmanları Prisma Decimal değerlerini domain tarafında number'a dönüştürür. Bu davranış PostgreSQL migration öncesi testle korunmalıdır.
+
+PostgreSQL baseline migration sırasında decimal alanlar için açık precision/scale kararı verilmelidir. Bu karar bu milestone kapsamında uygulanmaz.
 
 ## Operasyon Notları
 

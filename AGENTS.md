@@ -209,7 +209,9 @@ Git safety rules:
 - Before any Vercel preview or release PR, verify that local `main`/`develop` branch state is aligned with the intended remote base and that no stale feature branch is used for deployment.
 - If a Vercel preview is created before PostgreSQL and Auth, it must be treated as build/render smoke only and must not contain real financial data.
 - Do not apply existing SQLite migration SQL directly to a production PostgreSQL database; PostgreSQL requires a separate reviewed baseline and `prisma migrate deploy` runbook.
+- The documented production PostgreSQL recommendation is Neon Postgres via Vercel Marketplace with pooled `DATABASE_URL`, direct `DIRECT_URL`, and SSL required; do not implement this provider change until a later approved migration milestone.
 - PostgreSQL alone is not sufficient for public beta; Auth, authorization, and user/account ownership checks are required before real user data is accepted.
+- Future Auth and multi-user work must follow `docs/architecture/user-ownership.md`; client-provided user identifiers must never replace server-side authenticated owner context.
 
 ## Security and Privacy Checklist
 
