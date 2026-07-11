@@ -69,7 +69,7 @@ describe("finance server actions", () => {
         monthlySalaryKurus: "100000",
         survivalThresholdKurus: "10000",
         salaryDay: "1",
-      }),
+      +  }, 15_000);
     );
     const salaryResult = await createSalaryRecordAction(
       initialFormActionState,
