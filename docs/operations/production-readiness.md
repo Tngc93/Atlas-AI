@@ -1,14 +1,64 @@
 # Production Readiness
 
-Bu doküman Sprint 5 itibarıyla uygulamanın Vercel/production hazırlığı için operasyon notlarını özetler.
+Bu doküman uygulamanın Vercel/production hazırlığı ve PostgreSQL geçişi için operasyon notlarını özetler.
 
-Durum: hazırlık ve risk azaltma dokümanı. Bu sprintte Vercel deploy, PostgreSQL geçişi veya authentication eklenmemiştir.
+Durum: PostgreSQL provider ve çevrimdışı baseline hazırlanmıştır. Production Neon branch'e migration uygulanmamış, Vercel deploy veya authentication eklenmemiştir.
 
 ## Kapsam
 
-Uygulama şu anda local-first SQLite MVP olarak tasarlanmıştır. Lokal masaüstü geliştirme, demo ve kişisel test akışları için uygundur.
+Uygulamanın Prisma datasource'u PostgreSQL'e geçirilmiştir. Mevcut SQLite migration geçmişi yalnız arşiv olarak korunur ve PostgreSQL'e uygulanmaz.
 
-Vercel üzerinde SQLite ile çalıştırma ancak geçici preview/demo denemesi olarak değerlendirilmelidir. Gerçek kişisel finans verisiyle production kullanım için önce kalıcı production veritabanı, authentication ve kullanıcı bazlı veri izolasyonu gerekir.
+PostgreSQL doğrulaması production'dan ayrılmış Neon `test-preview` branch'inde yapılmalıdır. Gerçek kişisel finans verisiyle production kullanım için authentication ve kullanıcı bazlı veri izolasyonu hâlâ gerekir.
+
+## PostgreSQL Test Branch ve Baseline
+
+- Production Neon branch boş ve migration uygulanmamış kalır.
+- Integration ve E2E testleri yalnız `test-preview` branch'in pooled/direct endpoint'lerini kullanır.
+- Lokal test credential'ları `.env.test.local` içinde tutulur ve git'e gönderilmez.
+- Test harness yalnız endpoint kimliği doğrulanan Neon bağlantılarını ve `sslmode=require` URL'lerini kabul eder.
+- Her integration suite `pfc_it_*`, her E2E koşusu `pfc_e2e_*` adlı geçici schema kullanır.
+- `public`, `preview_app` ve boş schema adları otomatik cleanup hedefi olamaz.
+- Existing SQLite migration SQL'leri `prisma/migrations-sqlite` altında içerik değiştirilmeden korunur.
+- Aktif `prisma/migrations` yalnız çevrimdışı üretilmiş PostgreSQL baseline ve `provider = "postgresql"` lock dosyasını içerir.
+- Baseline bu milestone'da hiçbir Neon branch'e uygulanmamıştır.
+
+Test ortamı değişkenleri:
+
+| Değişken | Amaç |
+| --- | --- |
+| `TEST_DATABASE_URL` | `test-preview` pooled bağlantısı |
+| `TEST_DIRECT_URL` | Aynı branch direct bağlantısı |
+| `TEST_NEON_ENDPOINT_ID` | Pooled/direct endpoint eşleşme guard'ı |
+| `TEST_DATABASE_RESET_CONFIRM` | Yalnız `test-preview` cleanup onayı |
+| `TEST_BASELINE_DEPLOY_CONFIRM` | Kalıcı preview baseline için tek kullanımlık açık onay |
+
+Unit testler DB credential gerektirmez. `npm run test:integration` ve `npm run test:e2e` eksik test env durumunda skip edilmez, açık hata verir.
+
+### Onaylı Test Baseline Uygulaması
+
+Bu komut yalnız `test-preview` endpoint'inde sabit `preview_app` schema'sını hazırlar. Production `DATABASE_URL` veya `DIRECT_URL` değerlerine fallback yapmaz.
+
+1. `.env.test.local` içinde `TEST_DATABASE_URL`, `TEST_DIRECT_URL`, `TEST_NEON_ENDPOINT_ID` ve `TEST_DATABASE_RESET_CONFIRM=test-preview` tanımlanır.
+2. Baseline çevrimdışı kontrol edilir:
+
+```bash
+npm run prisma:baseline:check
+```
+
+3. Açık onay yalnız komut süresince verilerek baseline uygulanır:
+
+```bash
+TEST_BASELINE_DEPLOY_CONFIRM=test-preview:preview_app npm run prisma:baseline:deploy:test
+```
+
+4. Integration ve E2E doğrulanır:
+
+```bash
+npm run test:integration
+npm run test:e2e
+```
+
+Komut `NODE_ENV=test`, exact Neon endpoint kimliği, pooled/direct eşleşmesi, `sslmode=require`, `test-preview` reset onayı ve `test-preview:preview_app` baseline onayı olmadan durur. İkinci deploy no-op olmalıdır. Production migration için ayrı, manuel onaylı bir runbook gerekir.
 
 ## Ortam Değişkenleri
 
@@ -16,7 +66,8 @@ Vercel üzerinde SQLite ile çalıştırma ancak geçici preview/demo denemesi o
 
 | Değişken | Zorunluluk | Not |
 | --- | --- | --- |
-| `DATABASE_URL` | Lokal çalışma için gerekli | SQLite local-first kullanımında örnek değer `file:./dev.db`. Production ortamında sessiz fallback'e güvenilmemelidir. |
+| `DATABASE_URL` | Uygulama runtime'ı için gerekli | PostgreSQL pooled bağlantısı. Test baseline komutu bu değişkene fallback yapmaz. |
+| `DIRECT_URL` | Prisma CLI için gerekli | Aynı PostgreSQL branch'in direct bağlantısı. |
 | `AI_PROVIDER` | Önerilir | Güvenli varsayılan `mock`. Gerçek sağlayıcı seçilmedikçe AI çağrısı yapılmaz. |
 | `AI_DAILY_REQUEST_LIMIT` | Önerilir | AI kullanım limitleri için server-side değer. |
 | `AI_MONTHLY_BUDGET_LIMIT_TRY` | Önerilir | Maliyet kontrolü için server-side değer. |
@@ -30,9 +81,9 @@ Vercel üzerinde SQLite ile çalıştırma ancak geçici preview/demo denemesi o
 
 API anahtarları hiçbir zaman `NEXT_PUBLIC_` prefix'i ile tanımlanmamalıdır.
 
-## SQLite ve Vercel Sınırları
+## Arşivlenmiş SQLite Geçmişi
 
-SQLite bu MVP'de lokal kullanım için bilinçli bir seçimdir. Vercel/serverless ortamında şu sınırlamalar vardır:
+SQLite önceki local-first MVP'de bilinçli bir seçimdi. Migration geçmişi `prisma/migrations-sqlite` altında arşivlenmiştir ve PostgreSQL'e uygulanmamalıdır.
 
 - Serverless dosya sistemi kalıcı production veritabanı gibi ele alınamaz.
 - Concurrent write davranışı gerçek çok kullanıcılı finans uygulaması için güvenilir değildir.
@@ -40,7 +91,7 @@ SQLite bu MVP'de lokal kullanım için bilinçli bir seçimdir. Vercel/serverles
 - SQLite dosyası kişisel finans verisi içeriyorsa deploy artifact'i veya yanlış yapılandırılmış storage içinde risk yaratabilir.
 - Authentication olmadığı için tüm veri tek lokal kullanıcı varsayımına bağlıdır.
 
-Bu nedenle Vercel preview yalnızca boş/demo veriyle teknik smoke test için düşünülmelidir. Gerçek kullanıcı verisiyle production kullanımı önerilmez.
+Vercel preview yalnız `test-preview` PostgreSQL branch'i ve kurgusal veriyle teknik smoke test için düşünülmelidir. Auth ve user ownership olmadan gerçek kullanıcı verisiyle production kullanımı önerilmez.
 
 ## Prisma Akışı
 
@@ -48,15 +99,14 @@ Lokal geliştirme:
 
 ```bash
 cp .env.example .env.local
-npm run prisma:migrate
 npm run prisma:generate
 ```
 
 CI:
 
 - `npx prisma generate` çalışır.
-- Unit/integration testler izole test veritabanı kurulumunu kullanır.
-- Playwright E2E akışı izole SQLite DB üzerinde çalışır.
+- Unit testler veritabanı credential'ı kullanmaz.
+- Integration testler ve Playwright E2E yalnız izole `test-preview` schema'larını kullanır.
 
 Gelecek production veritabanı fazı:
 
@@ -73,7 +123,7 @@ Production veya multi-user kullanım için mevcut riskler:
 
 - Kullanıcı hesabı yoktur.
 - Tenant/user boundary yoktur.
-- Aynı SQLite verisi tek kullanıcıya ait kabul edilir.
+- Kayıtlı finans verisi tek kullanıcıya ait kabul edilir.
 - Server-side veri okuma/yazma akışları authenticated owner check içermez.
 - AI context minimization vardır, ancak hesap bazlı erişim sınırı yoktur.
 
@@ -118,7 +168,7 @@ Vercel preview şu amaçlarla kullanılmamalıdır:
 
 - Gerçek kişisel finans verisi saklama
 - Çok kullanıcılı production kullanım
-- Kalıcı SQLite veritabanı beklentisi
+- Test-preview verisini production kalıcılığı veya kullanıcı izolasyonu kanıtı sayma
 - Auth olmadan gerçek kullanıcı onboarding'i
 - API key veya secret değerlerini test amaçlı commit etme
 

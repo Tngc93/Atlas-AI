@@ -16,7 +16,7 @@ export const sampleInterestRateSnapshot: InterestRateSnapshot = {
   rawSourceUrl: TCMB_CREDIT_CARD_RATES_URL,
   retrievedAt: new Date("2026-07-01T09:00:00.000Z").toISOString(),
   isStale: true,
-  note: "Örnek TCMB biçimli veri. Ağ erişimini etkinleştirdikten veya sağlayıcıyı yerel veritabanı önbelleğine bağladıktan sonra yenileyin.",
+  note: "Örnek TCMB biçimli veri. Ağ erişimini etkinleştirdikten veya sağlayıcı önbelleğini bağladıktan sonra yenileyin.",
 };
 
 function parsePercentAfterLabel(html: string, label: string): number | undefined {

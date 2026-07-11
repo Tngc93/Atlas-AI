@@ -59,7 +59,7 @@ function ProfileIncomeForm({ profile }: { profile: ProfileFormModel }) {
   return (
     <FormSection
       title="Gelir yönetimi"
-      description="Güncel maaş, maaş günü ve hayatta kalma bütçesi eşiğini yerel SQLite veritabanında saklayın."
+      description="Güncel maaş, maaş günü ve hayatta kalma bütçesi eşiğini kayıtlı finans bilgileriniz arasında yönetin."
     >
       <form action={formAction} className="grid gap-4 lg:grid-cols-3">
         <MoneyInput state={state} name="monthlySalaryKurus" label="Aylık maaş" value={profile?.monthlySalaryKurus} required />

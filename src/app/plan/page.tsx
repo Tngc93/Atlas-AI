@@ -48,7 +48,7 @@ export default async function MonthlyPlanPage() {
             <h2 className="text-base font-semibold">Aylık plan için eksik bilgiler var</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-steel">
               Uygulanabilir bir borç ödeme planı için gelir, zorunlu gider ve en az bir aktif borç kaydı gerekir. Bu ekran
-              gerçek SQLite verisiyle çalışır; demo veri otomatik kullanılmaz.
+              kayıtlı finans bilgilerinizle çalışır; demo veri otomatik kullanılmaz.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {missingPlanInputs.map((item) => (

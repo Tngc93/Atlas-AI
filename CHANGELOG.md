@@ -4,6 +4,14 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Phase 2 - PostgreSQL Test Branch and Baseline
+
+- Mevcut SQLite migration geçmişi içerik değiştirilmeden `prisma/migrations-sqlite` altında arşivlendi.
+- Mevcut Prisma schema'dan çevrimdışı PostgreSQL baseline üretildi ve aktif migration geçmişi PostgreSQL olarak başlatıldı.
+- Integration ve Playwright testleri için endpoint doğrulamalı, geçici schema oluşturan ve temizleyen ortak PostgreSQL test harness'ı eklendi.
+- Unit ve integration test komutları ayrıldı; CI yalnız test branch secret'larını integration/E2E job'larına verir.
+- Production Neon branch'e migration uygulanmadı; gerçek veri, Auth veya user ownership eklenmedi.
+
 ### Phase 2 Milestone D - User Ownership Architecture
 
 - Gelecekteki Auth ve PostgreSQL yapısı için user-owned ve shared veri sınırları dokümante edildi.

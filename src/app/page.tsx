@@ -582,8 +582,8 @@ function DecisionLine({ label, value }: { label: string; value: string }) {
 
 function TrustLayer() {
   const items = [
-    { icon: LockKeyhole, title: "Verileriniz cihazınızda kalır." },
-    { icon: Bot, title: "AI yalnızca anonim finansal özetleri yorumlar." },
+    { icon: LockKeyhole, title: "Bu sürüm henüz public beta için hazır değildir." },
+    { icon: Bot, title: "AI yalnızca minimize edilmiş finans özetlerini yorumlar." },
     { icon: ShieldCheck, title: "Hesaplamalar deterministiktir." },
   ];
 

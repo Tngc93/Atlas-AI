@@ -1,7 +1,5 @@
-import { execFileSync } from "node:child_process";
-import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { createPostgresTestContext, type PostgresTestContext } from "@/test/postgres-test-context";
 
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
@@ -18,20 +16,14 @@ function makeFormData(entries: Record<string, string>) {
 }
 
 describe("reminder repository and actions", () => {
-  const dbFileName = `qa-reminders-${Date.now()}-${process.pid}.db`;
+  let postgresContext: PostgresTestContext;
   let disconnectPrismaForTests: () => Promise<void>;
   let listReminderStates: typeof import("./repository").listReminderStates;
   let upsertReminderState: typeof import("./repository").upsertReminderState;
   let updateReminderStateAction: typeof import("./actions").updateReminderStateAction;
 
   beforeAll(async () => {
-    const migrationsPath = join(process.cwd(), "prisma/migrations");
-    const migrationSql = readdirSync(migrationsPath)
-      .sort()
-      .map((folder) => readFileSync(join(migrationsPath, folder, "migration.sql"), "utf8"))
-      .join("\n");
-    execFileSync("sqlite3", [join(process.cwd(), "prisma", dbFileName)], { input: migrationSql });
-    process.env.DATABASE_URL = `file:./${dbFileName}`;
+    postgresContext = await createPostgresTestContext("reminders");
 
     ({ disconnectPrismaForTests } = await import("@/lib/db/prisma"));
     ({ listReminderStates, upsertReminderState } = await import("./repository"));
@@ -39,7 +31,8 @@ describe("reminder repository and actions", () => {
   });
 
   afterAll(async () => {
-    await disconnectPrismaForTests();
+    await disconnectPrismaForTests?.();
+    await postgresContext?.cleanup();
   });
 
   it("upserts one state per reminder key without storing reminder content", async () => {

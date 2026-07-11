@@ -35,7 +35,7 @@ export default async function CoachPage() {
       <PageHeader
         kicker="Koç"
         title="Bu ay ne yapman gerektiğini kısa, net ve güvenli şekilde konuş."
-        description="Koç, hesaplama motorunun ürettiği minimize edilmiş finans özetini yorumlar; veriniz lokal cihazınızda kalır."
+        description="Koç, hesaplama motorunun ürettiği minimize edilmiş finans özetini yorumlar. Canlı sağlayıcı seçiliyse yalnız bu özet gönderilebilir; ham finans kayıtları gönderilmez."
       />
       <div className="mt-6">
         <CoachPanel insight={coachInsight} />

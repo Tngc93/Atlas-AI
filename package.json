@@ -7,13 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run",
-    "test:e2e": "playwright test",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "vitest run",
+    "test:integration": "node scripts/run-with-test-env.mjs npx vitest run --config vitest.integration.config.ts",
+    "test:e2e": "node scripts/run-with-test-env.mjs npx playwright test",
+    "test:cleanup-schema": "node scripts/run-with-test-env.mjs node scripts/cleanup-postgres-test-schema.mjs",
     "security:secrets": "node scripts/check-secrets.mjs",
     "security:audit": "npm audit --omit=dev --audit-level=high",
     "ci": "npm run security:secrets && npm run security:audit && npx prisma generate && npm run lint && npm run test && npm run build && npm run test:e2e",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:baseline:check": "node scripts/check-postgresql-baseline.mjs",
+    "prisma:baseline:deploy:test": "node scripts/run-with-test-env.mjs node scripts/deploy-postgresql-baseline.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.0.0",

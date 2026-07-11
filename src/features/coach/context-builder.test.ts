@@ -152,7 +152,12 @@ function makeMemoryReport(): FinancialMemoryReport {
     ],
     insights: [
       { id: "debt-trend", title: "Toplam borç azalıyor", body: "Borç trendi aşağı yönlü.", tone: "low" },
-      { id: "local-only", title: "Analiz lokal veriye dayanır", body: "Veri cihazda kalır.", tone: "low" },
+      {
+        id: "local-only",
+        title: "Analiz kayıtlı hafızaya dayanır",
+        body: "Financial Memory analizi kendi başına AI çağrısı yapmaz.",
+        tone: "low",
+      },
     ],
     categoryChanges: [],
     planAdherence: {
@@ -195,7 +200,7 @@ describe("coach context builder", () => {
       survivalBudgetTrend: "improving",
       planAdherenceScore: 70,
     });
-    expect(context.memory.insightTitles).toEqual(["Toplam borç azalıyor", "Analiz lokal veriye dayanır"]);
+    expect(context.memory.insightTitles).toEqual(["Toplam borç azalıyor", "Analiz kayıtlı hafızaya dayanır"]);
     expect(context.trends).toMatchObject({
       hasEnoughHistory: true,
       reason: "none",

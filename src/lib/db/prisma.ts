@@ -4,14 +4,18 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
-export function resolveDatabaseUrl(): string {
-  const databaseUrl = process.env.DATABASE_URL?.trim();
+export function resolveDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string {
+  const databaseUrl = env.DATABASE_URL?.trim();
 
-  if (process.env.NODE_ENV === "production" && !databaseUrl) {
-    throw new Error("DATABASE_URL must be set in production.");
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is required for the PostgreSQL datasource.");
   }
 
-  return databaseUrl || "file:./dev.db";
+  if (!databaseUrl.startsWith("postgresql://") && !databaseUrl.startsWith("postgres://")) {
+    throw new Error("DATABASE_URL must use the PostgreSQL protocol.");
+  }
+
+  return databaseUrl;
 }
 
 export function getPrisma(): PrismaClient {

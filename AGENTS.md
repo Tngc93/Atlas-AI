@@ -63,14 +63,16 @@ This version has breaking changes. APIs, conventions, and file structure may dif
 - Do not log secrets or raw financial details.
 - Keep API responses minimal and avoid exposing internal implementation details.
 
-## Prisma and SQLite
+## Prisma and Database
 
-- SQLite is the local-first MVP database.
+- Prisma datasource uses PostgreSQL. The production Neon branch must remain untouched until an explicitly approved migration milestone.
+- Archived SQLite migrations live under `prisma/migrations-sqlite` and must never be applied to PostgreSQL.
 - Prisma models should reflect the finance domain clearly and avoid premature complexity.
 - Use Decimal or integer kuruş values for money. Do not use floating point for stored money.
 - Keep migrations minimal and intentional.
 - Do not run or create migrations casually if the current phase does not require persistence changes.
-- Do not commit local SQLite database files, generated backups, or real user data.
+- PostgreSQL integration and E2E tests may use only the guarded Neon `test-preview` endpoint and temporary `pfc_it_*` or `pfc_e2e_*` schemas.
+- Do not commit database files, credentials, generated backups, or real user data.
 
 ## Repository Pattern
 

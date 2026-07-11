@@ -48,7 +48,7 @@ export default async function DecisionsPage() {
         <section className="mt-6 rounded-lg border border-line bg-surface p-5 shadow-sm">
           <h2 className="text-lg font-semibold">Daha güçlü simülasyon için eksik kayıtlar</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-steel">
-            Karar simülatörü mevcut lokal SQLite kayıtlarınızı kullanır. Eksik alanlar varsa bazı senaryo türleri sınırlı
+            Karar simülatörü mevcut kayıtlı finans bilgilerinizi kullanır. Eksik alanlar varsa bazı senaryo türleri sınırlı
             çalışabilir.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">

@@ -204,8 +204,8 @@ export function buildDeterministicMemoryInsights(report: Omit<FinancialMemoryRep
       ),
       insight(
         "local-only",
-        "Analiz lokal veriye dayanır",
-        "Bu hafıza sadece cihazınızdaki SQLite kayıtlarından üretilir; üçüncü partiye finansal veri gönderilmez.",
+        "Analiz kayıtlı hafızaya dayanır",
+        "Bu hafıza kayıtlı finansal snapshot’lardan üretilir. Financial Memory analizi kendi başına üçüncü parti AI çağrısı yapmaz.",
         "low",
       ),
     ];
