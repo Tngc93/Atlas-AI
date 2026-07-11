@@ -63,27 +63,28 @@ describe("finance server actions", () => {
   });
 
   it("creates income and salary history records through server actions", async () => {
-    const incomeResult = await saveProfileIncomeAction(
-      initialFormActionState,
-      makeFormData({
-        monthlySalaryKurus: "100000",
-        survivalThresholdKurus: "10000",
-        salaryDay: "1",
-      +  }, 15_000);
-    );
-    const salaryResult = await createSalaryRecordAction(
-      initialFormActionState,
-      makeFormData({
-        amountKurus: "100000",
-        salaryDay: "1",
-        effectiveDate: "2026-07-01",
-        notes: "QA örnek server action maaş",
-      }),
-    );
+  const incomeResult = await saveProfileIncomeAction(
+    initialFormActionState,
+    makeFormData({
+      monthlySalaryKurus: "100000",
+      survivalThresholdKurus: "10000",
+      salaryDay: "1",
+    }),
+  );
 
-    expect(incomeResult.status).toBe("success");
-    expect(salaryResult.status).toBe("success");
-  });
+  const salaryResult = await createSalaryRecordAction(
+    initialFormActionState,
+    makeFormData({
+      amountKurus: "100000",
+      salaryDay: "1",
+      effectiveDate: "2026-07-01",
+      notes: "QA örnek server action maaş",
+    }),
+  );
+
+  expect(incomeResult.status).toBe("success");
+  expect(salaryResult.status).toBe("success");
+}, 15_000);
 
   it("creates, updates and deletes debt records through server actions", async () => {
     const createResult = await createDebtAction(
