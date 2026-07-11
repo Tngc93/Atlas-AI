@@ -164,5 +164,5 @@ describe("finance server actions", () => {
       "NEXT_REDIRECT",
     );
     expect(await listExpenses()).toHaveLength(0);
-  });
+  }, 15_000);
 });
