@@ -4,6 +4,14 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Phase 7 - Zero-Cost Public Demo
+
+- PostgreSQL ve ücretli AI anahtarı gerektirmeyen açık `PUBLIC_DEMO_MODE` execution sınırı eklendi.
+- Immutable kurgusal seed ve sekmeye özel browser-memory store ile geçici gelir, borç, gider, reminder ve memory işlemleri eklendi.
+- Dashboard, plan, forecast, decisions, memory, reminders ve Mock coach akışları client-only demo route tree üzerinden deterministic olarak çalışır hale getirildi.
+- Demo modunda Prisma ve DB-backed API erişimi fail-closed yapıldı; self-host PostgreSQL akışı varsayılan olarak korundu.
+- Reset, onboarding, Demo Mode göstergeleri ile DB'siz build ve Playwright demo test akışı eklendi.
+
 ### Phase 6.1 - Provider Reality Check and Demo Safety
 
 - Provider registry `Demo`, `Local`, `Deneysel Browser` ve `Self-host` availability durumlarıyla zenginleştirildi.

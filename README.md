@@ -18,6 +18,33 @@ docs/operations/production-readiness.md
 
 PostgreSQL baseline ve test altyapısı yalnız izole Neon `test-preview` branch'i için hazırlanmıştır. Production branch'e migration uygulanmamıştır. Gerçek kişisel finans verisiyle production kullanım için authentication ve kullanıcı bazlı veri izolasyonu hâlâ zorunludur.
 
+## Zero-Cost Public Demo
+
+Public demo, PostgreSQL veya ücretli AI anahtarı olmadan kurgusal verilerle çalışabilir:
+
+```bash
+PUBLIC_DEMO_MODE=true AI_PROVIDER=mock npm run dev
+```
+
+Demo modu immutable sample veriyi her sekme için ayrı browser belleğine kopyalar. Gelir, borç ve gider CRUD işlemleri ile plan, forecast, decisions, reminders, memory ve Mock koç akışları kullanılabilir; değişiklikler veritabanına, URL'ye, cookie'ye, `localStorage` veya `sessionStorage` içine yazılmaz. Sayfa yenilendiğinde, sekme kapandığında veya `Demo verisini sıfırla` seçildiğinde başlangıç verisine dönülür.
+
+Demo sınırlamaları:
+
+- Yalnız kurgusal veri kullanın; gerçek finansal bilgi girmeyin.
+- AI çıktısı Mock sağlayıcıdan gelir ve finansal tavsiye değildir.
+- Platform sahibine ait ücretli AI anahtarı kullanılmaz.
+- `PUBLIC_DEMO_MODE=true` iken Prisma ve DB-backed API yolları fail-closed kalır.
+- `PUBLIC_DEMO_MODE=false` self-host varsayılanıdır; eksik PostgreSQL ayarı sessizce demo moda düşmez.
+
+DB'siz demo doğrulaması:
+
+```bash
+npm run build:demo
+npm run test:e2e:demo
+```
+
+Kaynak kod: [GitHub repository](https://github.com/Tngc93/personal-finance-coach-dashboard). Self-host kullanımında kendi PostgreSQL bağlantınızı ve isterseniz kendi server-side AI sağlayıcınızı `.env.local` üzerinden yapılandırın.
+
 Gelecekteki Auth ve çok kullanıcılı veri sahipliği mimarisi:
 docs/architecture/user-ownership.md
 
@@ -50,6 +77,7 @@ Tarayıcıda `http://localhost:3000` adresini açın.
 ```bash
 DATABASE_URL=
 DIRECT_URL=
+PUBLIC_DEMO_MODE=false
 AI_PROVIDER=mock
 AI_DAILY_REQUEST_LIMIT=20
 AI_MONTHLY_BUDGET_LIMIT_TRY=100

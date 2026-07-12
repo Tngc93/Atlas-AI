@@ -11,6 +11,8 @@
     "test:unit": "vitest run",
     "test:integration": "node scripts/run-with-test-env.mjs npx vitest run --config vitest.integration.config.ts",
     "test:e2e": "node scripts/run-with-test-env.mjs npx playwright test",
+    "test:e2e:demo": "npx playwright test --config playwright.demo.config.ts",
+    "build:demo": "PUBLIC_DEMO_MODE=true AI_PROVIDER=mock DATABASE_URL='' DIRECT_URL='' next build",
     "test:cleanup-schema": "node scripts/run-with-test-env.mjs node scripts/cleanup-postgres-test-schema.mjs",
     "security:secrets": "node scripts/check-secrets.mjs",
     "security:audit": "npm audit --omit=dev --audit-level=high",
