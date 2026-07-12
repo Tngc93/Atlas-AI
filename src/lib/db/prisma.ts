@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { isPublicDemoMode } from "@/lib/runtime/execution-mode";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
@@ -19,6 +20,10 @@ export function resolveDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string
 }
 
 export function getPrisma(): PrismaClient {
+  if (isPublicDemoMode()) {
+    throw new Error("Database access is disabled while PUBLIC_DEMO_MODE is enabled.");
+  }
+
   if (!globalForPrisma.prisma) {
     globalForPrisma.prisma = new PrismaClient({
       datasources: {

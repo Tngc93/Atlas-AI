@@ -118,6 +118,8 @@ This version has breaking changes. APIs, conventions, and file structure may dif
 ## AI Provider and BYOK Rules
 
 - Public demo must default to `AI_PROVIDER=mock` and must not contain a project-owned paid AI key.
+- `PUBLIC_DEMO_MODE=true` must never initialize Prisma, call DB-backed Server Actions, or persist financial state in browser storage, cookies, URLs, analytics, or server memory.
+- Public demo finance state must remain per-tab and reset on reload; self-host mode must never silently fall back to demo mode.
 - OpenAI and Anthropic credentials are server-side/self-host only.
 - Browser BYOK is an explicit, feature-flagged exception for providers marked browser-capable in the registry.
 - A Browser BYOK credential may exist only in a client-side session vault. It must not enter localStorage, sessionStorage, IndexedDB, cookies, URLs, serialized props, application API routes, Prisma, logs, analytics, cache keys, tests, screenshots, or commits.

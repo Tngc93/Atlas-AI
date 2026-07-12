@@ -1,5 +1,41 @@
 # Production Readiness
 
+## Phase 7 Zero-Cost Public Demo
+
+Public demo, kalıcı veritabanı veya platform sahibine ait ücretli AI key kullanmayan ayrı bir execution mode'dur.
+
+- `PUBLIC_DEMO_MODE=true`: public ürün rotaları client-only demo route tree'ye rewrite edilir.
+- Demo verisi immutable fictional seed'den, sekmeye özel React memory store'a kopyalanır.
+- Finans state'i URL, cookie, `localStorage`, `sessionStorage`, IndexedDB, server memory veya database içine yazılmaz.
+- Demo CRUD, Forecast, Decision, Memory ve Reminder hesapları mevcut deterministic servisleri kullanır.
+- AI yalnız Mock provider'dır; DB-backed `/api/*` yolları ve Prisma erişimi demo modunda reddedilir.
+- `DATABASE_URL` ve `DIRECT_URL` demo Vercel environment'ına eklenmez.
+- Self-host modu varsayılan kalır ve PostgreSQL yapılandırması eksikse demo fallback yapmaz.
+
+Vercel demo environment checklist:
+
+```text
+PUBLIC_DEMO_MODE=true
+AI_PROVIDER=mock
+NEXT_PUBLIC_AI_BROWSER_BYOK_ENABLED=false
+NEXT_PUBLIC_AI_BROWSER_LOCAL_ENABLED=false
+NEXT_PUBLIC_AI_BROWSER_GEMINI_ENABLED=false
+NEXT_PUBLIC_AI_BROWSER_OPENROUTER_ENABLED=false
+AI_PUBLIC_DEMO_DATA_CONFIRMED=false
+```
+
+`DATABASE_URL`, `DIRECT_URL` ve ücretli provider API key'leri tanımlanmamalıdır. Build ve smoke gate:
+
+```bash
+npm run security:secrets
+npm run lint
+npm run test:unit
+npm run build:demo
+npm run test:e2e:demo
+```
+
+Vercel Hobby yalnız personal/non-commercial kullanım içindir. Ürün ticari kullanıma geçtiğinde veya ücretsiz kullanım limitleri yeterli olmadığında hosting planı yeniden değerlendirilmelidir.
+
 ## Phase 6 AI Provider Deployment Modes
 
 - Public demo `AI_PROVIDER=mock` ile açılır ve proje sahibine ait ücretli AI anahtarı içermez.

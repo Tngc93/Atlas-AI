@@ -9,6 +9,6 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    exclude: ["e2e/**", "**/*.integration.test.ts", "node_modules/**", "dist/**", ".next/**"],
+    exclude: ["e2e/**", "e2e-demo/**", "**/*.integration.test.ts", "node_modules/**", "dist/**", ".next/**"],
   },
 });

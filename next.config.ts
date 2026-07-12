@@ -7,6 +7,22 @@ const browserProviderFlags = resolveBrowserProviderFlags(process.env);
 const contentSecurityPolicy = buildContentSecurityPolicy({ isDevelopment, flags: browserProviderFlags });
 
 const nextConfig: NextConfig = {
+  async rewrites() {
+    if (process.env.PUBLIC_DEMO_MODE !== "true") {
+      return [];
+    }
+
+    return {
+      beforeFiles: [
+        { source: "/", destination: "/demo" },
+        ...["income", "debts", "expenses", "plan", "forecast", "decisions", "memory", "reminders", "coach"].map(
+          (route) => ({ source: `/${route}`, destination: `/demo/${route}` }),
+        ),
+      ],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
   async headers() {
     return [
       {
