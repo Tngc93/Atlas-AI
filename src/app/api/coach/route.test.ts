@@ -28,6 +28,20 @@ vi.mock("@/features/memory/repository", () => memoryRepositoryMock);
 vi.mock("@/features/memory/service", () => memoryServiceMock);
 
 describe("/api/coach", () => {
+  it("rejects client payloads so browser credentials cannot enter the server orchestrator", async () => {
+    const { POST } = await import("./route");
+    const response = await POST(
+      new Request("http://localhost/api/coach", {
+        method: "POST",
+        body: JSON.stringify({ apiKey: "client-secret", context: { raw: true } }),
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Koç endpoint'i istemci anahtarı veya finans bağlamı kabul etmez." });
+    expect(financeMock.getMonthlyFinancePlanSnapshot).not.toHaveBeenCalled();
+  });
+
   it("builds coach input server-side instead of trusting client payload", async () => {
     const monthlyPlan = { monthLabel: "Temmuz 2026" };
     const rateSnapshot = { source: "fallback" };
@@ -117,7 +131,7 @@ describe("/api/coach", () => {
     orchestratorMock.generateCoachInsight.mockResolvedValue(insight);
 
     const { POST } = await import("./route");
-    const response = await POST();
+    const response = await POST(new Request("http://localhost/api/coach", { method: "POST" }));
     const body = await response.json();
 
     expect(financeMock.getMonthlyFinancePlanSnapshot).toHaveBeenCalledWith(12);

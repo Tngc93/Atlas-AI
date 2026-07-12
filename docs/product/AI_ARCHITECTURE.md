@@ -15,6 +15,20 @@ This document does not define model providers, prompts, APIs, schemas, databases
 
 AI architecture in this product is a product-governance layer before it is a technical design.
 
+## Provider Independence and Execution Boundaries
+
+The product is provider-independent. Provider selection must not alter deterministic financial truth, `CoachContext` minimization, structured response validation, or user control.
+
+Three execution boundaries are supported:
+
+- Mock demo: no credential and no paid AI call.
+- Browser BYOK: explicit opt-in, direct provider call, transient session-only credential, and no application-server persistence.
+- Self-host: server-side credentials supplied by the operator through environment variables.
+
+Browser support is a provider capability, not a universal assumption. Providers with unsafe or unsupported browser credential behavior remain self-host-only. AI failure always falls back to deterministic content or the Mock explanation layer.
+
+Browser availability is explicit: Mock is `Demo`; Ollama and LM Studio are `Local`; Gemini and OpenRouter are `Experimental Browser`; OpenAI, Anthropic, and custom remote endpoints are `Self-host`. A connection test must not receive financial context. Minimized `CoachContext` may leave the browser only after a separate user action that clearly names the selected provider.
+
 ## 2. Constitutional Lineage
 
 This document derives from the accepted constitutional layer:
@@ -285,4 +299,3 @@ Those details belong to later implementation planning and must inherit from this
 - Which future AI outputs should require human review before being shown?
 - How should AI coaching be evaluated with Turkish users under real financial stress?
 - What summarized context is sufficient for useful coaching without exposing unnecessary sensitive detail?
-

@@ -1,9 +1,18 @@
 # Güvenlik ve Gizlilik Kontrol Listesi
 
 - Gerçek finansal veriyi iskele dışında tutun.
-- API anahtarlarını yalnızca `.env.local` içinde saklayın.
+- Self-host API anahtarlarını yalnızca `.env.local` veya güvenli server environment içinde saklayın.
+- Browser BYOK yalnız açıkça etkinleştirilen provider'larda geçici sekme belleği kullanır; localStorage, sessionStorage, IndexedDB, cookie, URL veya veritabanına yazmaz.
+- Credential; disconnect, provider/mode değişimi, navigation ve component unmount sırasında temizlenir.
 - `NEXT_PUBLIC_OPENAI_API_KEY` kullanmayın.
 - OpenAI kullanımını yalnızca sunucu tarafında tutun.
+- Anthropic kullanımını yalnızca sunucu tarafında tutun.
+- Public demo varsayılanı Mock olmalı; proje sahibine ait ücretli AI anahtarı içermemelidir.
+- OpenAI, Anthropic ve custom remote provider public browser'da kapalı kalmalıdır.
+- Ollama/LM Studio base URL'leri sabit loopback portlarıyla sınırlandırılmalıdır.
+- CSP `connect-src` yalnız etkin provider origin'lerini içermeli; kapalı provider origin'leri policy'de bulunmamalıdır.
+- Connection test finansal context göndermemeli; context gönderimi ayrı kullanıcı onayı gerektirmelidir.
+- Gerçek key yerine düşük limitli, kolayca iptal edilebilir test key kullanılmalıdır.
 - SQLite veritabanı dosyalarını git dışında bırakın.
 - Loglarda hassas değerleri maskeleyin.
 - AI tarafına ham özel notlar yerine özet finans verisi gönderin.

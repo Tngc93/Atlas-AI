@@ -9,6 +9,10 @@ const env = {
   DATABASE_URL: postgresContext.databaseUrl,
   DIRECT_URL: postgresContext.directUrl,
   AI_PROVIDER: "mock",
+  NEXT_PUBLIC_AI_BROWSER_BYOK_ENABLED: "true",
+  NEXT_PUBLIC_AI_BROWSER_LOCAL_ENABLED: "true",
+  NEXT_PUBLIC_AI_BROWSER_GEMINI_ENABLED: "false",
+  NEXT_PUBLIC_AI_BROWSER_OPENROUTER_ENABLED: "false",
 };
 
 const server = spawn("npm", ["run", "dev", "--", "--hostname", "127.0.0.1", "--port", "3100"], {

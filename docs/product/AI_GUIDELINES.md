@@ -218,6 +218,10 @@ AI participation must not obscure where sensitive financial information is proce
 
 Privacy should remain a felt product experience, not merely a legal condition.
 
+For explicit Browser BYOK, the user may temporarily provide a credential directly to a browser-capable provider. The product must explain that the credential is not persisted, that it is sent directly to the selected provider, and that browser runtime/XSS risk exists while connected. Browser BYOK must never become hidden consent or a reason to collect additional financial context.
+
+Testing a provider connection and sending financial context are separate consent moments. Connection checks should use metadata/status endpoints or fixed non-financial inputs. Browser calls should not retry automatically, and unsupported providers must remain visibly self-host-only.
+
 **What this rejects**
 
 - Unnecessary sensitive context

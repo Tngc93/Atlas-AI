@@ -3,13 +3,15 @@ import "server-only";
 import { composeCoachSections } from "../composer";
 import { runCoachAgents } from "../agents";
 import { coachInsightSchema, type AIUsageEstimate, type CoachContext } from "../types";
+import { getProviderDescriptor } from "./registry";
+import { noCredential, type ProviderRequest } from "./contracts";
 import type { AIProvider } from "./types";
+import { EDUCATIONAL_CAVEAT } from "./caveats";
 
-export const EDUCATIONAL_CAVEAT =
-  "Yalnızca eğitim amaçlıdır. Bu yorumlar deterministik hesaplamaların Türkçe açıklamasıdır; yatırım, hukuk, vergi veya lisanslı finansal tavsiye değildir.";
+export { EDUCATIONAL_CAVEAT } from "./caveats";
 
-function estimateUsage(input: CoachContext): AIUsageEstimate {
-  const estimatedInputTokens = Math.ceil(JSON.stringify(input).length / 4);
+function estimateUsage(request: ProviderRequest): AIUsageEstimate {
+  const estimatedInputTokens = Math.ceil(JSON.stringify(request.context).length / 4);
 
   return {
     estimatedInputTokens,
@@ -21,11 +23,14 @@ function estimateUsage(input: CoachContext): AIUsageEstimate {
 export const mockProvider: AIProvider = {
   name: "mock",
   mode: "mock",
+  descriptor: getProviderDescriptor("mock"),
   isConfigured: () => true,
   estimateUsage,
-  async generateCoachInsight(input) {
+  getStatus: () => "reachable",
+  async generateInsight(request) {
+    const input = request.context;
     const summary = input.summary;
-    const usage = estimateUsage(input);
+    const usage = estimateUsage(request);
     const sections = composeCoachSections(runCoachAgents(summary));
     const riskLabel = summary.riskLevel === "high" || summary.riskLevel === "critical" ? "yüksek" : summary.riskLevel === "medium" ? "orta" : "düşük";
     const firstAction = sections.monthlyActions[0]?.action ?? "Bu ay gelir, gider ve borç kayıtlarını gözden geçir.";
@@ -53,5 +58,11 @@ export const mockProvider: AIProvider = {
       providerMode: "mock",
       usage,
     });
+  },
+  async generateCoachInsight(input: CoachContext) {
+    return this.generateInsight(
+      { context: input, model: this.descriptor.defaultModel ?? "mock-finance-coach" },
+      { credential: noCredential, signal: new AbortController().signal },
+    );
   },
 };

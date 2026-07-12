@@ -1,4 +1,6 @@
-# Kişisel Finans Koçu Paneli
+# Open-source AI Financial Intelligence Platform
+
+**Bring your own AI. Bring your own Database. Deploy anywhere.**
 
 Türkiye / TRY odağında maaş planlama, kredi kartı borcu kapatma, zorunlu gider takibi, nakit akışı riski ve eğitim amaçlı finans koçu yorumları için gizlilik odaklı bir kontrol paneli.
 
@@ -26,8 +28,8 @@ docs/architecture/user-ownership.md
 - Tailwind CSS
 - PostgreSQL + Prisma
 - Recharts
-- Mock-first AI provider katmanı
-- Gemini provider ve OpenAI placeholder katmanı
+- Provider bağımsız, Mock-first AI katmanı
+- Self-host OpenAI, Gemini, Anthropic, OpenRouter, Ollama, LM Studio ve OpenAI-compatible provider adaptörleri
 - TCMB faiz verisi sağlayıcı yer tutucusu
 
 ## Başlangıç
@@ -58,6 +60,23 @@ GEMINI_API_KEY=
 GEMINI_MODEL=gemini-2.5-flash
 GEMINI_TIMEOUT_MS=12000
 GEMINI_RETRY_COUNT=2
+ANTHROPIC_API_KEY=
+ANTHROPIC_MODEL=claude-sonnet-4-20250514
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=openai/gpt-4.1-mini
+OLLAMA_MODEL=llama3.2
+OLLAMA_BASE_URL=http://127.0.0.1:11434/v1
+LM_STUDIO_MODEL=local-model
+LM_STUDIO_BASE_URL=http://127.0.0.1:1234/v1
+CUSTOM_AI_API_KEY=
+CUSTOM_AI_MODEL=
+CUSTOM_AI_BASE_URL=
+NEXT_PUBLIC_AI_BROWSER_BYOK_ENABLED=false
+NEXT_PUBLIC_AI_BROWSER_LOCAL_ENABLED=false
+NEXT_PUBLIC_AI_BROWSER_GEMINI_ENABLED=false
+NEXT_PUBLIC_AI_BROWSER_OPENROUTER_ENABLED=false
+AI_PUBLIC_DEMO_DATA_CONFIRMED=false
+AI_BROWSER_STRICT_CSP_CONFIRMED=false
 ```
 
 Varsayılan sağlayıcı `mock` değeridir. Gemini kullanmak için kendi `.env.local` dosyanızda `AI_PROVIDER=gemini` yapın ve `GEMINI_API_KEY` değerini yalnızca lokal ortamda doldurun. Anahtarı README, kod, test, commit veya GitHub'a eklemeyin.
@@ -69,15 +88,37 @@ Gemini sağlayıcısı şu şekilde çalışır:
 - AI'ya yalnızca deterministik finans motorunun ürettiği minimize özet gönderilir; isim, IBAN, hesap numarası, kart numarası, işlem açıklaması veya ham banka hareketi gönderilmez.
 - Aynı finansal özet tekrar geldiğinde cache kullanılır; gereksiz Gemini çağrısı yapılmaz.
 
+## AI Çalışma Modları
+
+- **Mock Demo:** Varsayılan, API anahtarı gerektirmeyen ve proje sahibine AI maliyeti üretmeyen moddur.
+- **Browser BYOK:** Master flag yanında provider'a özel flag gerektirir. Anahtar yalnız açık sekmenin geçici belleğinde tutulur; storage, cookie, URL, veritabanı veya uygulama API route'una yazılmaz.
+- **Local Browser:** Ollama/LM Studio yalnız sabit `127.0.0.1:11434` ve `127.0.0.1:1234` endpoint'leriyle açılır.
+- **Cloud Browser BYOK:** Gemini ve OpenRouter ayrı deneysel flag'lere sahiptir. Mevcut CSP inline framework scriptlerine izin verdiği için production'da kod seviyesinde fail-closed kalırlar; yalnız lokal geliştirme doğrulamasında açılabilirler.
+- **Self-host:** `AI_PROVIDER` ve ilgili server-side env değerleri kullanılır. Desteklenen değerler: `mock`, `openai`, `gemini`, `anthropic`, `openrouter`, `ollama`, `lm-studio`, `custom-openai-compatible`.
+
+OpenAI ve Anthropic public browser kullanımına açılmaz; self-host server-side modda çalışır. Custom remote base URL public demo browser modunda kabul edilmez. Local provider kullanırken ilgili Ollama/LM Studio sunucusunun CORS ayarı uygulama origin'ine izin vermelidir.
+
+| Sağlayıcı | Public browser durumu | UI etiketi |
+| --- | --- | --- |
+| Mock | Açık, dış çağrı yok | Demo |
+| Ollama / LM Studio | Yalnız sabit localhost endpoint ve açık CORS | Local |
+| Gemini / OpenRouter | Deneysel, ayrı flag ve test key gerekir | Deneysel Browser |
+| OpenAI / Anthropic / Custom remote | Browser'dan çağrılamaz | Self-host |
+
+`Bağlantıyı test et` yalnız provider metadata/status endpoint'ini çağırır ve finansal özet göndermez. Minimize `CoachContext` ancak kullanıcı ayrıca `Koç yorumunu oluştur` dediğinde gönderilir. Browser çağrıları otomatik retry yapmaz.
+
+Provider kararlarının resmi dayanakları: [OpenAI key safety](https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safet), [Anthropic TypeScript SDK](https://github.com/anthropics/anthropic-sdk-typescript), [Gemini key security](https://ai.google.dev/gemini-api/docs/generate-content/api-key), [OpenRouter OAuth PKCE](https://openrouter.ai/docs/guides/overview/auth/oauth), [Ollama CORS](https://docs.ollama.com/faq) ve [LM Studio CORS](https://lmstudio.ai/docs/cli/serve/server-start).
+
 Önemli notlar:
 
 - `DATABASE_URL` lokal `.env.local` içinde açıkça tanımlanmalıdır. Production ortamında sessiz SQLite fallback davranışına güvenilmemelidir.
 - `DIRECT_URL` Prisma migration işlemleri için aynı Neon branch'in direct bağlantısı olmalıdır.
 - Production branch bağlantıları integration test veya E2E için kullanılmamalıdır.
-- API anahtarlarını istemci tarafı koda koymayın.
-- Anahtarı `NEXT_PUBLIC_` ile başlatmayın.
-- AI provider kodu server-only çalışır.
+- API anahtarlarını kaynak koda veya `NEXT_PUBLIC_*_API_KEY` değişkenlerine koymayın.
+- Browser BYOK dışında provider kodu server-only çalışır. Browser BYOK anahtarı yalnız explicit kullanıcı işlemiyle session belleğinde tutulur.
+- Production'da Local Browser BYOK, `AI_PUBLIC_DEMO_DATA_CONFIRMED=true` olmadan etkinleşmez. Cloud provider'lar nonce/hash tabanlı CSP ayrı bir milestone'da uygulanana kadar production'da açılamaz.
 - `/api/coach` client payload'a güvenmez; server tarafında mevcut aylık plan snapshot'ından minimize edilmiş özet üretir.
+- `/api/coach` API key veya client tarafından üretilmiş `CoachContext` kabul etmez.
 - Canlı AI sağlayıcısı seçiliyse yalnız minimize edilmiş finans özeti gönderilebilir; ham Prisma kayıtları, isim, IBAN, kart numarası, işlem açıklaması ve kişisel notlar gönderilmez.
 
 ## Mevcut Sayfalar

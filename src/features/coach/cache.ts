@@ -1,15 +1,15 @@
-import type { AIProviderName, CoachInsight } from "./types";
+import type { CoachInsight } from "./types";
 
-type CacheKey = `${AIProviderName}:${string}`;
+type CacheKey = `${string}:${string}`;
 
 const insightCache = new Map<CacheKey, CoachInsight>();
 
-export function getCachedCoachInsight(provider: AIProviderName, inputHash: string): CoachInsight | null {
-  return insightCache.get(`${provider}:${inputHash}`) ?? null;
+export function getCachedCoachInsight(scope: string, inputHash: string): CoachInsight | null {
+  return insightCache.get(`${scope}:${inputHash}`) ?? null;
 }
 
-export function setCachedCoachInsight(provider: AIProviderName, inputHash: string, insight: CoachInsight) {
-  insightCache.set(`${provider}:${inputHash}`, insight);
+export function setCachedCoachInsight(scope: string, inputHash: string, insight: CoachInsight) {
+  insightCache.set(`${scope}:${inputHash}`, insight);
 }
 
 export function clearCoachInsightCache() {

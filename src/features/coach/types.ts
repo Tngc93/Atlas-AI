@@ -60,7 +60,7 @@ export const coachInsightSchema = z.object({
   caveats: z.string(),
   model: z.string(),
   isPlaceholder: z.boolean(),
-  provider: z.enum(["mock", "openai", "gemini"]),
+  provider: z.enum(["mock", "openai", "gemini", "anthropic", "openrouter", "ollama", "lm-studio", "custom-openai-compatible"]),
   providerMode: z.enum(["mock", "placeholder", "live", "fallback"]),
   usage: z.object({
     estimatedInputTokens: z.number().int().nonnegative(),
@@ -71,9 +71,17 @@ export const coachInsightSchema = z.object({
 
 export type CoachInsight = z.infer<typeof coachInsightSchema>;
 
-export type AIProviderName = "mock" | "openai" | "gemini";
+export type AIProviderName =
+  | "mock"
+  | "openai"
+  | "gemini"
+  | "anthropic"
+  | "openrouter"
+  | "ollama"
+  | "lm-studio"
+  | "custom-openai-compatible";
 
-export const geminiCoachResponseSchema = z.object({
+export const providerCoachResponseSchema = z.object({
   summary: z.string().min(1),
   strengths: z.array(z.string().min(1)).max(5),
   risks: z.array(z.string().min(1)).max(5),
@@ -82,7 +90,10 @@ export const geminiCoachResponseSchema = z.object({
   confidence: z.number().min(0).max(1),
 });
 
-export type GeminiCoachResponse = z.infer<typeof geminiCoachResponseSchema>;
+export const geminiCoachResponseSchema = providerCoachResponseSchema;
+
+export type ProviderCoachResponse = z.infer<typeof providerCoachResponseSchema>;
+export type GeminiCoachResponse = ProviderCoachResponse;
 
 export type CoachInputSummary = {
   month: string;

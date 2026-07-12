@@ -1,9 +1,7 @@
-import type { AIProviderMode, AIProviderName, AIUsageEstimate, CoachContext, CoachInsight } from "../types";
+import type { AIProviderName, CoachContext, CoachInsight } from "../types";
+import type { AIProviderAdapter } from "./contracts";
 
-export type AIProvider = {
+export type AIProvider = AIProviderAdapter & {
   name: AIProviderName;
-  mode: AIProviderMode;
-  isConfigured: () => boolean;
-  estimateUsage: (input: CoachContext) => AIUsageEstimate;
   generateCoachInsight: (input: CoachContext) => Promise<CoachInsight>;
 };

@@ -10,12 +10,28 @@ import { recordAIRequest, recordCacheHit, recordCacheMiss, recordFallback } from
 import { geminiProvider } from "./providers/gemini-provider";
 import { mockProvider } from "./providers/mock-provider";
 import { openAIProvider } from "./providers/openai-provider";
+import {
+  anthropicProvider,
+  customOpenAICompatibleProvider,
+  lmStudioProvider,
+  ollamaProvider,
+  openRouterProvider,
+} from "./providers/server-providers";
 import type { AIProvider } from "./providers/types";
 
 export { buildCoachContext, buildCoachInputSummary };
 
 function parseProviderName(value: string | undefined): AIProviderName {
-  if (value === "openai" || value === "gemini" || value === "mock") {
+  if (
+    value === "openai" ||
+    value === "gemini" ||
+    value === "mock" ||
+    value === "anthropic" ||
+    value === "openrouter" ||
+    value === "ollama" ||
+    value === "lm-studio" ||
+    value === "custom-openai-compatible"
+  ) {
     return value;
   }
 
@@ -32,6 +48,12 @@ export function selectAIProvider(): AIProvider {
   if (providerName === "gemini") {
     return geminiProvider;
   }
+
+  if (providerName === "anthropic") return anthropicProvider;
+  if (providerName === "openrouter") return openRouterProvider;
+  if (providerName === "ollama") return ollamaProvider;
+  if (providerName === "lm-studio") return lmStudioProvider;
+  if (providerName === "custom-openai-compatible") return customOpenAICompatibleProvider;
 
   return mockProvider;
 }
@@ -73,11 +95,25 @@ export function hashCoachContext(input: CoachContext): string {
     .digest("hex");
 }
 
-function isWithinCostControls(input: CoachContext, provider: AIProvider): boolean {
+function selectedModel(provider: AIProvider): string {
+  const envNames: Partial<Record<AIProviderName, string>> = {
+    openai: "OPENAI_MODEL",
+    gemini: "GEMINI_MODEL",
+    anthropic: "ANTHROPIC_MODEL",
+    openrouter: "OPENROUTER_MODEL",
+    ollama: "OLLAMA_MODEL",
+    "lm-studio": "LM_STUDIO_MODEL",
+    "custom-openai-compatible": "CUSTOM_AI_MODEL",
+  };
+  const envName = envNames[provider.name];
+  return (envName ? process.env[envName] : undefined) || provider.descriptor.defaultModel || "default";
+}
+
+function isWithinCostControls(input: CoachContext, provider: AIProvider, model: string): boolean {
   const maxSummaryChars = Number(process.env.AI_MAX_INPUT_SUMMARY_CHARS ?? "4000");
   const dailyLimit = Number(process.env.AI_DAILY_REQUEST_LIMIT ?? "20");
   const monthlyBudgetLimitTry = Number(process.env.AI_MONTHLY_BUDGET_LIMIT_TRY ?? "100");
-  const usage = provider.estimateUsage(input);
+  const usage = provider.estimateUsage({ context: input, model });
 
   return JSON.stringify(input).length <= maxSummaryChars && dailyLimit > 0 && monthlyBudgetLimitTry >= 0 && usage.estimatedCostKurus <= monthlyBudgetLimitTry * 100;
 }
@@ -85,12 +121,14 @@ function isWithinCostControls(input: CoachContext, provider: AIProvider): boolea
 export async function generateCoachInsight(input: CoachContext | CoachInputSummary): Promise<CoachInsight> {
   const context = normalizeCoachContext(input);
   const selectedProvider = selectAIProvider();
+  const model = selectedModel(selectedProvider);
   const provider =
-    selectedProvider.name === "mock" || (selectedProvider.isConfigured() && isWithinCostControls(context, selectedProvider))
+    selectedProvider.name === "mock" || (selectedProvider.isConfigured() && isWithinCostControls(context, selectedProvider, model))
       ? selectedProvider
       : mockProvider;
   const inputHash = hashCoachContext(context);
-  const cached = getCachedCoachInsight(provider.name, inputHash);
+  const cacheScope = `${provider.name}:${selectedModel(provider)}:server`;
+  const cached = getCachedCoachInsight(cacheScope, inputHash);
 
   if (cached) {
     recordCacheHit(provider.name);
@@ -109,7 +147,7 @@ export async function generateCoachInsight(input: CoachContext | CoachInputSumma
       recordFallback(selectedProvider.name);
     }
 
-    setCachedCoachInsight(provider.name, inputHash, parsed);
+    setCachedCoachInsight(cacheScope, inputHash, parsed);
     return parsed;
   } catch {
     recordFallback(selectedProvider.name);
@@ -119,7 +157,7 @@ export async function generateCoachInsight(input: CoachContext | CoachInputSumma
       providerMode: selectedProvider.name === "mock" ? "mock" : "fallback",
     });
     recordAIRequest(mockProvider.name, performance.now() - startedAt);
-    setCachedCoachInsight(provider.name, inputHash, parsedFallback);
+    setCachedCoachInsight(cacheScope, inputHash, parsedFallback);
     return parsedFallback;
   }
 }

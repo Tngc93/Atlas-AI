@@ -1,5 +1,18 @@
 # Production Readiness
 
+## Phase 6 AI Provider Deployment Modes
+
+- Public demo `AI_PROVIDER=mock` ile açılır ve proje sahibine ait ücretli AI anahtarı içermez.
+- Browser BYOK varsayılan olarak kapalıdır. Açıldığında credential yalnız client-side session vault içinde tutulur ve uygulama API route'larına gönderilmez.
+- Gemini ve OpenRouter browser modları ayrı capability flag'leri gerektirir.
+- Production Local Browser BYOK `AI_PUBLIC_DEMO_DATA_CONFIRMED=true` olmadan açılmaz. Cloud modlar nonce/hash tabanlı CSP uygulanana kadar production'da kod seviyesinde kapalıdır.
+- OpenAI ve Anthropic yalnız self-host/server-side modda desteklenir.
+- Self-host kurulumu provider anahtarlarını `.env` üzerinden, PostgreSQL bağlantısını kendi `DATABASE_URL`/`DIRECT_URL` değerlerinden sağlar.
+- Browser custom endpoint public demo'da desteklenmez. Ollama yalnız `11434`, LM Studio yalnız `1234` loopback portunu kullanır.
+- CSP `connect-src`, secret scan, Mock fallback ve storage-negative E2E kontrolleri public demo release gate'inin parçasıdır.
+- Provider connection testleri finansal özet göndermez; browser calls otomatik retry yapmaz.
+- Auth'suz ortak PostgreSQL ortamı demo-only kabul edilmez. Browser BYOK açılmadan önce read-only veya düzenli sıfırlanan kurgusal demo veri ortamı doğrulanmalıdır.
+
 Bu doküman uygulamanın Vercel/production hazırlığı ve PostgreSQL geçişi için operasyon notlarını özetler.
 
 Durum: PostgreSQL provider ve çevrimdışı baseline hazırlanmıştır. Production Neon branch'e migration uygulanmamış, Vercel deploy veya authentication eklenmemiştir.

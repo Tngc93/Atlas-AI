@@ -6,6 +6,8 @@ import { runCoachAgents } from "../agents";
 import { buildGeminiSystemPrompt, buildGeminiUserPrompt } from "../prompt-builder";
 import { coachInsightSchema, geminiCoachResponseSchema, type CoachContext, type GeminiCoachResponse } from "../types";
 import { EDUCATIONAL_CAVEAT, mockProvider } from "./mock-provider";
+import { createServerCredential, type ProviderRequest } from "./contracts";
+import { getProviderDescriptor } from "./registry";
 import type { AIProvider } from "./types";
 
 type GeminiClient = {
@@ -69,8 +71,8 @@ function createGeminiClient(apiKey: string): GeminiClient {
   return new GoogleGenAI({ apiKey }) as GeminiClient;
 }
 
-function estimateUsage(input: CoachContext) {
-  const estimatedInputTokens = Math.ceil((buildGeminiSystemPrompt().length + buildGeminiUserPrompt(input).length) / 4);
+function estimateUsage(request: ProviderRequest) {
+  const estimatedInputTokens = Math.ceil((buildGeminiSystemPrompt().length + buildGeminiUserPrompt(request.context).length) / 4);
   const estimatedOutputTokens = 260;
 
   return {
@@ -159,7 +161,7 @@ function priorityToRisk(priority: GeminiCoachResponse["priority"]) {
 }
 
 function buildGeminiInsight(input: CoachContext, response: GeminiCoachResponse, model: string) {
-  const usage = estimateUsage(input);
+  const usage = estimateUsage({ context: input, model });
   const sections = composeCoachSections(runCoachAgents(input.summary));
 
   const risks = response.risks.length > 0 ? response.risks : sections.risks.map((risk) => risk.finding);
@@ -200,14 +202,13 @@ function buildGeminiInsight(input: CoachContext, response: GeminiCoachResponse, 
   });
 }
 
-async function requestGemini(input: CoachContext) {
-  const apiKey = process.env.GEMINI_API_KEY;
+async function requestGemini(input: CoachContext, apiKey = process.env.GEMINI_API_KEY, requestedModel?: string) {
 
   if (!apiKey) {
     throw new Error("missing_api_key");
   }
 
-  const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+  const model = requestedModel || process.env.GEMINI_MODEL || DEFAULT_MODEL;
   const client = createGeminiClient(apiKey);
   const timeoutMs = parseTimeoutMs();
   const retryCount = parseRetryCount();
@@ -252,11 +253,22 @@ export function setGeminiClientFactoryForTests(factory: ((apiKey: string) => Gem
 export const geminiProvider: AIProvider = {
   name: "gemini",
   mode: "live",
+  descriptor: getProviderDescriptor("gemini"),
   isConfigured: () => Boolean(process.env.GEMINI_API_KEY),
   estimateUsage,
+  getStatus: (context) => (context.credential.readSecret() ? "configured" : "not-configured"),
+  async generateInsight(request, context) {
+    return requestGemini(request.context, context.credential.readSecret() ?? undefined, request.model);
+  },
   async generateCoachInsight(input: CoachContext) {
     try {
-      return await requestGemini(input);
+      return await this.generateInsight(
+        { context: input, model: process.env.GEMINI_MODEL || DEFAULT_MODEL },
+        {
+          credential: createServerCredential("gemini", () => process.env.GEMINI_API_KEY),
+          signal: new AbortController().signal,
+        },
+      );
     } catch (error) {
       safeLogGeminiFailure(error);
       return {
