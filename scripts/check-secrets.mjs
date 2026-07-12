@@ -34,16 +34,24 @@ const secretPatterns = [
     pattern: /AIza[0-9A-Za-z_-]{25,}/,
   },
   {
+    name: "Anthropic API key",
+    pattern: /sk-ant-[A-Za-z0-9_-]{20,}/,
+  },
+  {
+    name: "OpenRouter API key",
+    pattern: /sk-or-v1-[A-Za-z0-9_-]{20,}/,
+  },
+  {
     name: "private key block",
     pattern: /-----BEGIN (?:RSA |EC |OPENSSH |)PRIVATE KEY-----/,
   },
   {
     name: "client-side AI API key assignment",
-    pattern: /NEXT_PUBLIC_(?:OPENAI|GEMINI|AI)[A-Z0-9_]*\s*=/,
+    pattern: /NEXT_PUBLIC_(?:OPENAI|GEMINI|ANTHROPIC|OPENROUTER|AI)[A-Z0-9_]*API_KEY[A-Z0-9_]*\s*=/,
   },
   {
     name: "non-empty AI API key env value",
-    pattern: /^(?:OPENAI_API_KEY|GEMINI_API_KEY)[^\S\r\n]*=[^\S\r\n]*["']?[^"'\s\r\n]+/m,
+    pattern: /^(?:OPENAI_API_KEY|GEMINI_API_KEY|ANTHROPIC_API_KEY|OPENROUTER_API_KEY|CUSTOM_AI_API_KEY)[^\S\r\n]*=[^\S\r\n]*["']?[^"'\s\r\n]+/m,
   },
 ];
 

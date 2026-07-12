@@ -115,13 +115,28 @@ This version has breaking changes. APIs, conventions, and file structure may dif
 - Redact sensitive values from logs and errors.
 - Keep local database and backups out of git.
 
+## AI Provider and BYOK Rules
+
+- Public demo must default to `AI_PROVIDER=mock` and must not contain a project-owned paid AI key.
+- OpenAI and Anthropic credentials are server-side/self-host only.
+- Browser BYOK is an explicit, feature-flagged exception for providers marked browser-capable in the registry.
+- A Browser BYOK credential may exist only in a client-side session vault. It must not enter localStorage, sessionStorage, IndexedDB, cookies, URLs, serialized props, application API routes, Prisma, logs, analytics, cache keys, tests, screenshots, or commits.
+- Browser BYOK must be disabled by default. Gemini and OpenRouter require separate experimental capability flags.
+- Production Local Browser BYOK requires explicit demo-data confirmation. Cloud Browser BYOK remains code-level disabled until nonce/hash CSP is actually implemented and reviewed.
+- OpenAI, Anthropic, and custom remote endpoints are self-host-only. Ollama and LM Studio are local-only and may use only their approved loopback ports in the public demo.
+- Connection tests must not send `CoachContext`. Sending minimized finance context requires a separate explicit user action.
+- Browser-direct calls must not retry automatically because a retry can consume additional user quota.
+- Browser credentials are sent directly to the selected provider. The UI must disclose CORS, quota, browser developer-tools, and XSS risks.
+- `/api/coach` must never accept client credentials or client-supplied raw finance context.
+- All providers consume only minimized `CoachContext`; deterministic finance outputs remain authoritative.
+
 ## OpenAI API Usage Rules
 
 - OpenAI integration must be server-side only.
 - Use environment variables for API keys.
 - The expected local variable is `OPENAI_API_KEY`.
 - `.env.example` may contain `OPENAI_API_KEY=` as an empty placeholder only.
-- Never place API keys in frontend/client-side code.
+- Never place OpenAI API keys in frontend/client-side code; OpenAI is self-host/server-only.
 - Never expose API keys through serialized props, API responses, logs, browser network payloads, or build output.
 - Use AI for educational explanations, tradeoff summaries, review questions, and coaching language.
 - Do not use AI as the source of truth for budgets, interest, risk levels, or payoff projections.
@@ -131,10 +146,10 @@ This version has breaking changes. APIs, conventions, and file structure may dif
 
 ## Gemini API Usage Rules
 
-- Gemini integration must be server-side only.
+- Gemini is server-side by default. Optional Browser BYOK may be enabled only through the provider registry and both browser capability flags.
 - Use `GEMINI_API_KEY` from server-side environment variables only.
 - `.env.example` may contain `GEMINI_API_KEY=` as an empty placeholder only.
-- Never place Gemini API keys in frontend/client-side code, logs, docs, tests, screenshots, or commits.
+- Never hardcode Gemini API keys in frontend/client-side code, logs, docs, tests, screenshots, or commits. An explicit Browser BYOK value may exist only in the transient credential vault and direct provider request header.
 - `AI_PROVIDER=gemini` may call the real Gemini provider; `AI_PROVIDER=mock` must keep all AI behavior local and deterministic.
 - The default Gemini model is `gemini-2.5-flash`; use `GEMINI_MODEL` only for server-side model selection.
 - Gemini prompts must be Turkish and must not ask the model to perform financial calculations.

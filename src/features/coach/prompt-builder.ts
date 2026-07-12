@@ -1,6 +1,6 @@
 import type { CoachContext } from "./types";
 
-export function buildGeminiSystemPrompt(): string {
+export function buildProviderSystemPrompt(): string {
   return [
     "Sen Türkçe konuşan profesyonel bir kişisel finans koçusun.",
     "Finansal hesaplama yapma, sayı uydurma ve verilen özet dışında bilgi üretme.",
@@ -12,7 +12,7 @@ export function buildGeminiSystemPrompt(): string {
   ].join("\n");
 }
 
-export function buildGeminiUserPrompt(context: CoachContext): string {
+export function buildProviderUserPrompt(context: CoachContext): string {
   return [
     "Aşağıdaki finansal özet, uygulamanın deterministik finans motoru tarafından kişisel veri azaltılarak üretilmiştir.",
     "Bu özet dışında isim, IBAN, hesap numarası, kart numarası, işlem açıklaması veya ham banka hareketi bilmiyorsun.",
@@ -28,3 +28,6 @@ export function buildGeminiUserPrompt(context: CoachContext): string {
     JSON.stringify(context.recommendations),
   ].join("\n\n");
 }
+
+export const buildGeminiSystemPrompt = buildProviderSystemPrompt;
+export const buildGeminiUserPrompt = buildProviderUserPrompt;

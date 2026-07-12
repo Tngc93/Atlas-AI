@@ -15,8 +15,12 @@ async function getMemoryReportSafely(): Promise<FinancialMemoryReport | null> {
   }
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    if ((await request.text()).trim()) {
+      return NextResponse.json({ error: "Koç endpoint'i istemci anahtarı veya finans bağlamı kabul etmez." }, { status: 400 });
+    }
+
     const [{ monthlyPlan }, rateSnapshot, memoryReport] = await Promise.all([
       getMonthlyFinancePlanSnapshot(12),
       getLatestInterestRateSnapshot(),

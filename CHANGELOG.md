@@ -4,6 +4,23 @@ Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koç
 
 ## Unreleased
 
+### Phase 6.1 - Provider Reality Check and Demo Safety
+
+- Provider registry `Demo`, `Local`, `Deneysel Browser` ve `Self-host` availability durumlarıyla zenginleştirildi.
+- Gemini ve OpenRouter browser flag'leri ayrıldı; custom remote browser desteği public build'den kaldırıldı.
+- Production demo-data guard'ı, cloud CSP fail-closed kuralı, provider-aware `connect-src` ve sabit local port politikası eklendi.
+- Bağlantı testi finansal context göndermeyen metadata çağrısına ayrıldı; gerçek koç yorumu ayrı kullanıcı onayı gerektirir.
+- Browser retry kapatıldı; disconnect, navigation ve unmount credential/cache cleanup kapsamına alındı.
+- `402`, `408`, `429`, `5xx`, network/CORS ve invalid response durumları güvenli Türkçe hata sınıflarına bağlandı.
+
+### Phase 6 - AI Provider Abstraction
+
+- Mock, OpenAI, Gemini, Anthropic, OpenRouter, Ollama, LM Studio ve custom OpenAI-compatible sağlayıcıları için ortak registry ve adapter sözleşmesi eklendi.
+- Public demo, session-only Browser BYOK ve self-host execution sınırları birbirinden ayrıldı.
+- Browser credential'ın storage, URL, DB, server route, cache ve loglara taşınmasını önleyen credential vault ve güvenli hata/redaction katmanı eklendi.
+- `/coach` sayfasına varsayılan olarak kapalı Browser BYOK capability flag'leriyle AI Sağlayıcı Ayarları paneli eklendi.
+- Public demo varsayılanı Mock olarak korundu; ücretli server key kullanılmadan deterministic içerik ve fallback davranışı devam ediyor.
+
 ### Phase 2 - PostgreSQL Test Branch and Baseline
 
 - Mevcut SQLite migration geçmişi içerik değiştirilmeden `prisma/migrations-sqlite` altında arşivlendi.

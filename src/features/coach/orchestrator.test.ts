@@ -70,13 +70,14 @@ describe("AI coach orchestrator", () => {
     expect(selectAIProvider().name).toBe("mock");
   });
 
-  it("selects OpenAI placeholder without importing a real SDK call path", () => {
+  it("selects the self-host OpenAI adapter without calling it", () => {
     vi.stubEnv("AI_PROVIDER", "openai");
 
     const provider = selectAIProvider();
 
     expect(provider.name).toBe("openai");
-    expect(provider.mode).toBe("placeholder");
+    expect(provider.mode).toBe("live");
+    expect(provider.descriptor.browserSupport).toBe("self-host-only");
   });
 
   it("builds a minimized summary without raw debt names or lender names", () => {
