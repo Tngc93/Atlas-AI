@@ -366,7 +366,7 @@ body {
 .hero-reveal { animation:hero-reveal .9s cubic-bezier(.2,.75,.25,1) both; }.hero-step-2{animation-delay:.35s}.hero-step-3{animation-delay:.58s}.hero-step-3b{animation-delay:.72s}.hero-step-3c{animation-delay:.86s}.hero-step-4{animation-delay:1.04s}.hero-step-5{animation-delay:1.2s}.hero-step-6{animation-delay:1.42s}
 @keyframes hero-reveal { from { opacity:0; filter:blur(8px); transform:translateY(22px) } to { opacity:1; filter:blur(0); transform:none } }
 .landing-section,.truth-section,.demo-band,.open-source-section { padding:clamp(90px,11vw,170px) clamp(22px,6vw,96px); }
-.cv-auto { contain:layout paint; }
+.cv-auto { content-visibility:auto; contain:layout paint; contain-intrinsic-size:auto 900px; }
 .landing-section-heading { display:grid; grid-template-columns:minmax(160px,.55fr) 1.45fr; gap:40px; align-items:start; margin-bottom:70px; }
 .landing-section-heading>p,.truth-section>div>p,.demo-band>div>p,.open-source-section>div>p { font-size:10px; letter-spacing:.18em; color:#7aa8ff; }
 .landing-section-heading h2,.demo-band h2,.open-source-section h2 { margin:0; font-size:clamp(43px,5.5vw,84px); font-weight:450; line-height:.98; letter-spacing:-.055em; }
@@ -556,6 +556,11 @@ body {
 @media(max-width:1100px){.resource-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.resource-list{grid-template-columns:1fr;gap:18px}.resource-list .resource-card{grid-template-columns:62px minmax(0,1fr) 28px;column-gap:18px;min-height:230px;padding:24px!important;border-radius:26px!important}.resource-list .resource-card:hover{padding:24px!important}.resource-card .resource-icon{width:62px;height:62px;border-radius:17px}.resource-card .resource-icon svg{width:29px;height:29px}.resource-card .resource-content strong{font-size:23px}.resource-card .resource-content>span{font-size:17px;line-height:1.48}.resource-card .resource-arrow{width:28px;height:28px}.resource-card .resource-arrow svg{width:26px;height:26px}}
 @media(prefers-reduced-motion:reduce){.resource-card,.resource-card *{transition:none!important}.resource-card:hover{transform:none}.resource-card:hover .resource-arrow svg{transform:none}}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto!important}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
 
 /* Landing readability, navigation, and footer refinement */
 .landing-root{

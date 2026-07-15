@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { architecturePages, docsPages, productPages, resourcePages } from "@/lib/public-site/content";
+import { resolveSiteUrl } from "@/lib/public-site/site-url";
 
-const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+const baseUrl = resolveSiteUrl().origin;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const contentRoutes = [productPages, architecturePages, docsPages, resourcePages]

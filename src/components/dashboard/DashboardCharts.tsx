@@ -15,12 +15,14 @@ import { kurusToLira } from "@/features/finance/money";
 import type { PaymentPlanMonth, SalaryAllocation } from "@/features/finance/types";
 import { trCopy } from "@/lib/copy/tr";
 import { chartLabelStyle, chartTheme, chartTooltipStyle } from "@/components/ui/chartTheme";
+import { useReducedMotion } from "@/components/ui/useReducedMotion";
 
 function formatTooltipValue(value: unknown): string {
   return `${Number(value ?? 0).toLocaleString("tr-TR")} TL`;
 }
 
 export function SalaryWaterfall({ allocation }: { allocation: SalaryAllocation }) {
+  const reducedMotion = useReducedMotion();
   const data = [
     { name: trCopy.charts.income, amount: kurusToLira(allocation.salaryKurus) },
     { name: trCopy.charts.expenses, amount: -kurusToLira(allocation.mandatoryExpenseTotalKurus) },
@@ -43,7 +45,7 @@ export function SalaryWaterfall({ allocation }: { allocation: SalaryAllocation }
           <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} />
           <YAxis tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} />
           <Tooltip formatter={formatTooltipValue} contentStyle={chartTooltipStyle} labelStyle={chartLabelStyle} />
-          <Bar dataKey="amount" fill="url(#salaryBarGradient)" radius={[8, 8, 0, 0]} animationDuration={900} />
+          <Bar dataKey="amount" fill="url(#salaryBarGradient)" radius={[8, 8, 0, 0]} animationDuration={900} isAnimationActive={!reducedMotion} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -51,6 +53,7 @@ export function SalaryWaterfall({ allocation }: { allocation: SalaryAllocation }
 }
 
 export function PayoffRoadmapChart({ months }: { months: PaymentPlanMonth[] }) {
+  const reducedMotion = useReducedMotion();
   const data = months.map((month) => ({
     month: month.month,
     remaining: kurusToLira(month.debtProjections.reduce((total, debt) => total + debt.endingBalanceKurus, 0)),
@@ -71,8 +74,8 @@ export function PayoffRoadmapChart({ months }: { months: PaymentPlanMonth[] }) {
           <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} />
           <YAxis tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} />
           <Tooltip formatter={formatTooltipValue} contentStyle={chartTooltipStyle} labelStyle={chartLabelStyle} />
-          <Line type="monotone" dataKey="remaining" name="Kalan borç" stroke="url(#payoffRemainingGradient)" strokeWidth={3} dot={false} animationDuration={900} />
-          <Line type="monotone" dataKey="interest" name="Faiz etkisi" stroke={chartTheme.coral} strokeWidth={2} dot={false} animationDuration={900} />
+          <Line type="monotone" dataKey="remaining" name="Kalan borç" stroke="url(#payoffRemainingGradient)" strokeWidth={3} dot={false} animationDuration={900} isAnimationActive={!reducedMotion} />
+          <Line type="monotone" dataKey="interest" name="Faiz etkisi" stroke={chartTheme.coral} strokeWidth={2} dot={false} animationDuration={900} isAnimationActive={!reducedMotion} />
         </LineChart>
       </ResponsiveContainer>
     </div>

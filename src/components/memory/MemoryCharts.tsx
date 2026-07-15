@@ -4,6 +4,7 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 import { formatTry } from "@/features/finance/money";
 import type { MemoryTrendPoint } from "@/features/memory/types";
 import { chartLabelStyle, chartTheme, chartTooltipStyle } from "@/components/ui/chartTheme";
+import { useReducedMotion } from "@/components/ui/useReducedMotion";
 
 function toChartData(trend: MemoryTrendPoint[]) {
   return trend.map((point) => ({
@@ -16,6 +17,7 @@ function toChartData(trend: MemoryTrendPoint[]) {
 }
 
 export function MemoryDebtTrendChart({ trend }: { trend: MemoryTrendPoint[] }) {
+  const reducedMotion = useReducedMotion();
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -31,8 +33,8 @@ export function MemoryDebtTrendChart({ trend }: { trend: MemoryTrendPoint[] }) {
           <YAxis tickFormatter={(value) => `${Number(value).toLocaleString("tr-TR")} TL`} tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} />
           <Tooltip formatter={(value) => formatTry(Number(value) * 100)} labelFormatter={(label) => `Ay: ${label}`} contentStyle={chartTooltipStyle} labelStyle={chartLabelStyle} />
           <Legend wrapperStyle={chartLabelStyle} />
-          <Line type="monotone" dataKey="totalDebt" name="Toplam borç" stroke="url(#memoryDebtGradient)" strokeWidth={3} dot={false} animationDuration={900} />
-          <Line type="monotone" dataKey="activeDebt" name="Aktif borç" stroke={chartTheme.amber} strokeWidth={2} dot={false} animationDuration={900} />
+          <Line type="monotone" dataKey="totalDebt" name="Toplam borç" stroke="url(#memoryDebtGradient)" strokeWidth={3} dot={false} animationDuration={900} isAnimationActive={!reducedMotion} />
+          <Line type="monotone" dataKey="activeDebt" name="Aktif borç" stroke={chartTheme.amber} strokeWidth={2} dot={false} animationDuration={900} isAnimationActive={!reducedMotion} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -40,6 +42,7 @@ export function MemoryDebtTrendChart({ trend }: { trend: MemoryTrendPoint[] }) {
 }
 
 export function MemoryBudgetTrendChart({ trend }: { trend: MemoryTrendPoint[] }) {
+  const reducedMotion = useReducedMotion();
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -55,8 +58,8 @@ export function MemoryBudgetTrendChart({ trend }: { trend: MemoryTrendPoint[] })
           <YAxis tickFormatter={(value) => `${Number(value).toLocaleString("tr-TR")} TL`} tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} />
           <Tooltip formatter={(value) => formatTry(Number(value) * 100)} labelFormatter={(label) => `Ay: ${label}`} contentStyle={chartTooltipStyle} labelStyle={chartLabelStyle} />
           <Legend wrapperStyle={chartLabelStyle} />
-          <Line type="monotone" dataKey="survivalBudget" name="Yaşam bütçesi" stroke="url(#memoryBudgetGradient)" strokeWidth={3} dot={false} animationDuration={900} />
-          <Line type="monotone" dataKey="mandatoryExpenses" name="Zorunlu gider" stroke={chartTheme.steel} strokeWidth={2} dot={false} animationDuration={900} />
+          <Line type="monotone" dataKey="survivalBudget" name="Yaşam bütçesi" stroke="url(#memoryBudgetGradient)" strokeWidth={3} dot={false} animationDuration={900} isAnimationActive={!reducedMotion} />
+          <Line type="monotone" dataKey="mandatoryExpenses" name="Zorunlu gider" stroke={chartTheme.steel} strokeWidth={2} dot={false} animationDuration={900} isAnimationActive={!reducedMotion} />
         </LineChart>
       </ResponsiveContainer>
     </div>

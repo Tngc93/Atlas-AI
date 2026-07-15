@@ -66,5 +66,6 @@ test("reduced motion disables reveals and pauses the background frame", async ({
   await expect(page.locator(".hero-reveal").first()).toHaveCSS("animation-name", "none");
   await expect(page.locator("[data-background-video]")).toHaveCSS("display", "block");
   await expect(page.locator("[data-background-video]")).toHaveJSProperty("paused", true);
+  await expect(page.locator("[data-background-video]")).toHaveJSProperty("currentSrc", "");
   await expect(page.locator("[data-intro-layer], .hands-intro-stage, .hands-intro-video")).toHaveCount(0);
 });

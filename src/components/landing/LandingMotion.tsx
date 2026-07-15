@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const FADE_MS = 500;
 const FADE_OUT_LEAD = 0.55;
 
 export function LandingMotion() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -29,11 +30,20 @@ export function LandingMotion() {
       animationFrame = requestAnimationFrame(step);
     };
 
+    const play = async () => {
+      if (reducedMotion.matches || document.hidden) return;
+
+      await video.play().catch(() => {
+        // Keep the poster visible when browser autoplay policy blocks playback.
+        video.style.opacity = "1";
+      });
+    };
+
     const restart = async () => {
       video.currentTime = 0;
       fadingOut = false;
       if (!reducedMotion.matches) {
-        await video.play().catch(() => undefined);
+        await play();
         fadeTo(1);
       }
     };
@@ -44,7 +54,7 @@ export function LandingMotion() {
         video.currentTime = 0;
         video.style.opacity = "1";
       } else {
-        void video.play().catch(() => undefined);
+        void play();
         fadeTo(1);
       }
     };
@@ -64,13 +74,24 @@ export function LandingMotion() {
         video.currentTime = 0;
         video.style.opacity = "1";
       } else {
-        void restart();
+        setShouldLoadVideo(true);
+        if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) void restart();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animationFrame);
+        video.pause();
+      } else {
+        void play();
       }
     };
 
     video.addEventListener("loadeddata", handleLoaded);
     video.addEventListener("timeupdate", handleTimeUpdate);
     video.addEventListener("ended", restart);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     reducedMotion.addEventListener("change", syncMotionPreference);
 
     const targets = document.querySelectorAll<HTMLElement>("[data-landing-reveal]");
@@ -83,7 +104,11 @@ export function LandingMotion() {
     if (reducedMotion.matches) targets.forEach((target) => target.classList.add("is-visible"));
     else targets.forEach((target) => observer.observe(target));
 
-    if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) handleLoaded();
+    if (reducedMotion.matches) {
+      syncMotionPreference();
+    } else {
+      setShouldLoadVideo(true);
+    }
 
     return () => {
       cancelAnimationFrame(animationFrame);
@@ -91,9 +116,20 @@ export function LandingMotion() {
       video.removeEventListener("loadeddata", handleLoaded);
       video.removeEventListener("timeupdate", handleTimeUpdate);
       video.removeEventListener("ended", restart);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       reducedMotion.removeEventListener("change", syncMotionPreference);
     };
   }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !shouldLoadVideo) return;
+
+    video.load();
+    void video.play().catch(() => {
+      video.style.opacity = "1";
+    });
+  }, [shouldLoadVideo]);
 
   return (
     <video
@@ -102,14 +138,18 @@ export function LandingMotion() {
       autoPlay
       muted
       playsInline
-      preload="metadata"
+      preload="none"
       poster="/media/atlas-jellyfish-poster.jpg"
       aria-hidden
       tabIndex={-1}
       data-background-video
     >
-      <source media="(max-width: 680px)" src="/media/atlas-jellyfish-720.mp4" type="video/mp4" />
-      <source src="/media/atlas-jellyfish-1080.mp4" type="video/mp4" />
+      {shouldLoadVideo ? (
+        <>
+          <source media="(max-width: 680px)" src="/media/atlas-jellyfish-720.mp4" type="video/mp4" />
+          <source src="/media/atlas-jellyfish-1080.mp4" type="video/mp4" />
+        </>
+      ) : null}
     </video>
   );
 }

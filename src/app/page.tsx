@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     url: "/",
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "Atlas AI — Open-source AI Financial Intelligence Platform",
     description: "Bring your own AI. Bring your own Database. Deploy anywhere.",
   },
