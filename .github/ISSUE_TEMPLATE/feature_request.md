@@ -1,37 +1,44 @@
 ---
-name: Özellik İsteği
-about: Yeni özellik veya ürün geliştirme öner
+name: Feature Request
+about: Propose a scoped product improvement
 title: "[Feature]: "
 labels: enhancement
 assignees: ""
 ---
 
-## Kullanıcı Problemi
+## User Problem
+
+Who experiences the problem, and what are they unable to understand or do today?
+
+## Proposed Outcome
+
+Describe the desired capability without prescribing unnecessary implementation detail.
+
+## User Value
+
+How would this improve clarity, agency, privacy, or decision quality?
+
+## Acceptance Criteria
+
+- [ ]
+- [ ]
+
+## Constraints and Non-goals
+
+- Deterministic finance calculations remain the source of truth.
+- AI does not become the decision owner.
+- Sensitive data movement is minimized and explained.
+- Out of scope:
+
+## Alternatives Considered
 
 
-## Önerilen Çözüm
+## Delivery Status
 
+- [ ] Proposal only
+- [ ] Experimental candidate
+- [ ] Ready for implementation planning
 
-## Başarı Kriterleri
+## Additional Context
 
-- 
-
-## Kapsam Dışı
-
-- 
-
-## Etkilenen Alan
-
-- [ ] Dashboard
-- [ ] Gelir
-- [ ] Borçlar
-- [ ] Giderler
-- [ ] Aylık plan
-- [ ] Karar Simülatörü
-- [ ] Finans motoru
-- [ ] AI koç
-- [ ] GitHub / Release workflow
-
-## Gizlilik ve Güvenlik Notları
-
-
+Use fictional examples only. Do not include real financial data or credentials.

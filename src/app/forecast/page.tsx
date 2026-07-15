@@ -2,6 +2,8 @@ import Link from "next/link";
 import { AppShell } from "@/components/dashboard/AppShell";
 import { ForecastDebtTrendChart, ForecastLivingBudgetChart } from "@/components/forecast/ForecastCharts";
 import { ForecastScenarioPanel } from "@/components/forecast/ForecastScenarioPanel";
+import { EmptyState, PageHeader } from "@/components/ui/Primitives";
+import { TrendingUp } from "lucide-react";
 import { getFinanceSnapshot } from "@/features/finance/data-service";
 import { formatTry } from "@/features/finance/money";
 import type { RiskLevel, UiRiskLevel } from "@/features/finance/types";
@@ -87,11 +89,7 @@ export default async function ForecastPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-steel">{trCopy.forecast.kicker}</p>
-        <h1 className="max-w-4xl text-3xl font-semibold tracking-tight sm:text-4xl">{trCopy.forecast.title}</h1>
-        <p className="max-w-3xl text-sm leading-6 text-steel">{trCopy.forecast.description}</p>
-      </div>
+      <PageHeader kicker={trCopy.forecast.kicker} title={trCopy.forecast.title} description={trCopy.forecast.description} />
 
       {cannotBuildUsefulForecast ? (
         <section className="mt-6 rounded-lg border border-line bg-surface p-5 shadow-sm">
@@ -106,17 +104,15 @@ export default async function ForecastPage() {
       ) : null}
 
       {activeDebts.length === 0 ? (
-        <section className="mt-6 rounded-lg border border-dashed border-line bg-surface p-5 text-sm text-steel">
-          {trCopy.forecast.noActiveDebt}
-        </section>
+        <div className="mt-7"><EmptyState icon={TrendingUp} kicker="Tahmin verisi" title="Henüz borç tahmini oluşturulamıyor" description={trCopy.forecast.noActiveDebt} actions={<Link href="/debts" className="ui-primary-button">Borç ekle</Link>} /></div>
       ) : (
         <>
           <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {summaryCards.map((card) => (
-              <article key={card.label} className="rounded-lg border border-line bg-surface p-5 shadow-sm">
-                <p className="text-sm text-steel">{card.label}</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight">{card.value}</p>
-                <p className="mt-2 text-xs leading-5 text-steel">{card.helper}</p>
+              <article key={card.label} className="ui-card min-h-48">
+                <p className="text-sm font-semibold text-steel">{card.label}</p>
+                <p className="mt-3 text-3xl font-bold tracking-tight">{card.value}</p>
+                <p className="mt-3 text-sm font-medium leading-6 text-steel">{card.helper}</p>
               </article>
             ))}
           </section>
@@ -197,7 +193,7 @@ export default async function ForecastPage() {
             <div className="border-b border-line p-5">
               <h2 className="text-lg font-semibold">{trCopy.forecast.riskTrend}</h2>
             </div>
-            <table className="min-w-full divide-y divide-line text-sm">
+            <table className="product-data-table min-w-full divide-y divide-line text-sm">
               <thead className="bg-surface-muted text-left text-xs uppercase tracking-[0.12em] text-steel">
                 <tr>
                   <th className="px-4 py-3">Ay</th>

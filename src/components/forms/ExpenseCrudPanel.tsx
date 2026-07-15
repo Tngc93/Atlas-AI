@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import { ReceiptText } from "lucide-react";
+import { EmptyState } from "@/components/ui/Primitives";
 import { formatTry } from "@/features/finance/money";
 import { expenseCategoryOptions, getExpenseCategoryLabel } from "@/features/finance/form-options";
 import type { FormActionState } from "@/lib/actions/action-state";
@@ -39,9 +41,7 @@ export function ExpenseCrudPanel({ expenses }: { expenses: ExpenseFormModel[] })
 
       <div className="mt-6 grid gap-3">
         {expenses.length === 0 ? (
-          <p className="rounded-md border border-dashed border-line bg-surface-muted p-4 text-sm text-steel">
-            Henüz zorunlu gider kaydı yok. Gider eklediğinizde hayatta kalma bütçesi ve aylık plan güncellenecek.
-          </p>
+          <EmptyState icon={ReceiptText} kicker="Gider kaydı" title="Henüz zorunlu gider yok" description="İlk gideri yukarıdaki formdan eklediğinizde yaşam bütçesi ve aylık plan deterministik olarak güncellenir." />
         ) : (
           expenses.map((expense) => <ExpenseRow key={expense.id} expense={expense} />)
         )}

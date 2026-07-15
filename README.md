@@ -1,328 +1,284 @@
-# Open-source AI Financial Intelligence Platform
+# Atlas AI
 
-**Bring your own AI. Bring your own Database. Deploy anywhere.**
+**Open-source AI Financial Intelligence Platform**
 
-Türkiye / TRY odağında maaş planlama, kredi kartı borcu kapatma, zorunlu gider takibi, nakit akışı riski ve eğitim amaçlı finans koçu yorumları için gizlilik odaklı bir kontrol paneli.
+> Bring your own AI. Bring your own Database. Deploy anywhere.
 
-Uygulama PostgreSQL geçiş hazırlığındadır. Prisma provider PostgreSQL olarak ayarlanmış, production Neon branch ise boş ve dokunulmamış bırakılmıştır. Başlangıçta gerçek veri veya otomatik seed yoktur.
+[![Build](https://img.shields.io/badge/build-placeholder-lightgrey)](#testing)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Release](https://img.shields.io/badge/release-v1.0.0--beta-blue)](#roadmap)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
 
-## Product Philosophy
+Atlas AI is a privacy-aware personal finance decision-support platform. It combines a deterministic finance engine with forecasts, scenario comparison, financial memory, reminders, and provider-independent AI explanations.
 
-This project is governed by the Product Manifesto:
-docs/product/PRODUCT_MANIFESTO.md
+The finance engine remains the source of truth. AI may explain calculated results, but it does not calculate budgets, determine risk, or make decisions for the user.
 
-## Production Readiness
+> [!IMPORTANT]
+> Atlas AI is educational software, not financial advice. The public demo uses fictional data and Mock AI. Do not enter real financial information into a public demo deployment.
 
-Vercel/production hazırlık notları:
-docs/operations/production-readiness.md
+## Key Features
 
-PostgreSQL baseline ve test altyapısı yalnız izole Neon `test-preview` branch'i için hazırlanmıştır. Production branch'e migration uygulanmamıştır. Gerçek kişisel finans verisiyle production kullanım için authentication ve kullanıcı bazlı veri izolasyonu hâlâ zorunludur.
+- Deterministic monthly cash-flow and living-budget calculations
+- Debt prioritization and payoff projections
+- 3, 6, 12, and 24-month forecast views
+- Temporary decision and forecast scenario comparison
+- Financial Memory snapshots and trend intelligence
+- Deterministic recommendation and reminder engines
+- Provider-independent AI architecture with structured output validation
+- Mock-first graceful fallback when AI is unavailable
+- Self-host adapters for OpenAI, Gemini, Anthropic, OpenRouter, Ollama, LM Studio, and OpenAI-compatible APIs
+- Session-isolated, zero-cost public demo mode without database persistence
+- Secret scanning, unit, PostgreSQL integration, and Playwright E2E coverage
 
-## Zero-Cost Public Demo
+## Architecture Overview
 
-Public demo, PostgreSQL veya ücretli AI anahtarı olmadan kurgusal verilerle çalışabilir:
+```mermaid
+flowchart TD
+    UI["Next.js Frontend"] --> FE["Deterministic Finance Engine"]
+    FE --> DS["Decision, Forecast, Memory, Reminder Services"]
+    DS --> RB["Repository Boundary"]
+    RB -->|"Self-host mode"| PG["PostgreSQL + Prisma"]
+    RB -->|"Public demo mode"| DEMO["Per-tab Browser Memory"]
+    DS --> CC["Minimized Coach Context"]
+    CC --> REG["AI Provider Registry"]
+    REG --> MOCK["Mock Provider"]
+    REG --> CLOUD["Server-side AI Providers"]
+    REG --> LOCAL["Ollama / LM Studio"]
+```
+
+```mermaid
+flowchart LR
+    A["PUBLIC_DEMO_MODE=true"] --> B["Fictional Immutable Seed"]
+    B --> C["Session-isolated Demo Store"]
+    C --> D["Finance Engine"]
+    D --> E["Mock AI Explanation"]
+    F["PUBLIC_DEMO_MODE=false"] --> G["PostgreSQL Repositories"]
+    G --> D
+    D --> H["Configured Self-host Provider"]
+```
+
+More detail: [Architecture](docs/ARCHITECTURE.md), [AI Architecture](docs/product/AI_ARCHITECTURE.md), and [Product Architecture](docs/product/PRODUCT_ARCHITECTURE.md).
+
+## Technology Stack
+
+| Area | Technology |
+| --- | --- |
+| Web | Next.js App Router, React, TypeScript |
+| UI | Tailwind CSS, Recharts, Lucide |
+| Data | Prisma ORM, PostgreSQL |
+| Validation | Zod |
+| AI | Provider registry, structured responses, Mock fallback |
+| Testing | Vitest, Playwright |
+| CI | GitHub Actions |
+
+## Screenshots
+
+Screenshots will be added before the public launch. These placeholders intentionally avoid presenting unreleased visuals as final.
+
+| Surface | Preview |
+| --- | --- |
+| Dashboard | _Screenshot placeholder — Dashboard_ |
+| Forecast | _Screenshot placeholder — Forecast_ |
+| Decision Simulator | _Screenshot placeholder — Decision Simulator_ |
+| Financial Memory | _Screenshot placeholder — Financial Memory_ |
+| AI Coach | _Screenshot placeholder — AI Coach_ |
+| Provider Settings | _Screenshot placeholder — Provider Settings_ |
+| Demo Mode | _Screenshot placeholder — Zero-Cost Demo_ |
+
+## Live Demo
+
+> **Status: placeholder.** A public URL has not been published from this repository yet.
+
+The planned public demo runs with fictional data, per-tab memory state, and Mock AI. It does not require `DATABASE_URL`, paid provider keys, authentication, or shared database mutation.
+
+## Quick Start
+
+Requirements: Node.js 20+, npm, and PostgreSQL for normal self-host mode.
+
+```bash
+git clone https://github.com/Tngc93/personal-finance-coach-dashboard.git
+cd personal-finance-coach-dashboard
+npm ci
+cp .env.example .env.local
+npm run prisma:generate
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+## Self-host Installation
+
+1. Provision a PostgreSQL database.
+2. Set pooled `DATABASE_URL` and direct `DIRECT_URL` values in `.env.local`.
+3. Keep `AI_PROVIDER=mock`, or configure a supported server-side provider.
+4. Generate Prisma Client and apply only reviewed PostgreSQL migrations.
+5. Run validation before exposing the application.
+
+```bash
+npm run security:secrets
+npx prisma validate
+npm run prisma:generate
+npm run lint
+npm run test
+npm run build
+```
+
+Authentication and user ownership are not implemented. Do not expose database mode as a multi-user public service with real financial data. See [Self-hosting](docs/SELF_HOSTING.md) and [Production Readiness](docs/operations/production-readiness.md).
+
+## Bring Your Own AI
+
+The default provider is `mock`, which makes no paid external AI call.
+
+| Provider | Server self-host | Browser/public status |
+| --- | --- | --- |
+| Mock | Implemented | Default demo provider |
+| Gemini | Implemented | Experimental browser mode disabled in production |
+| OpenAI | Implemented adapter | Self-host only |
+| Anthropic | Implemented adapter | Self-host only |
+| OpenRouter | Implemented adapter | Experimental browser mode disabled in production |
+| Ollama | Implemented adapter | Local-only; requires CORS configuration |
+| LM Studio | Implemented adapter | Local-only; requires CORS configuration |
+| Custom OpenAI-compatible | Implemented adapter | Self-host only for remote endpoints |
+
+Credentials remain in server-side environment variables for self-host mode. Browser credentials, where explicitly enabled for local development, are session-only and must never enter repository or database storage.
+
+## Bring Your Own Database
+
+Atlas AI uses Prisma and PostgreSQL in self-host mode. Runtime requests use `DATABASE_URL`; Prisma migration operations use `DIRECT_URL`.
+
+- Archived SQLite migrations must not be applied to PostgreSQL.
+- Public demo mode never runs production migrations.
+- Public demo deployments must not receive database credentials.
+- Multi-user production use requires planned Auth and user ownership work.
+
+## Demo Mode
 
 ```bash
 PUBLIC_DEMO_MODE=true AI_PROVIDER=mock npm run dev
 ```
 
-Demo modu immutable sample veriyi her sekme için ayrı browser belleğine kopyalar. Gelir, borç ve gider CRUD işlemleri ile plan, forecast, decisions, reminders, memory ve Mock koç akışları kullanılabilir; değişiklikler veritabanına, URL'ye, cookie'ye, `localStorage` veya `sessionStorage` içine yazılmaz. Sayfa yenilendiğinde, sekme kapandığında veya `Demo verisini sıfırla` seçildiğinde başlangıç verisine dönülür.
-
-Demo sınırlamaları:
-
-- Yalnız kurgusal veri kullanın; gerçek finansal bilgi girmeyin.
-- AI çıktısı Mock sağlayıcıdan gelir ve finansal tavsiye değildir.
-- Platform sahibine ait ücretli AI anahtarı kullanılmaz.
-- `PUBLIC_DEMO_MODE=true` iken Prisma ve DB-backed API yolları fail-closed kalır.
-- `PUBLIC_DEMO_MODE=false` self-host varsayılanıdır; eksik PostgreSQL ayarı sessizce demo moda düşmez.
-
-DB'siz demo doğrulaması:
+- Uses an immutable fictional seed and active-tab memory
+- Supports temporary income, debt, and expense CRUD
+- Resets after refresh, tab closure, or `Demo verisini sıfırla`
+- Does not write finance state to database, URL, cookies, `localStorage`, or `sessionStorage`
+- Blocks DB-backed API routes and Prisma initialization
+- Uses Mock AI with zero required API cost
 
 ```bash
 npm run build:demo
 npm run test:e2e:demo
 ```
 
-Kaynak kod: [GitHub repository](https://github.com/Tngc93/personal-finance-coach-dashboard). Self-host kullanımında kendi PostgreSQL bağlantınızı ve isterseniz kendi server-side AI sağlayıcınızı `.env.local` üzerinden yapılandırın.
+## Security
 
-Gelecekteki Auth ve çok kullanıcılı veri sahipliği mimarisi:
-docs/architecture/user-ownership.md
+- Never commit `.env`, API keys, database URLs, database files, or real financial fixtures.
+- AI receives minimized deterministic context rather than raw banking activity.
+- Browser BYOK is disabled by default; cloud browser providers remain fail-closed in production.
+- Demo mode does not persist finance state or initialize Prisma.
+- Secret scanning is part of the quality gate.
 
-## Teknoloji Yığını
+Read [SECURITY.md](SECURITY.md) before reporting a vulnerability. Do not place secrets or real financial data in public issues.
 
-- Next.js App Router
-- React + TypeScript
-- Tailwind CSS
-- PostgreSQL + Prisma
-- Recharts
-- Provider bağımsız, Mock-first AI katmanı
-- Self-host OpenAI, Gemini, Anthropic, OpenRouter, Ollama, LM Studio ve OpenAI-compatible provider adaptörleri
-- TCMB faiz verisi sağlayıcı yer tutucusu
+## Project Structure
 
-## Başlangıç
-
-```bash
-npm install
-cp .env.example .env.local
-npm run prisma:generate
-npm run dev
+```text
+src/app/                 Next.js routes and API handlers
+src/components/          UI components
+src/features/finance/    Deterministic finance engine
+src/features/forecast/   Forecast and scenario logic
+src/features/decision/   Decision simulation and trade-offs
+src/features/memory/     Financial Memory and trends
+src/features/reminders/  Deterministic reminder engine
+src/features/coach/      Coach context and AI providers
+src/features/demo/       Session-isolated public demo state
+src/lib/db/              Prisma boundary
+prisma/                  PostgreSQL schema and migrations
+e2e/                     PostgreSQL-backed E2E tests
+e2e-demo/                Database-free demo E2E tests
+docs/                    Product and engineering documentation
 ```
 
-Tarayıcıda `http://localhost:3000` adresini açın.
-
-## Ortam Değişkenleri
-
-`.env.example` dosyasından `.env.local` oluşturun:
-
-```bash
-DATABASE_URL=
-DIRECT_URL=
-PUBLIC_DEMO_MODE=false
-AI_PROVIDER=mock
-AI_DAILY_REQUEST_LIMIT=20
-AI_MONTHLY_BUDGET_LIMIT_TRY=100
-AI_MAX_INPUT_SUMMARY_CHARS=4000
-OPENAI_API_KEY=
-OPENAI_MODEL=
-GEMINI_API_KEY=
-GEMINI_MODEL=gemini-2.5-flash
-GEMINI_TIMEOUT_MS=12000
-GEMINI_RETRY_COUNT=2
-ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL=claude-sonnet-4-20250514
-OPENROUTER_API_KEY=
-OPENROUTER_MODEL=openai/gpt-4.1-mini
-OLLAMA_MODEL=llama3.2
-OLLAMA_BASE_URL=http://127.0.0.1:11434/v1
-LM_STUDIO_MODEL=local-model
-LM_STUDIO_BASE_URL=http://127.0.0.1:1234/v1
-CUSTOM_AI_API_KEY=
-CUSTOM_AI_MODEL=
-CUSTOM_AI_BASE_URL=
-NEXT_PUBLIC_AI_BROWSER_BYOK_ENABLED=false
-NEXT_PUBLIC_AI_BROWSER_LOCAL_ENABLED=false
-NEXT_PUBLIC_AI_BROWSER_GEMINI_ENABLED=false
-NEXT_PUBLIC_AI_BROWSER_OPENROUTER_ENABLED=false
-AI_PUBLIC_DEMO_DATA_CONFIRMED=false
-AI_BROWSER_STRICT_CSP_CONFIRMED=false
-```
-
-Varsayılan sağlayıcı `mock` değeridir. Gemini kullanmak için kendi `.env.local` dosyanızda `AI_PROVIDER=gemini` yapın ve `GEMINI_API_KEY` değerini yalnızca lokal ortamda doldurun. Anahtarı README, kod, test, commit veya GitHub'a eklemeyin.
-
-Gemini sağlayıcısı şu şekilde çalışır:
-
-- Varsayılan model `gemini-2.5-flash`; gerekirse `GEMINI_MODEL` ile değiştirilebilir.
-- API key eksikse, timeout olursa, Gemini hata döndürürse veya JSON doğrulama başarısız olursa uygulama otomatik olarak Mock Provider'a döner.
-- AI'ya yalnızca deterministik finans motorunun ürettiği minimize özet gönderilir; isim, IBAN, hesap numarası, kart numarası, işlem açıklaması veya ham banka hareketi gönderilmez.
-- Aynı finansal özet tekrar geldiğinde cache kullanılır; gereksiz Gemini çağrısı yapılmaz.
-
-## AI Çalışma Modları
-
-- **Mock Demo:** Varsayılan, API anahtarı gerektirmeyen ve proje sahibine AI maliyeti üretmeyen moddur.
-- **Browser BYOK:** Master flag yanında provider'a özel flag gerektirir. Anahtar yalnız açık sekmenin geçici belleğinde tutulur; storage, cookie, URL, veritabanı veya uygulama API route'una yazılmaz.
-- **Local Browser:** Ollama/LM Studio yalnız sabit `127.0.0.1:11434` ve `127.0.0.1:1234` endpoint'leriyle açılır.
-- **Cloud Browser BYOK:** Gemini ve OpenRouter ayrı deneysel flag'lere sahiptir. Mevcut CSP inline framework scriptlerine izin verdiği için production'da kod seviyesinde fail-closed kalırlar; yalnız lokal geliştirme doğrulamasında açılabilirler.
-- **Self-host:** `AI_PROVIDER` ve ilgili server-side env değerleri kullanılır. Desteklenen değerler: `mock`, `openai`, `gemini`, `anthropic`, `openrouter`, `ollama`, `lm-studio`, `custom-openai-compatible`.
-
-OpenAI ve Anthropic public browser kullanımına açılmaz; self-host server-side modda çalışır. Custom remote base URL public demo browser modunda kabul edilmez. Local provider kullanırken ilgili Ollama/LM Studio sunucusunun CORS ayarı uygulama origin'ine izin vermelidir.
-
-| Sağlayıcı | Public browser durumu | UI etiketi |
-| --- | --- | --- |
-| Mock | Açık, dış çağrı yok | Demo |
-| Ollama / LM Studio | Yalnız sabit localhost endpoint ve açık CORS | Local |
-| Gemini / OpenRouter | Deneysel, ayrı flag ve test key gerekir | Deneysel Browser |
-| OpenAI / Anthropic / Custom remote | Browser'dan çağrılamaz | Self-host |
-
-`Bağlantıyı test et` yalnız provider metadata/status endpoint'ini çağırır ve finansal özet göndermez. Minimize `CoachContext` ancak kullanıcı ayrıca `Koç yorumunu oluştur` dediğinde gönderilir. Browser çağrıları otomatik retry yapmaz.
-
-Provider kararlarının resmi dayanakları: [OpenAI key safety](https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safet), [Anthropic TypeScript SDK](https://github.com/anthropics/anthropic-sdk-typescript), [Gemini key security](https://ai.google.dev/gemini-api/docs/generate-content/api-key), [OpenRouter OAuth PKCE](https://openrouter.ai/docs/guides/overview/auth/oauth), [Ollama CORS](https://docs.ollama.com/faq) ve [LM Studio CORS](https://lmstudio.ai/docs/cli/serve/server-start).
-
-Önemli notlar:
-
-- `DATABASE_URL` lokal `.env.local` içinde açıkça tanımlanmalıdır. Production ortamında sessiz SQLite fallback davranışına güvenilmemelidir.
-- `DIRECT_URL` Prisma migration işlemleri için aynı Neon branch'in direct bağlantısı olmalıdır.
-- Production branch bağlantıları integration test veya E2E için kullanılmamalıdır.
-- API anahtarlarını kaynak koda veya `NEXT_PUBLIC_*_API_KEY` değişkenlerine koymayın.
-- Browser BYOK dışında provider kodu server-only çalışır. Browser BYOK anahtarı yalnız explicit kullanıcı işlemiyle session belleğinde tutulur.
-- Production'da Local Browser BYOK, `AI_PUBLIC_DEMO_DATA_CONFIRMED=true` olmadan etkinleşmez. Cloud provider'lar nonce/hash tabanlı CSP ayrı bir milestone'da uygulanana kadar production'da açılamaz.
-- `/api/coach` client payload'a güvenmez; server tarafında mevcut aylık plan snapshot'ından minimize edilmiş özet üretir.
-- `/api/coach` API key veya client tarafından üretilmiş `CoachContext` kabul etmez.
-- Canlı AI sağlayıcısı seçiliyse yalnız minimize edilmiş finans özeti gönderilebilir; ham Prisma kayıtları, isim, IBAN, kart numarası, işlem açıklaması ve kişisel notlar gönderilmez.
-
-## Mevcut Sayfalar
-
-- `/` panel özeti
-- `/income` güncel maaş, maaş günü ve maaş geçmişi CRUD
-- `/debts` borçlar ve kredi kartları CRUD
-- `/expenses` zorunlu giderler CRUD
-- `/plan` kayıtlı finans verisine dayalı deterministik aylık borç kapatma yol haritası
-- `/decisions` gerçek kayıtları değiştirmeyen deterministik karar simülatörü
-- `/reminders` yaklaşan ödeme, maaş günü, risk ve eksik kayıt sinyalleri için uygulama içi hatırlatmalar
-- `/forecast` 3, 6, 12 ve 24 aylık deterministik finansal tahmin ekranı
-- `/memory` aylık snapshot’lardan finansal davranış ve trend hafızası
-
-## Veri ve Gizlilik
-
-- Uygulama başlangıçta gerçek veri veya otomatik seed oluşturmaz.
-- `src/lib/sample-data/finance.ts` yalnızca test/demo amaçlı kurgusal örnek veridir; gerçek dashboard akışında kullanılmaz.
-- Prisma şeması `prisma/schema.prisma` içinde tanımlıdır.
-- Eski SQLite migration geçmişi `prisma/migrations-sqlite` altında arşivlenir ve PostgreSQL'e uygulanmaz.
-- `.env.local` git dışında bırakılır.
-- Production Neon branch bu aşamada boş kalır; yalnız test branch'i kurgusal test verisiyle kullanılabilir.
-- Banka senkronizasyonu, otomatik ödeme veya bulut kalıcılığı dahil değildir.
-- API anahtarları, SQLite veritabanı dosyaları ve yedekler commit edilmemelidir.
-- Testlerde, mock verilerde ve dokümantasyon örneklerinde gerçek finansal veri kullanılmamalıdır.
-- GitHub'a push öncesi `.gitignore`, dry-run stage ve secret taraması yapılmalıdır.
-
-## Faz 3 CRUD Notları
-
-- Authentication yoktur; uygulama tek kullanıcı varsayımıyla çalışır ve public beta için hazır değildir.
-- Gelir yönetimi `Profile` üzerinde güncel maaşı, `SalaryRecord` üzerinde maaş geçmişini tutar.
-- Maaş güncellemesi otomatik maaş geçmişi kaydı oluşturmaz.
-- Borç silme ve gider silme bu fazda hard delete olarak uygulanır.
-- Formlarda TL girilir, veritabanında kuruş saklanır.
-- UI durumları Türkçedir: loading, success, error ve boş durumlar.
-- Business logic UI içinde değil, repository, Server Actions ve finance calculation engine katmanlarında tutulur.
-
-## TCMB Faiz Verisi
-
-Sağlayıcı yapısı `src/features/rates/tcmb-provider.ts` içinde bulunur.
-
-Bu fazda yeni TCMB entegrasyonu yapılmaz. Mevcut sağlayıcı yapısı sonraki fazlar için yer tutucu olarak durur. Planlanan birincil kaynak resmi TCMB kredi kartı azami faiz oranları sayfasıdır:
-
-https://www.tcmb.gov.tr/wps/wcm/connect/TR/TCMB+TR/Main+Menu/Istatistikler/Bankacilik+Verileri/Kredi_Karti_Islemlerinde_Uygulanacak_Azami_Faiz_Oranlari
-
-Bu oranlar yasal azami bağlamdır; sizin kartınıza uygulanan kesin oran olmayabilir. Gerçek karta özel aylık faiz oranını her zaman elle girin.
-
-## Forecast Engine
-
-`/forecast` sayfası mevcut kayıtlardan 3, 6, 12 ve 24 aylık finansal projeksiyon üretir.
-
-- Finans motoru tek hesaplama kaynağıdır.
-- Forecast sonuçları veritabanına kaydedilmez.
-- AI/OpenAI/Gemini çağrısı yapılmaz.
-- Pasif ve kapanmış borçlar tahmine dahil edilmez.
-- Çıktılar tahmin ve karar desteği niteliğindedir; kesin finansal tavsiye değildir.
-
-## Financial Memory
-
-`/memory` sayfası gelir, borç, gider, risk ve yaşam bütçesi snapshot’larını aylık olarak tutar.
-
-- Memory snapshot’ları aynı ay içinde tekrar üretilirse güncellenir.
-- CRUD işlemlerinden sonra memory kaydı best-effort denenir; ana kayıt akışı bu işleme bağımlı değildir.
-- Kullanıcı `/memory` üzerinde `Hafızayı güncelle` butonuyla manuel snapshot oluşturabilir.
-- Trendler için en az iki aylık geçmiş gerekir; geçmiş azsa ekran açıkça `Yeterli geçmiş yok` der.
-- Financial Memory AI/OpenAI/Gemini çağrısı yapmaz ve üçüncü partiye finansal veri göndermez.
-
-## Reminder Engine
-
-`/reminders` sayfası ve dashboard hatırlatma paneli, mevcut finans motoru çıktılarından uygulama içi hatırlatmalar üretir.
-
-- Hatırlatmalar yalnızca uygulama içinde görünür; push notification, e-posta, SMS veya dış servis yoktur.
-- Reminder içeriği veritabanına yazılmaz; veritabanı yalnızca `Görüldü`, `Ertele` ve `Gizle` durumlarını saklar.
-- Yaklaşan borç son ödeme tarihleri, maaş günü, zorunlu gider tarihi, yüksek risk, eksik kayıt ve eksik faiz sinyalleri deterministik olarak üretilir.
-- Hatırlatmalar ödeme yapmaz, veri değiştirmez ve kesin finansal tavsiye değildir.
-
-## Coach Context Builder
-
-AI koç katmanı `src/features/coach/context-builder.ts` üzerinden oluşturulan `CoachContext` nesnesini kullanır.
-
-- `CoachContext`, deterministik finans motorundan gelen minimize finans özetini ve Financial Memory sinyallerini tek yerde toplar.
-- Trend Intelligence katmanı Financial Memory snapshot’larından gelir, gider, borç, yaşam bütçesi, minimum ödeme yükü, risk, borç kapatma hızı ve nakit sıkışıklığı trendlerini minimize sinyallere dönüştürür.
-- Goal & Recommendation Intelligence katmanı mevcut summary, memory ve trend sinyallerinden hedef benzeri deterministic öneriler üretir; öneriler öncelik, kategori, neden, beklenen etki ve kaynak sinyalleriyle taşınır.
-- Prompt builder yalnızca bu context katmanını görür; raw Prisma kayıtları, kullanıcı notları, IBAN, kart numarası veya ham banka hareketi prompt’a taşınmaz.
-- Eski `CoachInputSummary` tabanlı çağrılar geriye uyumluluk için korunur.
-
-## Doğrulama
-
-DB'den bağımsız testler:
-
-```bash
-npm run test:unit
-```
-
-PostgreSQL integration ve E2E testleri için `.env.test.local` içinde yalnız `test-preview` branch değerleri tanımlanmalıdır:
-
-```bash
-TEST_DATABASE_URL=
-TEST_DIRECT_URL=
-TEST_NEON_ENDPOINT_ID=
-TEST_DATABASE_RESET_CONFIRM=test-preview
-TEST_BASELINE_DEPLOY_CONFIRM=
-```
-
-Test harness her suite için geçici `pfc_it_*` veya `pfc_e2e_*` schema oluşturur ve test sonunda siler. `public`, `preview_app` ve production endpoint'leri cleanup hedefi olamaz.
-
-Onaylı `test-preview` branch'inde kalıcı `preview_app` schema baseline'ı şu sırayla uygulanır:
-
-```bash
-npm run prisma:baseline:check
-TEST_BASELINE_DEPLOY_CONFIRM=test-preview:preview_app npm run prisma:baseline:deploy:test
-npm run test:integration
-npm run test:e2e
-```
-
-Baseline deploy komutu yalnız `TEST_DATABASE_URL` ve `TEST_DIRECT_URL` kullanır. Normal `DATABASE_URL`/`DIRECT_URL` değerlerine veya production branch'e fallback yapmaz. Aynı komut ikinci kez çalıştırıldığında Prisma migrate no-op olmalıdır.
-
-Yarım kalmış tek bir test schema'sı yalnız exact adı verilerek temizlenebilir:
-
-```bash
-npm run test:cleanup-schema -- pfc_it_<suite>_<runId>
-```
+## Testing
 
 ```bash
 npm run security:secrets
 npm run security:audit
-npm run prisma:generate
+npx prisma generate
 npm run lint
-npm run test
+npm run test:unit
+npm run test:integration
 npm run build
 npm run test:e2e
+npm run build:demo
+npm run test:e2e:demo
 ```
 
-## GitHub Actions CI
+PostgreSQL integration and standard E2E tests require guarded `test-preview` variables documented in [Production Readiness](docs/operations/production-readiness.md). Demo tests require no database or paid AI key.
 
-Pull request açıldığında ve `main` veya `develop` branch'lerine push yapıldığında `.github/workflows/ci.yml` otomatik çalışır.
+## Roadmap
 
-CI kalite kapısı şunları kontrol eder:
+### Implemented
 
-- `npx prisma generate`
-- `npm run security:secrets`
-- `npm run security:audit`
-- `npm run lint`
-- `npm run test:unit`
-- İzole Neon test branch'inde `npm run test:integration`
-- `npm run build`
-- `npm run test:e2e`
+- Deterministic finance engine and debt planning
+- Forecast, scenario comparison, Decision Intelligence, Financial Memory, reminders, and trend/recommendation context
+- Provider-independent AI adapters and Mock fallback
+- PostgreSQL test-preview infrastructure
+- Zero-cost, session-isolated demo mode
 
-Playwright raporu ve test sonuçları GitHub Actions artifact olarak 14 gün saklanır.
+### Experimental
 
-Önerilen branch protection:
+- Browser BYOK capability gates
+- Local Ollama and LM Studio browser connectivity
+- PostgreSQL production migration workflow
 
-- `main`: PR zorunlu, CI required check, force push kapalı.
-- `develop`: CI required check, doğrudan push yerine PR tercih edilir.
-- Merge öncesi CI yeşil olmalıdır.
+### Planned
 
-## Vercel / Production Öncesi Notlar
+- Authentication, user ownership, and multi-user isolation
+- Banking data import with explicit consent
+- PWA and mobile experience
+- Plugin/extension SDK
+- Production deployment and operational monitoring
 
-- Bu repo henüz gerçek production deploy için hazır kabul edilmez.
-- Vercel preview yalnız `test-preview` branch veya ayrı güvenli preview veritabanıyla düşünülmelidir.
-- Gerçek kişisel finans verisiyle production kullanım için PostgreSQL veya eşdeğer kalıcı veritabanı, authentication, authorization ve veri sahipliği modeli gerekir.
-- Production benzeri bir denemeden önce `docs/operations/production-readiness.md` içindeki checklist uygulanmalıdır.
-- Minimum Vercel ayarları, env listesi, PostgreSQL test-preview sınırları ve Auth geçiş sırası aynı operasyon dokümanında tanımlıdır.
-- PostgreSQL migration planı aynı dokümandaki `PostgreSQL Migration Plan` bölümünde tutulur; mevcut SQLite migration geçmişi production PostgreSQL'e doğrudan uygulanmamalıdır.
-- Production PostgreSQL için önerilen sağlayıcı stratejisi aynı dokümandaki `PostgreSQL Provider and Connection Strategy` bölümünde tutulur. Varsayılan öneri Neon Postgres via Vercel Marketplace, pooled `DATABASE_URL`, direct `DIRECT_URL` ve `sslmode=require` sözleşmesidir.
-- Demo/preview ortamlarında `AI_PROVIDER=mock` tercih edilmelidir; gerçek API key'ler yalnızca server-side environment variable olarak yönetilmelidir.
+See [Roadmap](docs/ROADMAP.md).
 
-## GitHub ve Release Akışı
+## Contributing
 
-- `main`: stable release branch.
-- `develop`: aktif geliştirme ve faz entegrasyonu.
-- `feature/*`: yeni faz veya feature branch'leri.
-- Release tag'leri `main` üzerinden oluşturulur.
-- İlk release önerisi: `v0.1.0 — Personal Finance OS Foundation`.
-- GitHub Actions CI, lint, test, build, e2e, Prisma generate, dependency audit ve secret scan kontrollerini çalıştırır.
+Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and use the issue and pull request templates. Security vulnerabilities must follow [SECURITY.md](SECURITY.md), not a public bug report.
 
-## Notlar
+## License
 
-Bu uygulama yalnızca eğitim amaçlı planlama desteği sağlar. Hukuki, vergisel, yatırım veya düzenlemeye tabi finansal tavsiye değildir.
+MIT License. See [LICENSE](LICENSE).
+
+## Product Philosophy
+
+Atlas AI is governed by the accepted [Product Manifesto](docs/product/PRODUCT_MANIFESTO.md). A concise engineering rationale is available in [Product Philosophy](docs/PRODUCT_PHILOSOPHY.md).
+
+## Acknowledgements
+
+Atlas AI builds on the open-source ecosystems around Next.js, React, TypeScript, Prisma, PostgreSQL, Vitest, Playwright, Recharts, and supported AI provider APIs and local model runtimes.
+
+## FAQ
+
+### Is Atlas AI a financial advisor?
+
+No. It is educational decision-support software. Calculations and AI explanations are not financial advice.
+
+### Does AI calculate my budget or risk level?
+
+No. Those values come from deterministic code. AI is downstream and explanatory only.
+
+### Can I use Atlas AI without an AI API key?
+
+Yes. Mock mode requires no key and keeps all deterministic features available.
+
+### Does the public demo store my changes?
+
+No. Demo changes live only in active-tab memory and reset on refresh or tab closure.
+
+### Is the project ready for public multi-user financial data?
+
+No. Authentication and user ownership remain planned requirements.
+
+### Can I use my own AI and database?
+
+Yes in self-host mode. Configure your own PostgreSQL connection and supported server-side provider through environment variables.

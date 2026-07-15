@@ -1,8 +1,16 @@
 # Changelog
 
-Bu proje Türkçe kullanıcı deneyimine sahip, local-first kişisel finans koçu panelidir. Bu dosya ürün sürümleri ve önemli teknik değişiklikleri özetler.
+Atlas AI Türkçe-first kullanıcı deneyimine sahip açık kaynak bir AI Financial Intelligence Platform'dur. Bu dosya ürün sürümlerini ve önemli teknik değişiklikleri özetler.
 
 ## Unreleased
+
+### v1.0.0-beta - Open-source Release Preparation
+
+- Product presentation standardized as **Atlas AI — Open-source AI Financial Intelligence Platform** while repository and package names remain unchanged.
+- README rewritten with architecture, quick start, self-hosting, BYOAI/BYODB, demo mode, security, testing, roadmap, contribution, license, and FAQ guidance.
+- MIT license, security policy, contributor guide, Contributor Covenant, issue templates, and pull request template prepared.
+- Product philosophy, technical architecture, self-hosting, delivery roadmap, GitHub Discussions, and repository topic recommendations documented.
+- Live demo URL and screenshots remain explicit placeholders; no deployment or GitHub settings change was performed.
 
 ### Phase 7 - Zero-Cost Public Demo
 

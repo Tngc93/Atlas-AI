@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/dashboard/AppShell";
 import { ExpenseCrudPanel } from "@/components/forms/ExpenseCrudPanel";
 import { PageNotice } from "@/components/forms/PageNotice";
+import { PageHeader } from "@/components/ui/Primitives";
 import { listExpenses } from "@/features/expenses/repository";
 
 export const dynamic = "force-dynamic";
@@ -24,8 +25,9 @@ export default async function ExpensesPage({ searchParams }: { searchParams?: Pr
 
   return (
     <AppShell>
+      <PageHeader kicker="Kayıtlar" title="Zorunlu giderler" description="Yaşam bütçesini korumak için düzenli ve zorunlu gider kayıtlarınızı yönetin." />
       <PageNotice message={params?.notice ? noticeMessages[params.notice] : undefined} />
-      <ExpenseCrudPanel expenses={expenseFormModels} />
+      <div className="mt-7"><ExpenseCrudPanel expenses={expenseFormModels} /></div>
     </AppShell>
   );
 }

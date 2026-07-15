@@ -7,6 +7,8 @@ import { getMemoryReportData } from "@/features/memory/repository";
 import { buildFinancialMemoryReport } from "@/features/memory/service";
 import type { MemoryWindowComparison } from "@/features/memory/types";
 import { trCopy } from "@/lib/copy/tr";
+import { EmptyState, PageHeader } from "@/components/ui/Primitives";
+import { History } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +23,7 @@ function riskLabel(riskLevel: "low" | "medium" | "high") {
 function Notice({ notice }: { notice?: string }) {
   if (notice === "memoryUpdated") {
     return (
-      <p role="status" className="rounded-md border border-mint/20 bg-mint/10 p-3 text-sm text-mint">
+      <p role="status" aria-live="polite" className="rounded-xl border border-mint/25 bg-mint/10 p-4 text-sm font-semibold text-mint">
         Finansal hafıza güncellendi.
       </p>
     );
@@ -29,7 +31,7 @@ function Notice({ notice }: { notice?: string }) {
 
   if (notice === "memoryError") {
     return (
-      <p role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+      <p role="alert" className="rounded-xl border border-coral/30 bg-coral/10 p-4 text-sm font-semibold text-coral">
         Finansal hafıza güncellenemedi. Kayıtlarınızı kontrol edip tekrar deneyin.
       </p>
     );
@@ -78,28 +80,21 @@ export default async function MemoryPage({ searchParams }: { searchParams?: Prom
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex flex-col gap-2">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-steel">{trCopy.memory.kicker}</p>
-          <h1 className="max-w-4xl text-3xl font-semibold tracking-tight sm:text-4xl">{trCopy.memory.title}</h1>
-          <p className="max-w-3xl text-sm leading-6 text-steel">{trCopy.memory.description}</p>
-        </div>
+      <PageHeader kicker={trCopy.memory.kicker} title={trCopy.memory.title} description={`${trCopy.memory.description} Finansal Hafıza yapılandırılmış aylık finans snapshot’larını saklar; gizli AI hafızası değildir.`} action={
         <form action={refreshFinancialMemoryAndRedirectAction}>
-          <button className="rounded-md bg-mint px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-mint/90 focus:outline-none focus:ring-2 focus:ring-mint focus:ring-offset-2">
+          <button className="ui-primary-button">
             {trCopy.memory.refresh}
           </button>
         </form>
-      </div>
+      } />
 
       <div className="mt-4">
         <Notice notice={params?.notice} />
       </div>
 
       {!report.hasAnySnapshot ? (
-        <section className="mt-6 rounded-lg border border-dashed border-line bg-surface p-5">
-          <h2 className="text-lg font-semibold">{trCopy.memory.emptyTitle}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-steel">{trCopy.memory.emptyDescription}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-7"><EmptyState icon={History} kicker="Yapılandırılmış snapshot" title={trCopy.memory.emptyTitle} description={trCopy.memory.emptyDescription} actions={
+          <>
             <Link className="rounded-md border border-line px-3 py-2 text-sm font-semibold" href="/income">
               Gelir ekle
             </Link>
@@ -109,8 +104,8 @@ export default async function MemoryPage({ searchParams }: { searchParams?: Prom
             <Link className="rounded-md border border-line px-3 py-2 text-sm font-semibold" href="/debts">
               Borç ekle
             </Link>
-          </div>
-        </section>
+          </>
+        } /></div>
       ) : null}
 
       {latest ? (
@@ -192,7 +187,7 @@ export default async function MemoryPage({ searchParams }: { searchParams?: Prom
             <h2 className="text-lg font-semibold">{trCopy.memory.categoryChanges}</h2>
             {report.categoryChanges.length > 0 ? (
               <div className="mt-4 overflow-x-auto">
-                <table className="min-w-full divide-y divide-line text-sm">
+                <table className="product-data-table min-w-full divide-y divide-line text-sm">
                   <thead className="bg-surface-muted text-left text-xs uppercase tracking-[0.12em] text-steel">
                     <tr>
                       <th className="px-4 py-3">Kategori</th>

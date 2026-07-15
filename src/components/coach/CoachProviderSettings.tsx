@@ -44,6 +44,7 @@ export function CoachProviderSettings({
   const [status, setStatus] = useState<ConnectionStatus>("idle");
   const [message, setMessage] = useState("Bağlı değil");
   const credentialRef = useRef<BrowserSessionCredential | null>(null);
+  const statusLabel = status === "connected" ? "Bağlı" : status === "testing" ? "İşleniyor" : status === "error" ? "Bağlantı hatası" : "Bağlı değil";
 
   function clearCredential() {
     const credential = credentialRef.current;
@@ -147,8 +148,12 @@ export function CoachProviderSettings({
           <h2 className="mt-2 text-xl font-semibold text-ink">AI Sağlayıcı Ayarları</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-steel">Demo ücretsiz çalışır. Kendi anahtarınız yalnız açık sekmenin geçici belleğinde tutulur.</p>
         </div>
-        <StatusPill tone={status === "connected" ? "success" : status === "error" ? "danger" : "neutral"}>{message}</StatusPill>
+        <StatusPill tone={status === "connected" ? "success" : status === "error" ? "danger" : "neutral"}>{statusLabel}</StatusPill>
       </div>
+
+      <p role={status === "error" ? "alert" : "status"} aria-live="polite" className={`mt-4 rounded-xl border px-4 py-3 text-sm font-semibold leading-6 ${status === "error" ? "border-coral/30 bg-coral/10 text-coral" : "border-line bg-surface-muted text-steel"}`}>
+        {message}
+      </p>
 
       <div className="mt-5 grid gap-2 sm:grid-cols-3" role="group" aria-label="AI çalışma modu">
         {(["demo", "byok", "self-host"] as const).map((item) => (

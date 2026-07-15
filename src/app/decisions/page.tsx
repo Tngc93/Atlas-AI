@@ -3,6 +3,7 @@ import { AppShell } from "@/components/dashboard/AppShell";
 import { DecisionSimulatorPanel } from "@/components/decision/DecisionSimulatorPanel";
 import { getFinanceSnapshot } from "@/features/finance/data-service";
 import { trCopy } from "@/lib/copy/tr";
+import { PageHeader } from "@/components/ui/Primitives";
 
 export const dynamic = "force-dynamic";
 
@@ -34,11 +35,7 @@ export default async function DecisionsPage() {
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-steel">Karar desteği</p>
-        <h1 className="max-w-4xl text-3xl font-semibold tracking-tight sm:text-4xl">{trCopy.decisions.title}</h1>
-        <p className="max-w-3xl text-sm leading-6 text-steel">{trCopy.decisions.description}</p>
-      </div>
+      <PageHeader kicker="Karar desteği" title={trCopy.decisions.title} description={trCopy.decisions.description} />
 
       <section className="mt-6 rounded-lg border border-amber/25 bg-amber/10 p-4">
         <p className="text-sm leading-6 text-steel">{trCopy.decisions.caveat}</p>

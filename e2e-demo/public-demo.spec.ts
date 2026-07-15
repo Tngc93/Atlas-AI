@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("public demo boots without a database and resets ephemeral CRUD", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/demo");
   await expect(page.getByText("Demo Mode", { exact: true })).toBeVisible();
   await expect(page.getByText("Bu ayın karar özeti")).toBeVisible();
 

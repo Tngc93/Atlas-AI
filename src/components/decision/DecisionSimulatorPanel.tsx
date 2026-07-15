@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { simulateDecisionScenarioAction, type DecisionActionState } from "@/features/decision/actions";
 import type { DecisionScenarioType, DecisionTradeoffItem } from "@/features/decision/types";
 import { formatTry } from "@/features/finance/money";
@@ -86,12 +87,15 @@ function impactTone(value: number, lowerIsBetter = true): string {
 }
 
 function SubmitButton() {
+  const { pending } = useFormStatus();
+
   return (
     <button
       type="submit"
+      disabled={pending}
       className="ui-primary-button"
     >
-      Simüle Et
+      {pending ? "Hesaplanıyor..." : "Simüle Et"}
     </button>
   );
 }
@@ -110,6 +114,8 @@ export function DecisionSimulatorPanel({
     initialFormActionState,
   );
   const [selectedType, setSelectedType] = useState<DecisionScenarioType>("extra_debt_payment");
+  const [resetKey, setResetKey] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   const selectedScenario = useMemo(
     () => scenarioOptions.find((scenario) => scenario.value === selectedType) ?? scenarioOptions[0],
     [selectedType],
@@ -119,6 +125,15 @@ export function DecisionSimulatorPanel({
   );
   const requiresPercent = selectedType === "reduce_expenses_percent";
   const requiresDebt = selectedType === "specific_debt_payment";
+  const formAction = (formData: FormData) => {
+    setShowResult(true);
+    action(formData);
+  };
+  const resetScenario = () => {
+    setResetKey((value) => value + 1);
+    setShowResult(false);
+    setSelectedType("extra_debt_payment");
+  };
 
   return (
     <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
@@ -138,7 +153,7 @@ export function DecisionSimulatorPanel({
           </p>
         ) : null}
 
-        <form action={action} className="mt-5 space-y-4">
+        <form key={resetKey} action={formAction} className="mt-6 space-y-5">
           <label className="block">
             <span className="text-sm font-medium text-steel">Senaryo türü</span>
             <select
@@ -207,13 +222,14 @@ export function DecisionSimulatorPanel({
 
           <div className="flex flex-wrap items-center gap-3">
             <SubmitButton />
-            <FormMessage state={state} />
+            <button type="button" onClick={resetScenario} className="ui-secondary-button">Sıfırla</button>
+            {showResult ? <FormMessage state={state} /> : null}
           </div>
         </form>
       </section>
 
-      <section className="ui-card">
-        {state.result ? <ScenarioResult state={state} /> : <EmptyResult />}
+      <section className="ui-card" aria-live="polite">
+        {state.result && showResult ? <ScenarioResult state={state} /> : <EmptyResult />}
       </section>
     </div>
   );
@@ -245,7 +261,7 @@ function ScenarioResult({ state }: { state: DecisionActionState }) {
           <h2 className="mt-2 text-xl font-semibold">{result.title}</h2>
         </div>
         <span className="w-fit rounded-md border border-line bg-surface-muted px-3 py-2 text-xs font-semibold text-steel">
-          Kesin tavsiye değil
+          Geçici sonuç · kayıtlar değişmedi
         </span>
       </div>
 
@@ -367,6 +383,10 @@ function ScenarioResult({ state }: { state: DecisionActionState }) {
           </ul>
         </div>
       ) : null}
+
+      <p className="mt-5 border-t border-line pt-4 text-sm font-medium leading-6 text-steel">
+        Bu sonuç hipotetiktir. Kayıtlı gelir, gider, borç ve geçmiş verileriniz değişmez; son karar size aittir.
+      </p>
 
     </div>
   );

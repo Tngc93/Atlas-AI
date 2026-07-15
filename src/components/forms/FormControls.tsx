@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { FormActionState } from "@/lib/actions/action-state";
 import { getFirstFieldError } from "@/lib/actions/action-state";
@@ -23,7 +23,7 @@ export function FieldError({ state, name }: { state: FormActionState; name: stri
     return null;
   }
 
-  return <p className="mt-1 text-xs font-medium text-coral">{error}</p>;
+  return <p id={`${name}-error`} role="alert" className="mt-2 text-sm font-semibold leading-5 text-coral">{error}</p>;
 }
 
 export function FormMessage({ state }: { state: FormActionState }) {
@@ -34,7 +34,7 @@ export function FormMessage({ state }: { state: FormActionState }) {
   const tone = state.status === "success" ? "border-mint/25 bg-mint/10 text-mint" : "border-coral/25 bg-coral/10 text-coral";
 
   return (
-    <p role="status" className={`rounded-md border px-3 py-2 text-sm font-medium ${tone}`}>
+    <p role={state.status === "error" ? "alert" : "status"} aria-live="polite" className={`rounded-xl border px-4 py-3 text-sm font-semibold leading-5 ${tone}`}>
       {state.message}
     </p>
   );
@@ -61,7 +61,7 @@ export function DeleteButton() {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex min-h-10 items-center justify-center rounded-md border border-coral/25 px-3 py-2 text-sm font-semibold text-coral transition hover:bg-coral/10 disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex min-h-11 items-center justify-center rounded-xl border border-coral/35 px-4 py-2 text-sm font-semibold text-coral transition hover:bg-coral/10 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? "Siliniyor..." : "Sil"}
     </button>
@@ -71,6 +71,11 @@ export function DeleteButton() {
 export function ConfirmDeleteButton({ itemLabel = "kayıt" }: { itemLabel?: string }) {
   const { pending } = useFormStatus();
   const [isConfirming, setIsConfirming] = useState(false);
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isConfirming) confirmButtonRef.current?.focus();
+  }, [isConfirming]);
 
   if (!isConfirming) {
     return (
@@ -78,7 +83,7 @@ export function ConfirmDeleteButton({ itemLabel = "kayıt" }: { itemLabel?: stri
         type="button"
         disabled={pending}
         onClick={() => setIsConfirming(true)}
-        className="inline-flex items-center justify-center rounded-md border border-coral/25 px-3 py-2 text-sm font-semibold text-coral transition hover:bg-coral/10 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-11 items-center justify-center rounded-xl border border-coral/35 px-4 py-2 text-sm font-semibold text-coral transition hover:bg-coral/10 disabled:cursor-not-allowed disabled:opacity-60"
       >
         Sil
       </button>
@@ -86,12 +91,13 @@ export function ConfirmDeleteButton({ itemLabel = "kayıt" }: { itemLabel?: stri
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-md border border-coral/20 bg-coral/10 p-2">
-      <span className="text-sm font-medium text-coral">Bu {itemLabel} silinsin mi?</span>
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-coral/30 bg-coral/10 p-3" role="group" aria-label={`${itemLabel} silme onayı`}>
+      <span className="text-sm font-semibold text-coral">Bu {itemLabel} silinsin mi?</span>
       <button
+        ref={confirmButtonRef}
         type="submit"
         disabled={pending}
-        className="inline-flex min-h-10 items-center justify-center rounded-md bg-coral px-3 py-2 text-sm font-semibold text-white transition hover:bg-coral/85 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-11 items-center justify-center rounded-xl bg-coral px-4 py-2 text-sm font-semibold text-white transition hover:bg-coral/85 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {pending ? "Siliniyor..." : "Eminim sil"}
       </button>
@@ -122,10 +128,14 @@ export function MoneyInput({
   helper?: string;
   required?: boolean;
 }) {
+  const error = getFirstFieldError(state, name);
+  const helperId = `${name}-helper`;
+  const errorId = error ? `${name}-error` : undefined;
+
   return (
     <label className="block">
-      <span className="text-sm font-medium text-steel">{label}</span>
-      <div className="mt-2 flex overflow-hidden rounded-md border border-line bg-surface transition focus-within:border-mint focus-within:ring-2 focus-within:ring-mint/20">
+      <span className="product-field-label">{label}{required ? <span className="ml-1 text-coral" aria-hidden="true">*</span> : null}</span>
+      <div className="mt-2 flex min-h-12 overflow-hidden rounded-xl border border-line bg-surface transition focus-within:border-mint focus-within:ring-2 focus-within:ring-mint/25">
         <span className="flex items-center border-r border-line bg-surface-muted px-3 text-sm font-semibold text-steel">
           ₺
         </span>
@@ -135,12 +145,15 @@ export function MoneyInput({
           inputMode="decimal"
           autoComplete="off"
           required={required}
+          aria-required={required}
+          aria-invalid={Boolean(error)}
+          aria-describedby={[helperId, errorId].filter(Boolean).join(" ")}
           defaultValue={kurusToLiraInput(value)}
           placeholder="0,00"
-          className="w-full bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-steel/70"
+          className="w-full bg-surface px-3.5 py-2.5 text-[15px] font-medium text-ink outline-none placeholder:text-steel/70"
         />
       </div>
-      <p className="mt-1 text-xs text-steel">{helper}</p>
+      <p id={helperId} className="product-helper">{helper}</p>
       <FieldError state={state} name={name} />
     </label>
   );
@@ -163,10 +176,14 @@ export function DaySelect({
   emptyLabel?: string;
   helper?: string;
 }) {
+  const error = getFirstFieldError(state, name);
+  const helperId = helper ? `${name}-helper` : undefined;
+  const errorId = error ? `${name}-error` : undefined;
+
   return (
     <label className="block">
-      <span className="text-sm font-medium text-steel">{label}</span>
-      <select name={name} defaultValue={value ?? ""} required={required} className="ui-input mt-2 w-full">
+      <span className="product-field-label">{label}{required ? <span className="ml-1 text-coral" aria-hidden="true">*</span> : null}</span>
+      <select name={name} defaultValue={value ?? ""} required={required} aria-required={required} aria-invalid={Boolean(error)} aria-describedby={[helperId, errorId].filter(Boolean).join(" ") || undefined} className="ui-input mt-2 w-full">
         <option value="">{emptyLabel}</option>
         {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
           <option key={day} value={day}>
@@ -174,7 +191,7 @@ export function DaySelect({
           </option>
         ))}
       </select>
-      {helper ? <p className="mt-1 text-xs text-steel">{helper}</p> : null}
+      {helper ? <p id={helperId} className="product-helper">{helper}</p> : null}
       <FieldError state={state} name={name} />
     </label>
   );
@@ -191,9 +208,9 @@ export function FormSection({
 }) {
   return (
     <section className="ui-card">
-      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-steel">{description}</p>
-      <div className="mt-6">{children}</div>
+      <h2 className="product-section-title">{title}</h2>
+      <p className="product-body-copy mt-2 max-w-3xl">{description}</p>
+      <div className="mt-7">{children}</div>
     </section>
   );
 }

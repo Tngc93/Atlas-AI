@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import { History } from "lucide-react";
+import { EmptyState } from "@/components/ui/Primitives";
 import { formatTry } from "@/features/finance/money";
 import type { FormActionState } from "@/lib/actions/action-state";
 import { initialFormActionState } from "@/lib/actions/action-state";
@@ -126,9 +128,7 @@ function SalaryHistoryPanel({ salaryRecords }: { salaryRecords: SalaryRecordForm
 
       <div className="mt-6 space-y-3">
         {salaryRecords.length === 0 ? (
-          <p className="rounded-md border border-dashed border-line bg-surface-muted p-4 text-sm text-steel">
-            Henüz maaş geçmişi kaydı yok.
-          </p>
+          <EmptyState icon={History} kicker="Maaş geçmişi" title="Henüz geçmiş maaş kaydı yok" description="İlk kaydı yukarıdaki formdan eklediğinizde gelir değişimini zaman içinde karşılaştırabilirsiniz." />
         ) : (
           salaryRecords.map((record) => <SalaryRecordRow key={record.id} record={record} />)
         )}

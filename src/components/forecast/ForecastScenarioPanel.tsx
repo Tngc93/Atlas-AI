@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { simulateForecastScenarioAction, type ForecastScenarioActionState } from "@/features/forecast/actions";
 import type { ForecastScenarioComparisonItem, ForecastScenarioType } from "@/features/forecast/types";
 import { formatTry } from "@/features/finance/money";
@@ -88,9 +89,11 @@ function amountTone(value: number, lowerIsBetter = true): string {
 }
 
 function SubmitButton() {
+  const { pending } = useFormStatus();
+
   return (
-    <button type="submit" className="ui-primary-button">
-      Karşılaştır
+    <button type="submit" disabled={pending} className="ui-primary-button">
+      {pending ? "Hesaplanıyor..." : "Karşılaştır"}
     </button>
   );
 }
@@ -196,7 +199,7 @@ export function ForecastScenarioPanel() {
           </form>
         </div>
 
-        <ForecastScenarioResult state={state} showResult={showResult} />
+        <div aria-live="polite"><ForecastScenarioResult state={state} showResult={showResult} /></div>
       </div>
     </section>
   );
