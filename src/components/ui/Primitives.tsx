@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ComponentType, ReactNode } from "react";
-import { CheckCircle2, Circle, Sparkles } from "lucide-react";
+import { CheckCircle2, Circle, Inbox, Sparkles } from "lucide-react";
 import type { RiskLevel, UiRiskLevel } from "@/features/finance/types";
 import { trCopy } from "@/lib/copy/tr";
 
@@ -26,11 +26,11 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <header className="animate-enter flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <header className="animate-enter flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
       <div className="min-w-0">
-        {kicker ? <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-mint">{kicker}</p> : null}
-        <h1 className="mt-3 max-w-5xl text-3xl font-semibold tracking-tight text-ink sm:text-5xl">{title}</h1>
-        {description ? <p className="mt-4 max-w-3xl text-sm leading-6 text-steel sm:text-base">{description}</p> : null}
+        {kicker ? <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mint">{kicker}</p> : null}
+        <h1 className="product-page-title mt-3 max-w-5xl text-ink">{title}</h1>
+        {description ? <p className="product-body-copy mt-4 max-w-3xl">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </header>
@@ -67,8 +67,8 @@ export function ChartCard({
     <section className="ui-card min-w-0 overflow-hidden">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-ink">{title}</h2>
-          {description ? <p className="mt-1 text-sm leading-6 text-steel">{description}</p> : null}
+          <h2 className="product-section-title text-ink">{title}</h2>
+          {description ? <p className="mt-2 text-[15px] font-medium leading-6 text-steel">{description}</p> : null}
         </div>
         {meta ? <span className="text-xs font-medium text-steel">{meta}</span> : null}
       </div>
@@ -142,17 +142,24 @@ export function EmptyState({
   title,
   description,
   actions,
+  icon: Icon = Inbox,
+  kicker = "Başlangıç",
 }: {
   title: string;
   description: string;
   actions?: ReactNode;
+  icon?: ComponentType<{ size?: number; "aria-hidden"?: boolean }>;
+  kicker?: string;
 }) {
   return (
-    <section className="rounded-lg border border-dashed border-line bg-surface p-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mint">Başlangıç</p>
-      <h2 className="mt-2 text-xl font-semibold text-ink">{title}</h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-steel">{description}</p>
-      {actions ? <div className="mt-5 flex flex-wrap gap-2">{actions}</div> : null}
+    <section className="rounded-2xl border border-dashed border-line bg-surface-muted/55 p-6 sm:p-8">
+      <span className="grid h-12 w-12 place-items-center rounded-xl border border-line bg-surface text-mint">
+        <Icon size={22} aria-hidden={true} />
+      </span>
+      <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-mint">{kicker}</p>
+      <h2 className="mt-2 text-xl font-semibold tracking-tight text-ink sm:text-2xl">{title}</h2>
+      <p className="mt-3 max-w-3xl text-[15px] font-medium leading-7 text-steel">{description}</p>
+      {actions ? <div className="mt-6 flex flex-wrap gap-3">{actions}</div> : null}
     </section>
   );
 }

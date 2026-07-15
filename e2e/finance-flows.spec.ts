@@ -25,18 +25,16 @@ async function assertNoHorizontalOverflow(page: Page, context: string) {
 
 async function assertVisibleTexts(page: Page, texts: string[]) {
   for (const text of texts) {
-    const matches = page.getByText(text, { exact: true });
-    const count = await matches.count();
-    let hasVisibleMatch = false;
-
-    for (let index = 0; index < count; index += 1) {
-      if (await matches.nth(index).isVisible()) {
-        hasVisibleMatch = true;
-        break;
-      }
-    }
-
-    expect(hasVisibleMatch, `"${text}" görünür olmalı`).toBe(true);
+    await expect
+      .poll(async () => {
+        const matches = page.getByText(text, { exact: true });
+        const count = await matches.count();
+        for (let index = 0; index < count; index += 1) {
+          if (await matches.nth(index).isVisible()) return true;
+        }
+        return false;
+      }, { message: `"${text}" görünür olmalı` })
+      .toBe(true);
   }
 }
 
@@ -45,7 +43,7 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
 
   const browserErrors = collectBrowserErrors(page);
 
-  await page.goto("/");
+  await page.goto("/dashboard");
   await expect(page.getByText("İlk kurulum")).toBeVisible();
   await expect(page.getByText("Güncel maaşını ekle")).toBeVisible();
   await expect(page.getByText("Zorunlu giderlerini yaz")).toBeVisible();
@@ -90,7 +88,7 @@ test("ilk kurulum akışı ve gerçek form submitleri çalışır", async ({ pag
   await page.reload();
   await expect(page.getByText("Örnek E2E Kart")).toBeVisible();
 
-  await page.goto("/");
+  await page.goto("/dashboard");
   await expect(page.getByRole("heading", { level: 2, name: "Hatırlatmalar" })).toBeVisible();
   await expect(page.getByText("Dikkat gerektirenler")).toBeVisible();
   await expect(page.getByText("Tümünü aç")).toBeVisible();
@@ -187,7 +185,7 @@ test("responsive smoke: ana finansal sayfalarda yatay taşma ve kritik metinler 
   ];
   const pages = [
     {
-      path: "/",
+      path: "/dashboard",
       texts: ["Bu ayın karar özeti", "Önce korunması gereken şey", "En önemli risk", "Sıradaki güvenli adım", "Neden?"],
     },
     {

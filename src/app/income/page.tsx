@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/dashboard/AppShell";
 import { IncomeCrudPanels } from "@/components/forms/IncomeCrudPanels";
 import { PageNotice } from "@/components/forms/PageNotice";
+import { PageHeader } from "@/components/ui/Primitives";
 import { getProfile, listSalaryRecords } from "@/features/income/repository";
 
 export const dynamic = "force-dynamic";
@@ -30,8 +31,9 @@ export default async function IncomePage({ searchParams }: { searchParams?: Prom
 
   return (
     <AppShell>
+      <PageHeader kicker="Kayıtlar" title="Gelir ve maaş geçmişi" description="Güncel gelirinizi, maaş gününü ve geçmiş maaş kayıtlarını tek bir yerde yönetin." />
       <PageNotice message={params?.notice ? noticeMessages[params.notice] : undefined} />
-      <IncomeCrudPanels profile={profileFormModel} salaryRecords={salaryRecordFormModels} />
+      <div className="mt-7"><IncomeCrudPanels profile={profileFormModel} salaryRecords={salaryRecordFormModels} /></div>
     </AppShell>
   );
 }

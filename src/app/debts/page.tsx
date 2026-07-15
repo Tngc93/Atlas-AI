@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/dashboard/AppShell";
 import { DebtCrudPanel } from "@/components/forms/DebtCrudPanel";
 import { PageNotice } from "@/components/forms/PageNotice";
+import { PageHeader } from "@/components/ui/Primitives";
 import { listDebts } from "@/features/debts/repository";
 
 export const dynamic = "force-dynamic";
@@ -35,8 +36,9 @@ export default async function DebtsPage({ searchParams }: { searchParams?: Promi
 
   return (
     <AppShell>
+      <PageHeader kicker="Kayıtlar" title="Borçlar ve kredi hesapları" description="Bakiyeleri, minimum ödemeleri, vade tarihlerini ve faiz bağlamını güvenli biçimde yönetin." />
       <PageNotice message={params?.notice ? noticeMessages[params.notice] : undefined} />
-      <DebtCrudPanel debts={debtFormModels} />
+      <div className="mt-7"><DebtCrudPanel debts={debtFormModels} /></div>
     </AppShell>
   );
 }

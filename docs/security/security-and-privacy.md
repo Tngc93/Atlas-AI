@@ -13,7 +13,7 @@
 - CSP `connect-src` yalnız etkin provider origin'lerini içermeli; kapalı provider origin'leri policy'de bulunmamalıdır.
 - Connection test finansal context göndermemeli; context gönderimi ayrı kullanıcı onayı gerektirmelidir.
 - Gerçek key yerine düşük limitli, kolayca iptal edilebilir test key kullanılmalıdır.
-- SQLite veritabanı dosyalarını git dışında bırakın.
+- PostgreSQL bağlantılarını yalnız server-side environment içinde tutun; arşivlenmiş veya lokal SQLite dosyalarını da git dışında bırakın.
 - Loglarda hassas değerleri maskeleyin.
 - AI tarafına ham özel notlar yerine özet finans verisi gönderin.
 - Kalıcı kayıttan önce sayısal girişleri doğrulayın.

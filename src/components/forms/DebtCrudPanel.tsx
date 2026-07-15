@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
+import { CreditCard } from "lucide-react";
+import { EmptyState } from "@/components/ui/Primitives";
 import { formatTry } from "@/features/finance/money";
 import { debtStatusOptions, debtTypeOptions, getDebtStatusLabel, getDebtTypeLabel } from "@/features/finance/form-options";
 import type { FormActionState } from "@/lib/actions/action-state";
@@ -50,9 +52,7 @@ export function DebtCrudPanel({ debts }: { debts: DebtFormModel[] }) {
 
       <div className="mt-6 space-y-3">
         {debts.length === 0 ? (
-          <p className="rounded-md border border-dashed border-line bg-surface-muted p-4 text-sm text-steel">
-            Henüz borç kaydı yok. İlk borcunuzu eklediğinizde panel ve aylık plan kayıtlı bilgilerle güncellenecek.
-          </p>
+          <EmptyState icon={CreditCard} kicker="Borç kaydı" title="Henüz aktif borç kaydı yok" description="İlk borcu yukarıdaki formdan eklediğinizde minimum ödeme, risk ve kapatma önceliği hesaplanır." />
         ) : (
           debts.map((debt) => <DebtRow key={debt.id} debt={debt} />)
         )}

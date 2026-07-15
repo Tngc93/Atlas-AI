@@ -1,23 +1,13 @@
-# Teknik Mimari
+# Technical Architecture Reference
 
-## Uygulama Katmanları
+The canonical implementation architecture is maintained in [docs/ARCHITECTURE.md](../ARCHITECTURE.md).
 
-- `src/app`: Next.js rotaları ve API handler dosyaları.
-- `src/components`: panel UI, grafikler, tablolar ve örnek giriş panelleri.
-- `src/features/finance`: deterministik para, risk, dağılım, sıralama ve borç kapatma projeksiyonu mantığı.
-- `src/features/rates`: TCMB sağlayıcı arayüzü, ayrıştırıcı ve örnek yedek veri.
-- `src/features/coach`: server-only OpenAI servis yer tutucusu ve yanıt şeması.
-- `src/lib/sample-data`: kurgusal MVP verisi.
-- `src/lib/db`: Prisma istemci sınırı.
-- `prisma`: SQLite şeması.
+Additional architecture authorities:
 
-## Veri Akışı
+- [Product Architecture](../product/PRODUCT_ARCHITECTURE.md)
+- [System Architecture](../product/SYSTEM_ARCHITECTURE.md)
+- [AI Architecture](../product/AI_ARCHITECTURE.md)
+- [User Ownership Architecture](user-ownership.md)
+- [Production Readiness](../operations/production-readiness.md)
 
-1. Örnek profil, borç ve gider verileri deterministik hesaplama fonksiyonlarını besler.
-2. Panel bileşenleri KPI kartlarını, grafikleri, öncelik tablolarını ve yol haritasını gösterir.
-3. `/api/rates/refresh` TCMB sağlayıcısını çağırır ve alınan veriyi ya da örnek yedek veriyi döndürür.
-4. `/api/coach` server-only OpenAI servisini çağırır. `OPENAI_API_KEY` yoksa Türkçe örnek eğitim yanıtı döndürür.
-
-## Hesaplama Sahipliği
-
-Sayısal kararların tamamı `src/features/finance/calculations.ts` içindeki deterministik koddan gelir. AI çıktısı yalnızca açıklayıcıdır.
+This compatibility path remains in place for older links. It should not duplicate technical details that may become stale.
