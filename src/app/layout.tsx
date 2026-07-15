@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Barlow, Inter_Tight } from "next/font/google";
 import { trCopy } from "@/lib/copy/tr";
+import { resolveSiteUrl } from "@/lib/public-site/site-url";
 import "./globals.css";
 
 const barlow = Barlow({
@@ -12,15 +13,18 @@ const barlow = Barlow({
 
 const interTight = Inter_Tight({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: "variable",
   variable: "--font-display",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: resolveSiteUrl(),
+  applicationName: "Atlas AI",
   title: trCopy.app.title,
   description: trCopy.app.description,
+  referrer: "no-referrer",
+  formatDetection: { telephone: false },
 };
 
 export default function RootLayout({

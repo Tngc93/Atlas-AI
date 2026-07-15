@@ -8,6 +8,6 @@ export function publicMetadata(content: PublicPageContent): Metadata {
     description: content.description,
     alternates: { canonical: content.path },
     openGraph: { title, description: content.description, url: content.path, type: "website", locale: "en_US" },
-    twitter: { card: "summary_large_image", title, description: content.description },
+    twitter: { card: "summary", title, description: content.description },
   };
 }

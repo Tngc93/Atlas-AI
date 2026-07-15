@@ -77,7 +77,14 @@ test("public recovery, sitemap and robots routes are production-ready", async ({
 
   const robots = await request.get("/robots.txt");
   expect(robots.ok()).toBe(true);
-  expect(await robots.text()).toContain("sitemap.xml");
+  const robotsBody = await robots.text();
+  expect(robotsBody).toContain("sitemap.xml");
+  expect(robotsBody).toContain("Disallow: /dashboard");
+  expect(robotsBody).toContain("Disallow: /coach");
+
+  const poster = await request.get("/media/atlas-jellyfish-poster.jpg");
+  expect(poster.ok()).toBe(true);
+  expect(poster.headers()["cache-control"]).toContain("stale-while-revalidate=604800");
 });
 
 test("core public pages remain overflow-free across the release viewport matrix", async ({ page }) => {
