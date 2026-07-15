@@ -89,7 +89,7 @@ Screenshots will be added before the public launch. These placeholders intention
 
 > **Status: placeholder.** A public URL has not been published from this repository yet.
 
-The planned public demo runs with fictional data, per-tab memory state, and Mock AI. It does not require `DATABASE_URL`, paid provider keys, authentication, or shared database mutation.
+The public demo at `/demo` runs with fictional data, per-tab memory state, and Mock AI. It does not require `DATABASE_URL`, paid provider keys, authentication, or shared database mutation. The marketing website remains available at `/` in demo deployments.
 
 ## Quick Start
 
@@ -159,15 +159,20 @@ PUBLIC_DEMO_MODE=true AI_PROVIDER=mock npm run dev
 
 - Uses an immutable fictional seed and active-tab memory
 - Supports temporary income, debt, and expense CRUD
-- Resets after refresh, tab closure, or `Demo verisini sıfırla`
-- Does not write finance state to database, URL, cookies, `localStorage`, or `sessionStorage`
+- Keeps every demo product link under `/demo/*` and fails closed for unsupported routes
+- Resets after refresh, tab closure, a new browser context, or the confirmed `Reset Demo` action
+- Does not write finance state to a database, URL, browser history, cookies, `localStorage`, `sessionStorage`, IndexedDB, Cache Storage, or service-worker storage
 - Blocks DB-backed API routes and Prisma initialization
-- Uses Mock AI with zero required API cost
+- Uses deterministic Mock AI with zero required API cost and no platform-owned provider key
 
 ```bash
 npm run build:demo
 npm run test:e2e:demo
 ```
+
+For a free public deployment, set only `PUBLIC_DEMO_MODE=true` and `AI_PROVIDER=mock`; leave database and cloud AI credentials empty. No KV, Redis, Blob, persistent service, analytics, or tracking integration is required. Hosting remains subject to the provider's free-tier quotas and acceptable-use limits; unlimited free hosting is not implied.
+
+See [Public Demo](docs/PUBLIC_DEMO.md) for the route map, reset lifecycle, negative storage controls, deployment profile, and known limitations.
 
 ## Security
 

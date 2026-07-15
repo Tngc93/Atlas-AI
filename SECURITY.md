@@ -49,7 +49,9 @@ Maintainers will attempt to acknowledge a report promptly, validate impact, coor
 
 ## Demo Limitations
 
-Public demo mode is designed for fictional data only. It has no authentication or durable user storage. State lives in active-tab memory and resets after refresh or tab closure.
+Public demo mode is designed for fictional data only. It has no authentication or durable user storage. State lives in active-tab memory and resets after refresh, tab closure, a new context, or the confirmed Reset Demo action. Demo navigation remains under `/demo/*`; unsupported routes and DB-backed APIs fail closed.
+
+Demo financial state, form values, reminders, snapshots, scenarios, Mock AI output, and onboarding state must not enter browser persistence, URLs, logs, analytics, Prisma, or PostgreSQL. Public demo deployments must use Mock AI and must not receive database credentials or project-owned provider keys. See [Public Demo](docs/PUBLIC_DEMO.md) for the complete negative-control and deployment profile.
 
 The demo is not a secure environment for real financial information. Warnings and ephemeral state reduce risk but cannot protect users from malicious browser extensions, compromised client code, screenshots, or information manually shared elsewhere.
 

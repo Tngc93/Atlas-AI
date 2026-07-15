@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useMemo, useReducer, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useReducer, useState, type ReactNode } from "react";
 import { buildMonthlyFinancePlan } from "@/features/finance/calculations";
 import type { FinancePlanSnapshot, FinanceSnapshot } from "@/features/finance/data-service";
 import { buildFinancialMemoryReport } from "@/features/memory/service";
@@ -56,12 +56,19 @@ type DemoContextValue = {
   planSnapshot: FinancePlanSnapshot;
   memoryReport: ReturnType<typeof buildFinancialMemoryReport>;
   reminderInbox: ReturnType<typeof buildReminderInbox>;
+  resetDemo: () => void;
+  resetGeneration: number;
 };
 
 const DemoContext = createContext<DemoContextValue | null>(null);
 
 export function DemoStateProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(demoFinanceReducer, undefined, createDemoSeed);
+  const [resetGeneration, setResetGeneration] = useState(0);
+  const resetDemo = useCallback(() => {
+    dispatch({ type: "reset" });
+    setResetGeneration((generation) => generation + 1);
+  }, []);
   const value = useMemo<DemoContextValue>(() => {
     const snapshot: FinanceSnapshot = { hasProfile: true, profile: state.profile, debts: state.debts, expenses: state.expenses };
     const monthlyPlan = buildMonthlyFinancePlan(snapshot.profile, snapshot.debts, snapshot.expenses, { horizonMonths: 24 });
@@ -73,8 +80,10 @@ export function DemoStateProvider({ children }: { children: ReactNode }) {
       planSnapshot,
       memoryReport: buildFinancialMemoryReport(state.memorySnapshots),
       reminderInbox: buildReminderInbox(planSnapshot, state.reminderStates),
+      resetDemo,
+      resetGeneration,
     };
-  }, [state]);
+  }, [resetDemo, resetGeneration, state]);
 
   return <DemoContext.Provider value={value}>{children}</DemoContext.Provider>;
 }

@@ -20,3 +20,13 @@
 - TCMB verisini halka açık yasal azami faiz bağlamı olarak ele alın.
 - Faiz yenileme başarısız olursa eski/örnek veri uyarısı gösterin.
 - Gerçek veri eklemeden veya dağıtıma çıkmadan önce güvenlik incelemesi yapın.
+
+## Public Demo Güvenlik Sınırı
+
+- Public demo yalnız `/demo/*` altındaki client-only bileşenleri kullanır; self-host rotalarına sessiz geçiş yapmaz.
+- Demo finans state'i, onboarding durumu, reminder değişiklikleri, snapshot yenilemeleri, senaryolar ve Mock AI çıktıları yalnız geçici sekme belleğindedir.
+- Finans state'i `localStorage`, `sessionStorage`, IndexedDB, cookie, Cache Storage, service worker, URL, browser history, log veya veritabanına yazılmaz.
+- `PUBLIC_DEMO_MODE=true` iken DB-backed API istekleri güvenli İngilizce mesajla `403` döner; Prisma başlatma ayrıca fail-closed kalır.
+- Demo deployment'a `DATABASE_URL`, `DIRECT_URL` veya proje sahibine ait cloud AI anahtarı verilmemelidir.
+- Mock AI yalnız minimize deterministic sonucu açıklar; dış provider çağrısı, API maliyeti veya finansal tavsiye üretmez.
+- Reset iki aşamalı onayla immutable kurgusal seed'i geri yükler; refresh, yeni tab ve yeni browser context de aynı seed ile başlar.

@@ -4,6 +4,15 @@ Atlas AI Türkçe-first kullanıcı deneyimine sahip açık kaynak bir AI Financ
 
 ## Unreleased
 
+### Phase 8.4 - Public Demo Experience Hardening
+
+- Public demo navigasyonu kanonik `/demo/*` route ağacında tutuldu; unsupported demo route'ları DB-backed uygulamaya düşmeden fail-closed hale getirildi.
+- İngilizce, non-blocking onboarding; kalıcı Demo Mode göstergesi; erişilebilir safety paneli ve iki aşamalı reset dialog'u eklendi.
+- Reset; geçici CRUD, reminder, Financial Memory, forecast/simulator control state'i ve Mock AI çıktısını temizleyerek immutable kurgusal seed'e döner.
+- Refresh, yeni tab ve yeni browser context izolasyonu ile localStorage, sessionStorage, IndexedDB, cookie, Cache Storage, service worker, URL ve history negatif kontrolleri genişletildi.
+- Demo API erişimi güvenli İngilizce mesajla fail-closed tutuldu; landing `/` altında korunurken public demo `/demo` altında çalışır hale getirildi.
+- DB'siz, paid-key'siz free deployment profili ve hosting free-tier sınırları dokümante edildi.
+
 ### v1.0.0-beta - Open-source Release Preparation
 
 - Product presentation standardized as **Atlas AI — Open-source AI Financial Intelligence Platform** while repository and package names remain unchanged.

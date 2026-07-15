@@ -5,7 +5,10 @@ export function middleware() {
     return NextResponse.next();
   }
 
-  return NextResponse.json({ error: "Bu API public demo modunda kullanılamaz." }, { status: 403 });
+  return NextResponse.json(
+    { error: "This operation is unavailable in the public demo. Reset the demo or continue with fictional data." },
+    { status: 403, headers: { "Cache-Control": "no-store" } },
+  );
 }
 
 export const config = {

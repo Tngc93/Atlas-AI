@@ -48,17 +48,18 @@ function memoryRecord(monthOffset: number, debtLira: number, budgetLira: number)
 
 export function createDemoSeed(): DemoFinanceState {
   const now = new Date();
+  const demoSalaryDay = Math.min(28, now.getUTCDate());
   const effectiveDateIso = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
 
   return structuredClone({
-    profile: { ...sampleProfile, salaryDay: 25 },
+    profile: { ...sampleProfile, salaryDay: demoSalaryDay },
     salaryRecords: [
       {
         id: "demo-salary-current",
         amountKurus: sampleProfile.monthlySalaryKurus,
-        salaryDay: 25,
+        salaryDay: demoSalaryDay,
         effectiveDateIso,
-        notes: "Kurgusal demo maaşı",
+        notes: "Fictional demo salary",
       },
     ],
     debts: sampleDebts,
