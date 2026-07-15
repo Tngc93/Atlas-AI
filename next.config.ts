@@ -14,7 +14,6 @@ const nextConfig: NextConfig = {
 
     return {
       beforeFiles: [
-        { source: "/", destination: "/demo" },
         ...["income", "debts", "expenses", "plan", "forecast", "decisions", "memory", "reminders", "coach"].map(
           (route) => ({ source: `/${route}`, destination: `/demo/${route}` }),
         ),

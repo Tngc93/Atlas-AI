@@ -70,6 +70,10 @@ PUBLIC_DEMO_MODE=true AI_PROVIDER=mock npm run dev
 
 Do not set database or paid provider secrets in a public demo deployment. Demo state is temporary and fictional.
 
+The free public-demo profile requires only `PUBLIC_DEMO_MODE=true` and `AI_PROVIDER=mock`. Leave `DATABASE_URL`, `DIRECT_URL`, and cloud AI keys empty. It needs no PostgreSQL, Neon, KV, Redis, Blob, analytics, tracking, or other persistent service. `/` remains the marketing site and `/demo` is the canonical demo entry.
+
+The deployment can fit a free Vercel project, subject to Vercel's current quotas and acceptable-use limits. Atlas AI does not claim unlimited free hosting. See [Public Demo](PUBLIC_DEMO.md) for reset, route, storage, and security boundaries.
+
 ## Production Recommendations
 
 Before accepting real user data:

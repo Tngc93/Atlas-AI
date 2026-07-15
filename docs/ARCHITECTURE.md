@@ -58,6 +58,9 @@ Coach Context Builder minimizes deterministic plan, memory, trend, and recommend
 - Does not initialize Prisma or call DB-backed APIs
 - Uses Mock AI and requires no paid provider key
 - Resets after refresh, tab closure, or manual reset
+- Keeps the marketing website at `/` and the canonical demo entry at `/demo`
+- Keeps demo navigation under `/demo/*`; unknown demo routes fail closed
+- Stores no demo financial state in browser persistence or URLs
 
 ### PostgreSQL Self-host
 

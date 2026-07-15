@@ -55,7 +55,38 @@ const navGroups = [
   },
 ];
 
-const routeTitles = new Map(navGroups.flatMap((group) => group.items.map((item) => [item.href, item.label])));
+const demoNavGroups = [
+  {
+    label: "Financial OS",
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: CalendarCheck },
+      { href: "/plan", label: "Plan", icon: BarChart3 },
+      { href: "/coach", label: "AI Coach", icon: Bot, featured: true },
+      { href: "/forecast", label: "Forecast", icon: TrendingUp },
+    ],
+  },
+  {
+    label: "Explore",
+    items: [
+      { href: "/decisions", label: "Decision Simulator", icon: Split },
+      { href: "/memory", label: "Financial Memory", icon: History },
+      { href: "/reminders", label: "Reminders", icon: BellRing },
+    ],
+  },
+  {
+    label: "Fictional Records",
+    items: [
+      { href: "/income", label: "Income", icon: WalletCards },
+      { href: "/expenses", label: "Expenses", icon: ReceiptText },
+      { href: "/debts", label: "Debts", icon: CreditCard },
+    ],
+  },
+] satisfies typeof navGroups;
+
+function shellHref(href: string, publicDemo: boolean) {
+  if (!publicDemo) return href;
+  return href === "/dashboard" ? "/demo" : `/demo${href}`;
+}
 
 function isCurrentRoute(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -73,8 +104,10 @@ function applyTheme(mode: ThemeMode) {
   root.dataset.themeMode = mode;
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ children, publicDemo = false }: { children: React.ReactNode; publicDemo?: boolean }) {
   const pathname = usePathname();
+  const shellGroups = publicDemo ? demoNavGroups : navGroups;
+  const routeTitles = new Map(shellGroups.flatMap((group) => group.items.map((item) => [shellHref(item.href, publicDemo), item.label])));
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>("system");
@@ -139,7 +172,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="product-shell overflow-x-hidden transition-colors duration-300">
       <a href="#product-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-lg focus:bg-surface focus:px-4 focus:py-3 focus:text-ink focus:shadow-panel">
-        Ana içeriğe geç
+        {publicDemo ? "Skip to main content" : "Ana içeriğe geç"}
       </a>
       <aside
         className={`product-sidebar fixed inset-y-0 left-0 z-20 hidden border-r border-line px-4 py-5 transition-all duration-300 lg:block ${
@@ -152,6 +185,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onCollapseChange={setIsCollapsed}
           themeMode={themeMode}
           onThemeChange={updateTheme}
+          publicDemo={publicDemo}
+          groups={shellGroups}
         />
       </aside>
 
@@ -161,13 +196,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             type="button"
             className="product-drawer-backdrop"
             onClick={() => setIsMobileOpen(false)}
-            aria-label="Menüyü kapat"
+            aria-label={publicDemo ? "Close menu" : "Menüyü kapat"}
             tabIndex={-1}
           />
-          <aside ref={drawerRef} className="product-drawer p-5 lg:hidden" aria-label="Mobil menü">
+          <aside ref={drawerRef} className="product-drawer p-5 lg:hidden" aria-label={publicDemo ? "Mobile menu" : "Mobil menü"}>
             <div className="mb-5 flex items-center justify-between gap-3">
               <p className="text-lg font-bold tracking-tight">Atlas AI</p>
-              <button type="button" className="grid h-11 w-11 place-items-center rounded-xl border border-line text-steel hover:text-ink" onClick={() => setIsMobileOpen(false)} aria-label="Menüyü kapat">
+              <button type="button" className="grid h-11 w-11 place-items-center rounded-xl border border-line text-steel hover:text-ink" onClick={() => setIsMobileOpen(false)} aria-label={publicDemo ? "Close menu" : "Menüyü kapat"}>
                 <X size={20} aria-hidden="true" />
               </button>
             </div>
@@ -178,6 +213,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               onCollapseChange={setIsCollapsed}
               themeMode={themeMode}
               onThemeChange={updateTheme}
+              publicDemo={publicDemo}
+              groups={shellGroups}
             />
           </aside>
         </>
@@ -186,14 +223,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className={`min-w-0 transition-all duration-300 ${isCollapsed ? "lg:pl-24" : "lg:pl-80"}`}>
         <header className="sticky top-0 z-30 border-b border-line bg-surface/95 px-4 py-3 shadow-sm backdrop-blur-xl lg:hidden">
           <div className="flex min-h-12 items-center gap-3">
-            <button ref={menuButtonRef} type="button" className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-line bg-surface-muted text-ink" onClick={() => setIsMobileOpen(true)} aria-label="Menüyü aç" aria-expanded={isMobileOpen} aria-controls="product-mobile-navigation">
+            <button ref={menuButtonRef} type="button" className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-line bg-surface-muted text-ink" onClick={() => setIsMobileOpen(true)} aria-label={publicDemo ? "Open menu" : "Menüyü aç"} aria-expanded={isMobileOpen} aria-controls="product-mobile-navigation">
               <Menu size={20} aria-hidden="true" />
             </button>
             <div className="min-w-0 flex-1">
-              <Link href="/dashboard" className="block truncate text-sm font-bold tracking-tight">Atlas AI</Link>
-              <p className="truncate text-xs font-medium text-steel">{routeTitles.get(pathname) ?? "Finansal çalışma alanı"}</p>
+              <Link href={publicDemo ? "/demo" : "/dashboard"} className="block truncate text-sm font-bold tracking-tight">Atlas AI</Link>
+              <p className="truncate text-xs font-medium text-steel">{routeTitles.get(pathname) ?? (publicDemo ? "Public demo workspace" : "Finansal çalışma alanı")}</p>
             </div>
-            <ThemeSwitch mode={themeMode} onChange={updateTheme} compact />
+            <ThemeSwitch mode={themeMode} onChange={updateTheme} compact english={publicDemo} />
           </div>
         </header>
         <main id="product-main" className="product-main animate-enter">{children}</main>
@@ -209,6 +246,8 @@ function SidebarContent({
   onCollapseChange,
   themeMode,
   onThemeChange,
+  publicDemo,
+  groups,
 }: {
   pathname: string;
   collapsed: boolean;
@@ -216,11 +255,13 @@ function SidebarContent({
   onCollapseChange: (collapsed: boolean) => void;
   themeMode: ThemeMode;
   onThemeChange: (mode: ThemeMode) => void;
+  publicDemo: boolean;
+  groups: typeof navGroups;
 }) {
   return (
     <div id={mobile ? "product-mobile-navigation" : undefined} className="flex h-full flex-col">
           <div className={`flex items-center ${collapsed ? "justify-center" : "justify-between gap-3"}`}>
-            <Link href="/dashboard" className="group flex min-w-0 items-center gap-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint">
+            <Link href={publicDemo ? "/demo" : "/dashboard"} className="group flex min-w-0 items-center gap-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-mint">
               <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-mint/30 bg-mint/10 text-mint transition group-hover:-translate-y-0.5 group-hover:shadow-panel">
                 <Landmark size={22} aria-hidden="true" />
               </span>
@@ -236,7 +277,7 @@ function SidebarContent({
                 type="button"
                 className="grid h-11 w-11 place-items-center rounded-xl border border-line text-steel transition hover:border-mint/40 hover:bg-mint/10 hover:text-mint"
                 onClick={() => onCollapseChange(true)}
-                aria-label="Menüyü daralt"
+                aria-label={publicDemo ? "Collapse menu" : "Menüyü daralt"}
               >
                 <ChevronLeft size={16} aria-hidden="true" />
               </button>
@@ -248,25 +289,26 @@ function SidebarContent({
               type="button"
               className="mx-auto mt-5 grid h-11 w-11 place-items-center rounded-xl border border-line text-steel transition hover:border-mint/40 hover:bg-mint/10 hover:text-mint"
               onClick={() => onCollapseChange(false)}
-              aria-label="Menüyü genişlet"
+              aria-label={publicDemo ? "Expand menu" : "Menüyü genişlet"}
             >
               <ChevronsLeftRight size={16} aria-hidden="true" />
             </button>
           ) : null}
 
-          <nav className="mt-9 flex-1 space-y-7" aria-label={trCopy.nav.mainAria}>
-            {navGroups.map((group) => (
+          <nav className="mt-9 flex-1 space-y-7" aria-label={publicDemo ? "Demo navigation" : trCopy.nav.mainAria}>
+            {groups.map((group) => (
               <div key={group.label}>
                   {!collapsed ? (
                   <p className="px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-steel/80">{group.label}</p>
                 ) : null}
                 <div className="mt-2 space-y-1.5">
                   {group.items.map((item) => {
-                    const isActive = isCurrentRoute(pathname, item.href);
+                    const href = shellHref(item.href, publicDemo);
+                    const isActive = isCurrentRoute(pathname, href);
                     return (
                       <Link
                         key={item.href}
-                        href={item.href}
+                        href={href}
                         aria-current={isActive ? "page" : undefined}
                         title={collapsed ? item.label : undefined}
                         className={`product-nav-link group relative flex items-center rounded-xl border px-3 py-2.5 text-[15px] font-semibold transition duration-200 focus:outline-none focus:ring-2 focus:ring-mint ${
@@ -293,7 +335,7 @@ function SidebarContent({
           <div className="space-y-3">
             {!collapsed ? (
               <Link
-                href="/coach"
+                href={publicDemo ? "/demo/coach" : "/coach"}
                 className="block rounded-xl border border-mint/25 bg-mint/10 p-4 transition hover:-translate-y-0.5 hover:border-mint/45 hover:shadow-panel"
               >
                 <div className="flex items-center gap-3">
@@ -301,14 +343,14 @@ function SidebarContent({
                     <Bot size={17} aria-hidden="true" />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-ink">Koça sor</p>
-                    <p className="mt-1 text-xs text-steel">Risk, aksiyon ve karar desteği</p>
+                    <p className="text-sm font-semibold text-ink">{publicDemo ? "Generate a Mock AI explanation" : "Koça sor"}</p>
+                    <p className="mt-1 text-xs text-steel">{publicDemo ? "No external provider or API cost" : "Risk, aksiyon ve karar desteği"}</p>
                   </div>
                 </div>
               </Link>
             ) : null}
 
-            <ThemeSwitch mode={themeMode} onChange={onThemeChange} collapsed={collapsed} />
+            <ThemeSwitch mode={themeMode} onChange={onThemeChange} collapsed={collapsed} english={publicDemo} />
 
             {!collapsed ? (
               <div className="rounded-xl border border-line bg-surface-muted p-3">
@@ -317,8 +359,8 @@ function SidebarContent({
                     OS
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">Finans Profili</p>
-                    <p className="text-xs text-steel">Test ve preview sürümü</p>
+                    <p className="truncate text-sm font-semibold">{publicDemo ? "Fictional Profile" : "Finans Profili"}</p>
+                    <p className="text-xs text-steel">{publicDemo ? "Temporary session" : "Test ve preview sürümü"}</p>
                   </div>
                 </div>
               </div>
@@ -333,16 +375,18 @@ function ThemeSwitch({
   onChange,
   collapsed = false,
   compact = false,
+  english = false,
 }: {
   mode: ThemeMode;
   onChange: (mode: ThemeMode) => void;
   collapsed?: boolean;
   compact?: boolean;
+  english?: boolean;
 }) {
   const options = [
-    { value: "dark" as const, label: "Koyu", icon: Moon },
-    { value: "light" as const, label: "Açık", icon: Sun },
-    { value: "system" as const, label: "Sistem", icon: Monitor },
+    { value: "dark" as const, label: english ? "Dark" : "Koyu", icon: Moon },
+    { value: "light" as const, label: english ? "Light" : "Açık", icon: Sun },
+    { value: "system" as const, label: english ? "System" : "Sistem", icon: Monitor },
   ];
 
   if (compact || collapsed) {
@@ -355,7 +399,7 @@ function ThemeSwitch({
         type="button"
         onClick={() => onChange(nextMode[mode])}
         className="grid h-11 w-11 place-items-center rounded-xl border border-line bg-surface-muted text-steel transition hover:border-mint/40 hover:text-mint"
-        aria-label={`Tema modu: ${current.label}`}
+        aria-label={english ? `Theme mode: ${current.label}` : `Tema modu: ${current.label}`}
       >
         <Icon size={16} aria-hidden="true" />
       </button>
@@ -363,7 +407,7 @@ function ThemeSwitch({
   }
 
   return (
-    <div className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-surface-muted p-1" aria-label="Tema seçimi">
+    <div className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-surface-muted p-1" aria-label={english ? "Theme selection" : "Tema seçimi"}>
       {options.map((option) => {
         const Icon = option.icon;
         const isActive = mode === option.value;

@@ -243,7 +243,7 @@ export const docsPages: Record<string, PublicPageContent> = {
   "demo-mode": {
     path: "/docs/demo-mode", eyebrow: "Docs · Demo Mode", title: "Evaluate the product without persistence or paid AI.", description: "Public demo execution mode, fictional data boundaries and zero-cost validation.",
     summary: "Demo mode is an explicit browser-only execution path. It uses an immutable fictional seed, per-tab memory and Mock AI, and resets on refresh.", principles: ["No Prisma initialization", "No database writes", "No paid provider key", "No browser persistence"], workflow: ["Fictional seed", "Per-tab store", "Finance engine", "Mock explanation", "Reset"], visual: "dashboard",
-    sections: [{ title: "Separated by design", body: "Demo requests are routed into a client-only tree and do not silently fall through to self-host repositories." }, { title: "Not for real information", body: "The public demo has no authentication or durable privacy boundary and must contain fictional data only." }], related: ["/demo", "/security", "/docs/getting-started"], sourceFile: "docs/ARCHITECTURE.md",
+    sections: [{ title: "Separated by design", body: "Demo requests are routed into a client-only tree and do not silently fall through to self-host repositories." }, { title: "Not for real information", body: "The public demo has no authentication or durable privacy boundary and must contain fictional data only." }], related: ["/demo", "/security", "/docs/getting-started"], sourceFile: "docs/PUBLIC_DEMO.md",
   },
   postgresql: {
     path: "/docs/postgresql", eyebrow: "Docs · PostgreSQL", title: "Configure PostgreSQL without crossing the server boundary.", description: "Atlas AI PostgreSQL environment, Prisma baseline, testing and migration guidance.",
