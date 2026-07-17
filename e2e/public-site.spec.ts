@@ -23,6 +23,7 @@ test("every public information-architecture route renders intentional content", 
   for (const route of publicRoutes) {
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
     expect(response?.ok(), `${route} should return a successful response`).toBe(true);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.locator(".public-site")).toHaveAttribute("lang", "en");
     await expect(page.locator("main")).toHaveCount(1);
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);

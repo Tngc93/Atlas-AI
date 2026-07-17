@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" className={`${barlow.variable} ${interTight.variable}`}>
+    <html lang="en" className={`${barlow.variable} ${interTight.variable}`}>
       <body className="min-h-screen">{children}</body>
     </html>
   );

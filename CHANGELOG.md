@@ -1,189 +1,104 @@
 # Changelog
 
-Atlas AI Türkçe-first kullanıcı deneyimine sahip açık kaynak bir AI Financial Intelligence Platform'dur. Bu dosya ürün sürümlerini ve önemli teknik değişiklikleri özetler.
+Atlas AI is a Turkish-first, open-source AI Financial Intelligence Platform. This file records user-visible releases and material technical changes.
 
-## Unreleased
+## v1.0.0-beta - Release Candidate
 
-### Phase 8.4 - Public Demo Experience Hardening
+Release date: pending final deployment validation.
 
-- Public demo navigasyonu kanonik `/demo/*` route ağacında tutuldu; unsupported demo route'ları DB-backed uygulamaya düşmeden fail-closed hale getirildi.
-- İngilizce, non-blocking onboarding; kalıcı Demo Mode göstergesi; erişilebilir safety paneli ve iki aşamalı reset dialog'u eklendi.
-- Reset; geçici CRUD, reminder, Financial Memory, forecast/simulator control state'i ve Mock AI çıktısını temizleyerek immutable kurgusal seed'e döner.
-- Refresh, yeni tab ve yeni browser context izolasyonu ile localStorage, sessionStorage, IndexedDB, cookie, Cache Storage, service worker, URL ve history negatif kontrolleri genişletildi.
-- Demo API erişimi güvenli İngilizce mesajla fail-closed tutuldu; landing `/` altında korunurken public demo `/demo` altında çalışır hale getirildi.
-- DB'siz, paid-key'siz free deployment profili ve hosting free-tier sınırları dokümante edildi.
+### Product
 
-### v1.0.0-beta - Open-source Release Preparation
+- Added a Turkish-first financial workspace for reviewing current position, monthly plans, forecasts, decisions, memory, reminders, and optional AI explanations.
+- Added an English public website for product, architecture, documentation, security, roadmap, contributing, and open-source resources.
+- Kept financial outputs educational and decision-support oriented; Atlas AI is not a regulated financial adviser.
 
-- Product presentation standardized as **Atlas AI — Open-source AI Financial Intelligence Platform** while repository and package names remain unchanged.
-- README rewritten with architecture, quick start, self-hosting, BYOAI/BYODB, demo mode, security, testing, roadmap, contribution, license, and FAQ guidance.
-- MIT license, security policy, contributor guide, Contributor Covenant, issue templates, and pull request template prepared.
-- Product philosophy, technical architecture, self-hosting, delivery roadmap, GitHub Discussions, and repository topic recommendations documented.
-- Live demo URL and screenshots remain explicit placeholders; no deployment or GitHub settings change was performed.
+### Deterministic Finance Engine
 
-### Phase 7 - Zero-Cost Public Demo
+- Calculates monthly cash flow, protected living budget, minimum-payment coverage, risk bands, debt priority, and payoff projections without AI.
+- Preserves deterministic finance output as the source of truth for every downstream product surface.
+- Uses integer kuruş for stored money values and explicit interest-rate context.
 
-- PostgreSQL ve ücretli AI anahtarı gerektirmeyen açık `PUBLIC_DEMO_MODE` execution sınırı eklendi.
-- Immutable kurgusal seed ve sekmeye özel browser-memory store ile geçici gelir, borç, gider, reminder ve memory işlemleri eklendi.
-- Dashboard, plan, forecast, decisions, memory, reminders ve Mock coach akışları client-only demo route tree üzerinden deterministic olarak çalışır hale getirildi.
-- Demo modunda Prisma ve DB-backed API erişimi fail-closed yapıldı; self-host PostgreSQL akışı varsayılan olarak korundu.
-- Reset, onboarding, Demo Mode göstergeleri ile DB'siz build ve Playwright demo test akışı eklendi.
+### Forecast
 
-### Phase 6.1 - Provider Reality Check and Demo Safety
+- Provides 3, 6, 12, and 24-month projections with visible assumptions, risk timelines, payoff milestones, and scenario comparison.
+- Keeps forecast scenarios temporary and separates projected outcomes from current financial reality.
 
-- Provider registry `Demo`, `Local`, `Deneysel Browser` ve `Self-host` availability durumlarıyla zenginleştirildi.
-- Gemini ve OpenRouter browser flag'leri ayrıldı; custom remote browser desteği public build'den kaldırıldı.
-- Production demo-data guard'ı, cloud CSP fail-closed kuralı, provider-aware `connect-src` ve sabit local port politikası eklendi.
-- Bağlantı testi finansal context göndermeyen metadata çağrısına ayrıldı; gerçek koç yorumu ayrı kullanıcı onayı gerektirir.
-- Browser retry kapatıldı; disconnect, navigation ve unmount credential/cache cleanup kapsamına alındı.
-- `402`, `408`, `429`, `5xx`, network/CORS ve invalid response durumları güvenli Türkçe hata sınıflarına bağlandı.
+### Decision Simulator
 
-### Phase 6 - AI Provider Abstraction
+- Compares reversible salary, expense, payment, and debt scenarios against the current deterministic plan.
+- Shows trade-offs, risk effects, and short/long-term impact without selecting a decision for the user.
 
-- Mock, OpenAI, Gemini, Anthropic, OpenRouter, Ollama, LM Studio ve custom OpenAI-compatible sağlayıcıları için ortak registry ve adapter sözleşmesi eklendi.
-- Public demo, session-only Browser BYOK ve self-host execution sınırları birbirinden ayrıldı.
-- Browser credential'ın storage, URL, DB, server route, cache ve loglara taşınmasını önleyen credential vault ve güvenli hata/redaction katmanı eklendi.
-- `/coach` sayfasına varsayılan olarak kapalı Browser BYOK capability flag'leriyle AI Sağlayıcı Ayarları paneli eklendi.
-- Public demo varsayılanı Mock olarak korundu; ücretli server key kullanılmadan deterministic içerik ve fallback davranışı devam ediyor.
+### Financial Memory
 
-### Phase 2 - PostgreSQL Test Branch and Baseline
+- Stores structured monthly snapshots in self-host mode and derives deterministic trend context.
+- Keeps AI memory minimized and separate from raw finance records.
 
-- Mevcut SQLite migration geçmişi içerik değiştirilmeden `prisma/migrations-sqlite` altında arşivlendi.
-- Mevcut Prisma schema'dan çevrimdışı PostgreSQL baseline üretildi ve aktif migration geçmişi PostgreSQL olarak başlatıldı.
-- Integration ve Playwright testleri için endpoint doğrulamalı, geçici schema oluşturan ve temizleyen ortak PostgreSQL test harness'ı eklendi.
-- Unit ve integration test komutları ayrıldı; CI yalnız test branch secret'larını integration/E2E job'larına verir.
-- Production Neon branch'e migration uygulanmadı; gerçek veri, Auth veya user ownership eklenmedi.
+### Reminders
 
-### Phase 2 Milestone D - User Ownership Architecture
+- Generates calm in-app reminders for due dates, cash-flow pressure, missing setup, and review moments.
+- Persists only reminder state in self-host mode; reminder content remains deterministic and regenerated.
+- Does not include push, email, SMS, or external notification delivery.
 
-- Gelecekteki Auth ve PostgreSQL yapısı için user-owned ve shared veri sınırları dokümante edildi.
-- Profile, core finance, Financial Memory, Reminder ve Coach kayıtlarının hedef ownership ilişkileri tanımlandı.
-- Repository owner context sözleşmesi, user-scoped unique constraint'ler, migration sırası ve cross-user test kriterleri belgelendi.
-- Kod, Prisma schema, migration, Auth, PostgreSQL provider veya runtime davranışı değiştirilmedi.
+### AI Coach
 
-### Phase 2 Milestone B - PostgreSQL Provider and Connection Strategy
+- Explains minimized deterministic context through validated structured responses.
+- Falls back to Mock AI when a configured provider is unavailable or invalid.
+- Does not calculate budgets, risk, payoff order, or financial truth.
 
-- Production PostgreSQL için önerilen sağlayıcı Neon Postgres via Vercel Marketplace olarak dokümante edildi.
-- Neon, Supabase, Railway ve Render seçenekleri avantaj/dezavantaj ve MVP uygunluğu açısından karşılaştırıldı.
-- Pooled `DATABASE_URL`, direct `DIRECT_URL`, `sslmode=require`, connection pooling, Prisma Accelerate kararı ve preview/production ortam akışı netleştirildi.
-- Backup, disaster recovery, maliyet varsayımları ve en düşük riskli PostgreSQL altyapı sırası belgelendi.
-- Kod, Prisma datasource, migration, provider provision, deploy, Auth veya yeni dependency eklenmedi.
+### Provider Architecture
 
-### Phase 2 Milestone A - PostgreSQL Migration Planning
+- Includes provider-independent adapters for Mock, Gemini, OpenAI, Anthropic, OpenRouter, Ollama, LM Studio, and custom OpenAI-compatible APIs.
+- Keeps OpenAI, Anthropic, and remote custom endpoints self-host only.
+- Marks browser Gemini/OpenRouter support as experimental and disabled in production; Ollama/LM Studio browser connectivity remains local-only and conditional.
 
-- SQLite local-first MVP'den gelecekteki production PostgreSQL yapısına geçiş planı belgelendi.
-- Mevcut SQLite bağımlılıkları, provider değişiminde korunacak/değişecek noktalar ve migration riskleri netleştirildi.
-- PostgreSQL baseline migration, `prisma migrate deploy`, veri taşıma ve test stratejisi dokümante edildi.
-- Auth ve user ownership olmadan PostgreSQL'e geçmenin public beta için yeterli olmadığı vurgulandı.
-- Kod, Prisma migration, PostgreSQL provider seçimi, Auth, deploy veya yeni dependency eklenmedi.
+### Public Demo
 
-### Sprint 5.2 - Deployment Readiness Plan
+- Adds a database-free `/demo` workspace with immutable fictional seed data and per-tab in-memory CRUD.
+- Resets all demo state on refresh, tab closure, browser-context change, or confirmed reset.
+- Uses Mock AI only and makes no platform-owned paid AI request.
+- Does not persist finance state to PostgreSQL, URL, cookies, browser storage, analytics, or server memory.
 
-- Vercel deployment öncesi minimum proje ayarları, env değişkenleri ve validation kapıları belgelendi.
-- SQLite ile Vercel preview denenirse hangi akışların güvenilir olmayacağı netleştirildi.
-- PostgreSQL geçişi, Auth/veri sahipliği ve public beta için güvenli sıra tanımlandı.
-- Auth olmadan yalnızca gerçek veri içermeyen private/demo preview yapılabileceği kayda geçirildi.
-- Deploy, PostgreSQL, Auth, yeni dependency veya kod davranışı eklenmedi.
+### Public Website
 
-### Sprint 5 - Production Hardening
+- Adds product, architecture, documentation, resource, sitemap, robots, offline, and custom 404 routes.
+- Adds responsive navigation, canonical metadata, Open Graph/Twitter metadata, structured data, and reduced-motion support.
 
-- Vercel/production hazırlığı için operasyon dokümantasyonu eklendi.
-- SQLite’ın local-first MVP sınırları ve Vercel/serverless production riskleri açıklandı.
-- Environment variable sözleşmesi, server-only AI key yönetimi ve `.env.local` güvenliği netleştirildi.
-- Prisma local/CI/future production akışları ayrıştırıldı.
-- Deploy öncesi secret scan, audit, Prisma generate, lint, test, build ve E2E checklist’i belgelendi.
-- PostgreSQL, authentication, deploy workflow, yeni dependency veya ürün davranışı eklenmedi.
+### Self-hosting
 
-### Sprint 4 - Notification & Reminder Engine
+- Supports PostgreSQL through Prisma with pooled runtime and direct migration connection contracts.
+- Preserves guarded isolated-schema integration and E2E validation for the test-preview environment.
+- Supports operator-owned database and server-side AI provider credentials.
 
-- Lokal-first Reminder Engine eklendi.
-- Yaklaşan borç son ödeme tarihi, maaş günü, zorunlu gider tarihi, yüksek risk, eksik veri ve eksik faiz sinyallerinden uygulama içi hatırlatmalar üretildi.
-- `ReminderState` modeliyle yalnızca kullanıcı durumları (`Görüldü`, `Ertele`, `Gizle`) saklanır; reminder içeriği veritabanına yazılmaz.
-- Dashboard üzerinde top-3 hatırlatma paneli ve `/reminders` sayfası eklendi.
-- Push notification, e-posta, SMS, AI veya dış servis entegrasyonu eklenmedi.
+### Security and Privacy
 
-### Faz 12B Sprint 3 - Goal & Recommendation Intelligence
+- Adds secret scanning, fail-closed demo database/API boundaries, credential redaction, restrictive provider capability gates, and a responsible disclosure policy.
+- Keeps API keys server-side in self-host mode; experimental browser credentials are session-memory only and disabled by default.
+- Excludes `.env` files, database files, test artifacts, logs, and provider credentials from version control.
 
-- Deterministik recommendation analyzer eklendi.
-- `CoachContext` içine minimize `recommendations` alanı eklendi.
-- Borç azaltma, yaşam bütçesi koruma, nakit sıkışıklığı azaltma, yüksek faiz önceliği, risk azaltma, tasarruf kapasitesi ve finansal alışkanlık önerileri üretildi.
-- Öneriler `priority`, `category`, `reason`, `expectedImpact`, `confidence` ve `sourceSignals` ile sıralandı.
-- Gemini prompt builder recommendation context’i güvenli ve Türkçe açıklama kurallarıyla kullanacak şekilde güncellendi.
+### Testing and Quality
 
-### Faz 12B Sprint 2 - Trend Intelligence
+- Covers deterministic services with unit tests, repositories with isolated PostgreSQL integration tests, and product/public/demo flows with Playwright.
+- Adds database-free demo build and E2E validation to CI.
+- Includes responsive, reduced-motion, metadata, broken internal navigation, storage-negative, and no-external-AI assertions.
 
-- Financial Memory snapshot’larından deterministik Trend Intelligence sinyalleri üretildi.
-- `CoachContext` içine minimize `trends` alanı eklendi.
-- Gelir, zorunlu gider, toplam borç, aktif borç, yaşam bütçesi, minimum ödeme yükü, risk, borç kapatma hızı ve nakit sıkışıklığı trendleri hesaplandı.
-- Gemini prompt builder trend bağlamını güvenli ve Türkçe açıklama kurallarıyla kullanacak şekilde güncellendi.
-- Trend analyzer, prompt builder ve coach context builder için unit testler eklendi.
+### Known Limitations
 
-### Faz 12B Sprint 1 - Coach Context Builder
-
-- `CoachContext` tipi ve `coach-context-builder` servisi eklendi.
-- AI koç finans özeti üretimi orchestrator içinden ayrılarak builder katmanına taşındı.
-- Financial Memory sinyalleri veri minimizasyonu korunarak coach context içine eklendi.
-- Gemini prompt builder yalnızca `CoachContext` kullanacak şekilde güncellendi.
-- Eski `CoachInputSummary` tabanlı çağrılar geriye uyumlu tutuldu.
-- Coach Context Builder için unit testler eklendi.
-
-### Faz 12A - Gemini AI Provider
-
-- Gerçek Gemini provider eklendi ve varsayılan model `gemini-2.5-flash` olarak ayarlandı.
-- `AI_PROVIDER=gemini` seçildiğinde `GEMINI_API_KEY` yalnızca server-side ortam değişkeninden okunur.
-- Gemini çağrıları timeout, retry, exponential backoff, JSON doğrulama ve güvenli Mock fallback ile dayanıklı hale getirildi.
-- AI prompt sistemi Türkçe, veri minimizasyonlu ve finans motorunu tek doğruluk kaynağı kabul edecek şekilde ayrıştırıldı.
-- Aynı minimize finans özeti için process içi cache ve provider kullanım metrikleri eklendi.
-- Gemini provider, invalid JSON, timeout, retry, fallback ve cache davranışları için testler eklendi.
-
-### Faz 11 - Engineering Excellence / GitHub Actions CI
-
-- GitHub Actions CI workflow eklendi.
-- PR ve `main`/`develop` push akışlarında Prisma generate, secret scan, dependency audit, lint, test, build ve Playwright E2E kontrolleri tanımlandı.
-- Playwright raporları ve test sonuçları GitHub Actions artifact olarak saklanacak şekilde yapılandırıldı.
-- Dependency’siz secret scan script’i ve güvenlik npm scriptleri eklendi.
-- README, AGENTS.md ve Obsidian Project Brain CI/branch protection beklentileriyle güncellendi.
-
-### Faz 10 - Financial Memory
-
-- `/memory` sayfası eklendi.
-- Lokal SQLite üzerinde aylık `FinancialMemorySnapshot` ve kategori toplamı kayıtları oluşturuldu.
-- Gelir, borç ve gider değişikliklerinden sonra memory snapshot kaydı best-effort çalışacak şekilde bağlandı.
-- 3, 6 ve 12 aylık borç, yaşam bütçesi, gider/maaş oranı, risk ve kategori trendleri için deterministik rapor üretildi.
-- Geçmiş veri az olduğunda Türkçe `Yeterli geçmiş yok` boş/yetersiz veri deneyimi eklendi.
-- AI/OpenAI/Gemini çağrısı yapılmadı; finansal veri üçüncü partiye gönderilmedi.
-
-### Faz 9 - Forecast Engine
-
-- `/forecast` sayfası eklendi.
-- 3, 6, 12 ve 24 aylık deterministik finansal tahmin raporu oluşturuldu.
-- Kalan borç trendi, yaşam bütçesi trendi, toplam tahmini faiz, risk trendi ve borç kapanış kilometre taşları gösterildi.
-- Forecast Engine, mevcut finans motorunun `MonthlyFinancePlan.payoffForecast` çıktısını kullanır; AI/OpenAI/Gemini çağrısı yapmaz.
-- Forecast sonuçları SQLite’a kaydedilmez.
+- Authentication, user ownership, and multi-user authorization are not included.
+- Banking import, account aggregation, payment execution, and transaction synchronization are not included.
+- The public demo is fictional, non-persistent, and intentionally unsuitable for real financial information.
+- Browser cloud BYOK is experimental and disabled in production; local provider access depends on browser, CORS, and local runtime configuration.
+- Self-host operators are responsible for database security, backups, migration review, provider terms, and infrastructure operations.
+- Forecasts, scenarios, reminders, and AI explanations are educational decision support, not guarantees or regulated financial advice.
 
 ## v0.1.0 - Personal Finance OS Foundation
 
-Tarih: 2026-07-05
+Release date: 2026-07-05
 
-### Kapsam
+### Scope
 
-- Finance Engine: maaş, zorunlu gider, minimum ödeme, yaşam bütçesi, risk ve borç kapatma hesapları.
-- SQLite CRUD: gelir, maaş geçmişi, borçlar ve zorunlu giderler için local-first veri akışı.
-- UX + E2E: Türkçe dashboard, form akışları, iki aşamalı silme, mobil taşma kontrolleri ve Playwright testleri.
-- Interest Engine: manuel faiz, çözümlenmiş faiz, TCMB/cache/fallback sağlayıcı mimarisi.
-- AI Provider Layer: mock-first OpenAI/Gemini provider altyapısı, server-only placeholder yaklaşımı ve maliyet kontrol tasarımı.
-- AI Financial Coach Engine: çok katmanlı mock finans koçu, Türkçe bölümlü koç çıktısı.
-- Decision Intelligence Engine: `/decisions` üzerinde deterministik karar simülasyonu.
-- Obsidian Project Brain: `Personal Finance OS` yaşayan proje hafızası.
-- AGENTS.md workflow: GitHub, release, test ve gizlilik checklist kuralları.
+- Initial deterministic finance engine, local CRUD, interest context, Mock-first AI coach, decision simulation, and forecast foundation.
+- Initial Turkish dashboard, responsive form flows, unit tests, and Playwright coverage.
 
-### Doğrulama
+### Privacy Note
 
-- `npm run lint`
-- `npm run test`
-- `npm run build`
-- `npm run test:e2e`
-
-### Gizlilik Notu
-
-Gerçek finansal veri, SQLite veritabanı dosyaları, `.env.local`, API anahtarları ve lokal test çıktıları commit edilmemelidir.
+Real financial data, local database files, `.env.local`, API keys, and generated test artifacts must never be committed.

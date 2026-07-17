@@ -4,7 +4,7 @@
 
 > Bring your own AI. Bring your own Database. Deploy anywhere.
 
-[![Build](https://img.shields.io/badge/build-placeholder-lightgrey)](#testing)
+[![CI](https://github.com/Tngc93/personal-finance-coach-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/Tngc93/personal-finance-coach-dashboard/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Release](https://img.shields.io/badge/release-v1.0.0--beta-blue)](#roadmap)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
@@ -87,7 +87,7 @@ Screenshots will be added before the public launch. These placeholders intention
 
 ## Live Demo
 
-> **Status: placeholder.** A public URL has not been published from this repository yet.
+> **Live demo URL will be added after production deployment.**
 
 The public demo at `/demo` runs with fictional data, per-tab memory state, and Mock AI. It does not require `DATABASE_URL`, paid provider keys, authentication, or shared database mutation. The marketing website remains available at `/` in demo deployments.
 
@@ -172,6 +172,8 @@ npm run test:e2e:demo
 
 For a free public deployment, set only `PUBLIC_DEMO_MODE=true` and `AI_PROVIDER=mock`; leave database and cloud AI credentials empty. No KV, Redis, Blob, persistent service, analytics, or tracking integration is required. Hosting remains subject to the provider's free-tier quotas and acceptable-use limits; unlimited free hosting is not implied.
 
+Set the optional `NEXT_PUBLIC_SITE_URL` to the final `https://` origin after deployment. Until then, Vercel's production URL is used for canonical metadata, sitemap, robots, Open Graph, and Twitter URLs. See [Vercel Deployment](docs/operations/vercel-deployment.md).
+
 See [Public Demo](docs/PUBLIC_DEMO.md) for the route map, reset lifecycle, negative storage controls, deployment profile, and known limitations.
 
 ## Security
@@ -245,6 +247,8 @@ PostgreSQL integration and standard E2E tests require guarded `test-preview` var
 - Production deployment and operational monitoring
 
 See [Roadmap](docs/ROADMAP.md).
+
+Release candidate materials: [v1.0.0-beta notes](docs/releases/v1.0.0-beta.md) and [release checklist](docs/releases/RELEASE_CHECKLIST.md).
 
 ## Contributing
 
