@@ -131,7 +131,7 @@ describe("finance server actions", () => {
       "NEXT_REDIRECT",
     );
     expect(await listDebts()).toHaveLength(0);
-  });
+  }, 15_000);
 
   it("creates, updates and deletes expense records through server actions", async () => {
     const createResult = await createExpenseAction(

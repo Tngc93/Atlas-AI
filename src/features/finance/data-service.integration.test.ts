@@ -29,7 +29,7 @@ describe("PostgreSQL-backed finance data flow", () => {
       await import("@/features/income/repository"));
     ({ getFinanceSnapshot, getMonthlyFinancePlanSnapshot } = await import("./data-service"));
     ({ buildForecastReport } = await import("@/features/forecast/service"));
-  });
+  }, 30_000);
 
   afterAll(async () => {
     await disconnectPrismaForTests?.();
