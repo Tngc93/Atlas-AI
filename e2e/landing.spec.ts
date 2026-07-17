@@ -35,9 +35,12 @@ test("public landing preserves its English product story and interactions", asyn
   await expect(page.getByRole("navigation", { name: "Resources links" })).toBeVisible();
   await expect(page.getByText("Built with an AI-assisted engineering workflow using Codex.")).toHaveCount(0);
 
-  await page.waitForTimeout(700);
-  await page.getByRole("link", { name: "Try the Live Demo" }).first().click();
-  await expect(page).toHaveURL(/\/demo$/);
+  const heroDemoCta = page
+    .locator('section[aria-labelledby="hero-title"]')
+    .getByRole("link", { name: "Try the Live Demo", exact: true });
+  const demoNavigation = page.waitForURL(/\/demo$/);
+  await heroDemoCta.click();
+  await demoNavigation;
 });
 
 test("landing avoids mobile overflow and keeps dashboard reachable", async ({ page }) => {
