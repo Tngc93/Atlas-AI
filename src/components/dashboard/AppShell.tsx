@@ -269,7 +269,7 @@ function SidebarContent({
                 <span className="min-w-0">
                   <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-mint">Finance OS</span>
                   <span className="block truncate text-lg font-semibold tracking-tight">
-                    {publicDemo ? "Finance Control Center" : trCopy.app.brandName}
+                    {publicDemo ? "Control Center" : trCopy.app.brandName}
                   </span>
                 </span>
               ) : null}
