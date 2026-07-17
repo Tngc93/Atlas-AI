@@ -208,7 +208,7 @@ GitHub branch rules:
 
 Git safety rules:
 
-- Never stage or commit secrets, real financial data, local SQLite databases, generated backups, `.env.local`, `.next`, `node_modules`, `test-results`, `playwright-report`, `coverage`, or log files.
+- Never stage or commit secrets, real financial data, local database files, generated backups, `.env.local`, `.next`, `node_modules`, `test-results`, `playwright-report`, `coverage`, or log files.
 - Before the first commit or any broad staging operation, run a dry-run staging check and inspect ignored files.
 - Prefer explicit `git add` paths when the worktree contains unrelated files.
 - Do not push directly to GitHub until validation and secret/local-data checks are complete.
@@ -216,17 +216,17 @@ Git safety rules:
 
 ## Production and Deployment Safety
 
-- Treat the current app as a local-first SQLite MVP unless a later approved phase explicitly adds production database, authentication, and user-level data isolation.
-- Do not present Vercel + SQLite as production-ready for real personal financial data.
-- Vercel preview may be used only for demo, empty-data, or technical smoke-test scenarios until PostgreSQL or an equivalent durable database and Auth are implemented.
+- Treat the public demo and PostgreSQL self-host paths as explicit, separate execution modes; neither may silently fall back to the other.
+- Public demo deployments must run without database credentials, persistent finance state, or owner-owned paid AI keys.
+- Do not present PostgreSQL self-host mode as public multi-user ready until authentication, authorization, and user ownership are implemented.
 - Before any release or deploy attempt, review `docs/operations/production-readiness.md`.
 - Production-like validation must include `npm run security:secrets`, `npm run security:audit`, `npx prisma generate`, `npm run lint`, `npm run test`, `npm run build`, and `npm run test:e2e`.
-- Keep `.env.local`, real API keys, SQLite DB files, backups, exports, build artifacts, Playwright artifacts, and logs out of git.
+- Keep `.env.local`, real API keys, database files, backups, exports, build artifacts, Playwright artifacts, and logs out of git.
 - Real production usage requires explicit decisions for database durability, migration deploy strategy, authentication, authorization, data ownership, monitoring, rollback, and secret management.
 - Before any Vercel preview or release PR, verify that local `main`/`develop` branch state is aligned with the intended remote base and that no stale feature branch is used for deployment.
-- If a Vercel preview is created before PostgreSQL and Auth, it must be treated as build/render smoke only and must not contain real financial data.
+- Vercel public-demo previews must use fictional data, `PUBLIC_DEMO_MODE=true`, and `AI_PROVIDER=mock`; database and paid-provider credentials must be absent.
 - Do not apply existing SQLite migration SQL directly to a production PostgreSQL database; PostgreSQL requires a separate reviewed baseline and `prisma migrate deploy` runbook.
-- The documented production PostgreSQL recommendation is Neon Postgres via Vercel Marketplace with pooled `DATABASE_URL`, direct `DIRECT_URL`, and SSL required; do not implement this provider change until a later approved migration milestone.
+- PostgreSQL self-host mode uses pooled `DATABASE_URL`, direct `DIRECT_URL`, and reviewed PostgreSQL migrations; production migration always requires explicit approval.
 - PostgreSQL alone is not sufficient for public beta; Auth, authorization, and user/account ownership checks are required before real user data is accepted.
 - Future Auth and multi-user work must follow `docs/architecture/user-ownership.md`; client-provided user identifiers must never replace server-side authenticated owner context.
 
@@ -242,7 +242,7 @@ Before completing security-sensitive work, verify:
 - Error messages are user-safe and Turkish where user-facing.
 - Logs do not contain raw financial data or secrets.
 - AI requests contain only the minimum necessary summarized data.
-- Local SQLite files and backups are ignored by git.
+- Local database files and backups are ignored by git.
 - Rate data failures show stale/fallback warnings when relevant.
 
 ## Future Architecture Notes

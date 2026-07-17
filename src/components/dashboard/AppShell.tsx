@@ -170,7 +170,7 @@ export function AppShell({ children, publicDemo = false }: { children: React.Rea
   }
 
   return (
-    <div className="product-shell overflow-x-hidden transition-colors duration-300">
+    <div lang={publicDemo ? "en" : "tr"} className="product-shell overflow-x-hidden transition-colors duration-300">
       <a href="#product-main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-lg focus:bg-surface focus:px-4 focus:py-3 focus:text-ink focus:shadow-panel">
         {publicDemo ? "Skip to main content" : "Ana içeriğe geç"}
       </a>

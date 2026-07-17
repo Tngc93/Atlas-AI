@@ -13,6 +13,9 @@ test("product shell exposes the active route and an accessible mobile drawer", a
   const browserErrors = collectBrowserErrors(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/dashboard");
+  await page.waitForLoadState("networkidle");
+  await expect(page.locator(".product-shell")).toHaveCount(1);
+  await expect(page.locator(".product-shell")).toHaveAttribute("lang", "tr");
 
   await expect(page.getByRole("button", { name: "Menüyü aç" })).toBeVisible();
   await page.getByRole("button", { name: "Menüyü aç" }).click();

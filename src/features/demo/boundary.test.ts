@@ -36,6 +36,7 @@ describe("public demo import boundary", () => {
   it("keeps the landing route public and rewrites only self-host product routes", () => {
     const config = readFileSync("next.config.ts", "utf8");
     expect(config).not.toContain('{ source: "/", destination: "/demo" }');
+    expect(config).toContain('"dashboard", "income"');
     expect(config).toContain('destination: `/demo/${route}`');
   });
 });

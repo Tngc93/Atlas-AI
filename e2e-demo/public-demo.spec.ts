@@ -16,9 +16,19 @@ async function openDemoRoute(page: Page, name: string) {
   await page.getByRole("navigation", { name: "Demo navigation" }).getByRole("link", { name, exact: true }).click();
 }
 
+async function gotoAfterDevReload(page: Page, route: string) {
+  try {
+    await page.goto(route);
+  } catch (error) {
+    if (!(error instanceof Error) || !error.message.includes("ERR_ABORTED")) throw error;
+    await page.goto(route);
+  }
+}
+
 test("public demo entry explains boundaries without blocking exploration", async ({ page }) => {
   await page.goto("/demo");
   await expect(page).toHaveURL(/\/demo$/);
+  await expect(page.locator(".product-shell")).toHaveAttribute("lang", "en");
   await expect(page.getByRole("heading", { name: "Explore Atlas AI safely." })).toBeVisible();
   await expect(page.getByText("Nothing is connected to a bank, stored in a database or retained after the session ends.")).toBeVisible();
   await expect(page.getByRole("button", { name: /Public Demo/ })).toBeVisible();
@@ -242,7 +252,7 @@ test("all demo routes expose the indicator without overflow or console errors", 
 
 test("public website demo calls to action use the canonical entry", async ({ page }) => {
   for (const route of ["/", "/product", "/architecture", "/docs", "/this-route-does-not-exist"]) {
-    await page.goto(route);
+    await gotoAfterDevReload(page, route);
     const links = page.locator('a[href^="/demo"]');
     const count = await links.count();
     expect(count, `${route} should expose a demo recovery or CTA`).toBeGreaterThan(0);

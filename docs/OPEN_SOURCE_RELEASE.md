@@ -2,6 +2,10 @@
 
 This document records recommended GitHub presentation settings. It does not change repository settings.
 
+Recommended GitHub About description:
+
+> Open-source AI financial intelligence with deterministic finance, provider-independent explanations, a database-free public demo, and self-hosted PostgreSQL support.
+
 ## GitHub Discussions Categories
 
 - Announcements
@@ -40,10 +44,17 @@ self-hosted
 
 Topics should be applied manually in GitHub repository settings after maintainer review.
 
-## Release Checklist
+## Release Materials
+
+- [v1.0.0-beta release notes](releases/v1.0.0-beta.md)
+- [Release checklist](releases/RELEASE_CHECKLIST.md)
+- [Screenshot plan](releases/SCREENSHOT_PLAN.md)
+- [LinkedIn launch package](releases/LINKEDIN_LAUNCH.md)
+
+## Repository Checklist
 
 - README links resolve.
-- Live demo and screenshots remain placeholders until verified assets exist.
+- Live demo and screenshots remain intentionally labeled as pending until verified assets exist.
 - `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, and `CODE_OF_CONDUCT.md` are present.
 - Issue and pull request templates are visible in GitHub.
 - Secret scan and documentation path checks are clean.
