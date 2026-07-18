@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGeminiUserPrompt } from "./prompt-builder";
+import { buildGeminiSystemPrompt, buildGeminiUserPrompt } from "./prompt-builder";
 import type { CoachContext } from "./types";
 
 const context: CoachContext = {
@@ -88,5 +88,39 @@ describe("Gemini prompt builder", () => {
     expect(prompt).not.toContain("Örnek Banka");
     expect(prompt).not.toContain("Örnek Kart");
     expect(prompt).not.toContain("kart numarası\":\"");
+  });
+
+  it("grounds a chat question in the minimized deterministic snapshot and selected language", () => {
+    const prompt = buildGeminiUserPrompt({
+      ...context,
+      chatRequest: {
+        question: "Can I save ₺20,000 per month?",
+        language: "en",
+        financialSnapshot: {
+          monthlyIncomeKurus: 150_000_00,
+          monthlyExpensesKurus: 50_000_00,
+          minimumDebtPaymentsKurus: 17_200_00,
+          totalDebtKurus: 88_500_00,
+          availableMonthlyBalanceKurus: 82_800_00,
+          protectedBufferKurus: 12_000_00,
+          extraDebtPaymentCapacityKurus: 70_800_00,
+          riskLevel: "low",
+          minimumPaymentsCovered: true,
+          activeDebtCount: 3,
+          priorityDebt: { balanceKurus: 42_000_00, minimumPaymentKurus: 8_500_00, interestRateMonthly: 4.25 },
+          forecast: { horizonMonths: 24, remainingDebtKurus: 0, estimatedPayoffMonth: "2026-09", highestRiskLevel: "low" },
+          incomeDrop20: { averageLivingBudgetDeltaKurus: -30_000_00, riskLevel: "medium" },
+          expenseReduction10: { averageLivingBudgetDeltaKurus: 5_000_00, riskLevel: "low" },
+          reminders: { total: 2, highPriorityCount: 0, kinds: ["salary_day"] },
+        },
+      },
+    });
+
+    expect(buildGeminiSystemPrompt("en")).toContain("responding in natural English");
+    expect(buildGeminiSystemPrompt("en")).toContain("Finance Engine is authoritative");
+    expect(prompt).toContain("Can I save ₺20,000 per month?");
+    expect(prompt).toContain("\"monthlyIncomeKurus\":15000000");
+    expect(prompt).not.toContain("lender");
+    expect(prompt).not.toContain("debtName");
   });
 });

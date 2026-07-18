@@ -225,92 +225,59 @@ test("responsive smoke: ana finansal sayfalarda yatay taşma ve kritik metinler 
   expect(browserErrors).toEqual([]);
 });
 
-test("AI sağlayıcı ayarları anahtarı yalnız geçici oturumda tutar", async ({ page }) => {
+test("AI koç sohbeti yalnız sunucu tarafındaki sağlayıcı yolunu kullanır", async ({ page }) => {
   const browserErrors = collectBrowserErrors(page);
-  const temporaryKey = "temporary-browser-key-for-e2e";
 
-  await page.route("http://127.0.0.1:1234/v1/models", async (route) => {
-    const headers = route.request().headers();
-    expect(headers.authorization).toBe(`Bearer ${temporaryKey}`);
-    expect(route.request().postData()).toBeNull();
-    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ data: [] }) });
-  });
-  await page.route("http://127.0.0.1:1234/v1/chat/completions", async (route) => {
-    const headers = route.request().headers();
-    expect(headers.authorization).toBe(`Bearer ${temporaryKey}`);
+  await page.goto("/coach");
+  await expect(page.getByRole("heading", { name: "Finansal özetiniz hazır." })).toBeVisible();
+  await expect(page.getByLabel(/API anahtarı/)).toHaveCount(0);
+  await expect(page.getByText("API anahtarları tarayıcıya gösterilmez.")).toBeVisible();
+
+  const question = page.getByLabel("Finansınız hakkında bir soru sorun...");
+  await question.fill("Finansal durumumu açıklar mısın?");
+  await question.press("Enter");
+  await expect(page.getByText("Finansal durumumu açıklar mısın?", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("AI Koç yanıtı")).toBeVisible();
+  await expect(page.getByText("AI açıklamaları finans motorunun ürettiği hesaplamaları değiştirmez.")).toBeVisible();
+
+  await page.getByRole("button", { name: "Sohbeti temizle" }).click();
+  await expect(page.getByLabel("AI Koç yanıtı")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Finansal özetiniz hazır." })).toBeVisible();
+  expect(browserErrors).toEqual([]);
+});
+
+test("AI koç geçici sunucu hatasından sonra aynı soruyu tekrar deneyebilir", async ({ page }) => {
+  let attempt = 0;
+  await page.route("**/api/coach", async (route) => {
+    attempt += 1;
+    if (attempt === 1) {
+      await route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "temporarily unavailable" }) });
+      return;
+    }
     await route.fulfill({
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
-        choices: [
-          {
-            message: {
-              content: JSON.stringify({
-                summary: "Geçici sağlayıcı bağlantısı doğrulandı.",
-                strengths: ["Deterministik özet korunuyor."],
-                risks: ["Bu bağlantı yalnız açık sekmede geçerlidir."],
-                recommendations: ["Son kararı mevcut hesaplama sonuçlarıyla birlikte gözden geçir."],
-                priority: "LOW",
-                confidence: 0.8,
-              }),
-            },
-          },
-        ],
+        summary: "Deterministik özet yeniden açıklandı.",
+        recommendation: "Mevcut planı karar desteği olarak değerlendirin.",
+        risk: "Finans motorunun risk sınıfı değişmedi.",
+        nextAction: "Planı gözden geçirin.",
+        keyNumbers: [{ label: "Kullanılabilir bakiye", value: "₺12.000" }],
+        followUps: [],
+        providerLabel: "Mock AI",
+        simulated: true,
       }),
     });
   });
 
   await page.goto("/coach");
-  await expect(page.getByRole("heading", { name: "AI Sağlayıcı Ayarları" })).toBeVisible();
-  await page.getByRole("button", { name: "Kendi anahtarım" }).click();
-  await page.getByRole("combobox", { name: "Sağlayıcı" }).selectOption("lm-studio");
-  await expect(page.getByRole("combobox", { name: "Sağlayıcı" }).locator("option[value='openai']"),).toHaveCount(0);
-  await expect(page.getByLabel("Base URL")).toHaveAttribute("readonly", "");
-  await page.getByLabel(/API anahtarı/).fill(temporaryKey);
-  await page.getByRole("button", { name: "Bağlantıyı test et" }).click();
-  await expect(page.getByText("Bağlantı doğrulandı. Henüz finansal özet gönderilmedi.")).toBeVisible();
-  await page.getByRole("button", { name: "Koç yorumunu oluştur" }).click();
-  await expect(page.getByText("Bağlı. Koç yorumu seçtiğiniz sağlayıcıdan alındı.")).toBeVisible();
-  await expect(page.getByText("Geçici sağlayıcı bağlantısı doğrulandı.", { exact: true })).toBeVisible();
-
-  const persistedStorage = await page.evaluate(async () =>
-    JSON.stringify({
-      local: Object.entries(localStorage),
-      session: Object.entries(sessionStorage),
-      indexedDb: await indexedDB.databases(),
-      cookie: document.cookie,
-      url: window.location.href,
-    }),
-  );
-  expect(persistedStorage).not.toContain(temporaryKey);
-
-  await page.getByRole("button", { name: "Bağlantıyı kes" }).click();
-  await expect(page.getByText("Bağlantı kesildi. Geçici anahtar temizlendi.")).toBeVisible();
-  await page.reload();
-  await page.getByRole("button", { name: "Kendi anahtarım" }).click();
-  await page.getByRole("combobox", { name: "Sağlayıcı" }).selectOption("lm-studio");
-  await expect(page.getByLabel(/API anahtarı/)).toHaveValue("");
-
-  await page.goto("/plan");
-  await page.goto("/coach");
-  await page.getByRole("button", { name: "Kendi anahtarım" }).click();
-  await page.getByRole("combobox", { name: "Sağlayıcı" }).selectOption("lm-studio");
-  await expect(page.getByLabel(/API anahtarı/)).toHaveValue("");
-  expect(browserErrors).toEqual([]);
-});
-
-test("browser provider hatası ham response göstermeden güvenli mesaj üretir", async ({ page }) => {
-  await page.route("http://127.0.0.1:1234/v1/models", async (route) => {
-    await route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ error: "raw-secret-provider-body" }) });
-  });
-
-  await page.goto("/coach");
-  await page.getByRole("button", { name: "Kendi anahtarım" }).click();
-  await page.getByRole("combobox", { name: "Sağlayıcı" }).selectOption("lm-studio");
-  await page.getByLabel(/API anahtarı/).fill("temporary-invalid-key");
-  await page.getByRole("button", { name: "Bağlantıyı test et" }).click();
-  await expect(page.getByText("AI sağlayıcısı anahtarı doğrulayamadı.")).toBeVisible();
-  await expect(page.getByText("raw-secret-provider-body")).toHaveCount(0);
+  const questionText = "Riskimi açıklar mısın?";
+  await page.getByLabel("Finansınız hakkında bir soru sorun...").fill(questionText);
+  await page.getByRole("button", { name: "Soruyu gönder" }).click();
+  await expect(page.getByTestId("coach-chat-experience").getByRole("alert")).toContainText("Koç yanıtı hazırlanamadı");
+  await page.getByRole("button", { name: "Tekrar dene" }).click();
+  await expect(page.getByLabel("AI Koç yanıtı")).toContainText("Deterministik özet yeniden açıklandı.");
+  await expect(page.getByText(questionText, { exact: true })).toHaveCount(1);
 });
 
 test("borç formu minimum ödeme ve gün seçici davranışlarını korur", async ({ page }) => {

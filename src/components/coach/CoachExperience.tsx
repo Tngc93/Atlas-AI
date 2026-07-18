@@ -1,27 +1,18 @@
-"use client";
-
-import { useState } from "react";
 import { Bot, Calculator, UserCheck } from "lucide-react";
-import { CoachPanel } from "@/components/dashboard/CoachPanel";
+import { CoachChatExperience } from "./CoachChatExperience";
 import { CoachEvidencePanel } from "./CoachEvidencePanel";
-import { CoachProviderSettings } from "./CoachProviderSettings";
 import type { CoachEvidenceSummary } from "@/features/coach/context-evidence";
-import type { CoachContext, CoachInsight } from "@/features/coach/types";
-import type { BrowserProviderFlags } from "@/features/coach/providers/browser-flags";
+import type { CoachFinancialSnapshot } from "@/features/coach/types";
 
 export function CoachExperience({
-  context,
   evidence,
-  initialInsight,
-  browserProviderFlags,
+  financialSnapshot,
+  provider,
 }: {
-  context: CoachContext;
   evidence: CoachEvidenceSummary;
-  initialInsight: CoachInsight;
-  browserProviderFlags: BrowserProviderFlags;
+  financialSnapshot: CoachFinancialSnapshot;
+  provider: { label: string; available: boolean; isMock: boolean };
 }) {
-  const [insight, setInsight] = useState(initialInsight);
-
   return (
     <>
       <section className="mb-6 grid gap-3 md:grid-cols-3" aria-label="Koç karar sınırları">
@@ -37,14 +28,8 @@ export function CoachExperience({
           </article>
         ))}
       </section>
-      <CoachProviderSettings
-        context={context}
-        initialInsight={initialInsight}
-        browserProviderFlags={browserProviderFlags}
-        onInsightChange={setInsight}
-      />
-      <section aria-label="AI açıklaması"><CoachPanel insight={insight} /></section>
-      <section aria-label="Deterministik kanıt özeti"><CoachEvidencePanel evidence={evidence} /></section>
+      <CoachChatExperience mode="self-host" financialSnapshot={financialSnapshot} provider={provider} defaultLanguage="tr" />
+      <section className="mt-6" aria-label="Deterministik kanıt özeti"><CoachEvidencePanel evidence={evidence} /></section>
     </>
   );
 }

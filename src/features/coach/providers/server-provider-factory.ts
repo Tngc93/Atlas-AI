@@ -25,7 +25,9 @@ function readEnv(name: string | undefined) {
 }
 
 function estimateUsage(request: ProviderRequest) {
-  const estimatedInputTokens = Math.ceil((buildProviderSystemPrompt().length + buildProviderUserPrompt(request.context).length) / 4);
+  const estimatedInputTokens = Math.ceil(
+    (buildProviderSystemPrompt(request.context.chatRequest?.language).length + buildProviderUserPrompt(request.context).length) / 4,
+  );
   return {
     estimatedInputTokens,
     estimatedOutputTokens: 260,
@@ -69,7 +71,7 @@ export function createServerProvider(config: ServerProviderConfig): AIProvider {
       body = {
         model: request.model,
         max_tokens: 700,
-        system: buildProviderSystemPrompt(),
+        system: buildProviderSystemPrompt(request.context.chatRequest?.language),
         messages: [{ role: "user", content: userPrompt }],
       };
     } else {
@@ -80,7 +82,7 @@ export function createServerProvider(config: ServerProviderConfig): AIProvider {
         temperature: 0.2,
         max_tokens: 700,
         messages: [
-          { role: "system", content: buildProviderSystemPrompt() },
+          { role: "system", content: buildProviderSystemPrompt(request.context.chatRequest?.language) },
           { role: "user", content: userPrompt },
         ],
         response_format: { type: "json_object" },

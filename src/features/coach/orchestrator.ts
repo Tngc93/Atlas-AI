@@ -58,6 +58,17 @@ export function selectAIProvider(): AIProvider {
   return mockProvider;
 }
 
+export function getCoachProviderPresentation() {
+  const provider = selectAIProvider();
+  const available = provider.name === "mock" || provider.isConfigured();
+
+  return {
+    label: available ? provider.descriptor.displayName : "Configured AI Provider",
+    available,
+    isMock: provider.name === "mock",
+  };
+}
+
 function isCoachContext(input: CoachContext | CoachInputSummary): input is CoachContext {
   return "summary" in input && "memory" in input && input.version === "coach-context-v1";
 }
@@ -90,6 +101,7 @@ export function hashCoachContext(input: CoachContext): string {
         memory: input.memory,
         trends: input.trends,
         recommendations: input.recommendations,
+        chatRequest: input.chatRequest,
       }),
     )
     .digest("hex");
