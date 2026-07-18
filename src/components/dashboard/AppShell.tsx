@@ -34,7 +34,7 @@ const navGroups = [
     items: [
       { href: "/dashboard", label: "Bugün", icon: CalendarCheck },
       { href: "/plan", label: trCopy.nav.plan, icon: BarChart3 },
-      { href: "/coach", label: "Koç", icon: Bot, featured: true },
+      { href: "/coach", label: "Koç", icon: Bot },
       { href: "/forecast", label: "Gelecek", icon: TrendingUp },
     ],
   },
@@ -62,7 +62,7 @@ const demoNavGroups = [
     items: [
       { href: "/dashboard", label: "Dashboard", icon: CalendarCheck },
       { href: "/plan", label: "Plan", icon: BarChart3 },
-      { href: "/coach", label: "AI Coach", icon: Bot, featured: true },
+      { href: "/coach", label: "AI Coach", icon: Bot },
       { href: "/forecast", label: "Forecast", icon: TrendingUp },
     ],
   },
@@ -315,9 +315,7 @@ function SidebarContent({
                         } ${
                           isActive
                             ? "border-mint/40 bg-mint/10 text-mint shadow-panel"
-                            : item.featured
-                              ? "border-mint/20 bg-mint/10 text-mint hover:border-mint/40 hover:bg-mint/10"
-                              : "border-transparent text-steel hover:border-line hover:bg-surface-muted hover:text-ink"
+                            : "border-transparent text-steel hover:border-line hover:bg-surface-muted hover:text-ink"
                         }`}
                       >
                         {isActive ? <span className="absolute left-0 top-2 h-6 w-0.5 rounded-full bg-mint" aria-hidden="true" /> : null}
