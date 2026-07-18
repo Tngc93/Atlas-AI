@@ -25,6 +25,14 @@ async function gotoAfterDevReload(page: Page, route: string) {
   }
 }
 
+async function expectEnglishDemoCopy(page: Page) {
+  const visibleText = await page.locator("body").innerText();
+  const turkishUserFacingCopy =
+    /[çğıöşüİÇĞÖŞÜ]|\b(?:Bu|için|önce|gün|kaldı|maaş|borç|gider|gelir|ödeme|yaşam|bütçe|görünüyor|yaklaşıyor|zorunlu|asgari|güvenli|kontrol|örnek|faturalar|ulaşım|barınma|seyahat|mağazası)\b/i;
+
+  expect(visibleText).not.toMatch(turkishUserFacingCopy);
+}
+
 test("public demo entry explains boundaries without blocking exploration", async ({ page }) => {
   await page.goto("/demo");
   await expect(page).toHaveURL(/\/demo$/);
@@ -62,6 +70,11 @@ test("demo navigation stays under the canonical demo route", async ({ page }) =>
   await expect(page).toHaveURL(/\/demo\/income$/);
   await expect(page.getByRole("heading", { name: "Income", exact: true })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Income", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByLabel("Fictional monthly salary (TRY)")).toHaveValue("150000");
+  await expect(page.getByText("₺150,000", { exact: true })).toBeVisible();
+
+  await openDemoRoute(page, "Plan");
+  await expect(page.getByText("₺150,000", { exact: true })).toBeVisible();
 });
 
 test("temporary CRUD, memory and Mock AI state reset together", async ({ page }) => {
@@ -244,6 +257,7 @@ test("all demo routes expose the indicator without overflow or console errors", 
     for (const route of routes) {
       await page.goto(route, { waitUntil: "domcontentloaded" });
       await expect(page.getByRole("button", { name: /Public Demo/ })).toBeVisible();
+      await expectEnglishDemoCopy(page);
       expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), `${route} at ${viewport.width}x${viewport.height}`).toBe(false);
     }
   }

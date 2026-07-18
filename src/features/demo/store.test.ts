@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { createDemoSeed } from "./seed";
+import { buildMonthlyFinancePlan } from "@/features/finance/calculations";
+import { liraToKurus } from "@/features/finance/money";
+import { createDemoSeed, DEMO_MONTHLY_SALARY_KURUS } from "./seed";
 import { demoFinanceReducer } from "./store";
 
 describe("demo finance store", () => {
@@ -21,6 +23,25 @@ describe("demo finance store", () => {
     const reset = demoFinanceReducer(changed, { type: "reset" });
     expect(reset.expenses).toHaveLength(seed.expenses.length);
     expect(reset.revision).toBe(0);
+  });
+
+  it("propagates the 150,000 TRY seed salary through deterministic plan outputs", () => {
+    const seed = createDemoSeed();
+    const plan = buildMonthlyFinancePlan(seed.profile, seed.debts, seed.expenses, {
+      asOfDate: new Date("2026-07-15T12:00:00.000Z"),
+      horizonMonths: 24,
+    });
+
+    expect(seed.profile.monthlySalaryKurus).toBe(DEMO_MONTHLY_SALARY_KURUS);
+    expect(seed.salaryRecords[0].amountKurus).toBe(DEMO_MONTHLY_SALARY_KURUS);
+    expect(plan.cashFlow.salaryKurus).toBe(liraToKurus(150_000));
+    expect(plan.cashFlow.mandatoryExpenseTotalKurus).toBe(liraToKurus(50_000));
+    expect(plan.cashFlow.minimumDebtPaymentsKurus).toBe(liraToKurus(17_200));
+    expect(plan.cashFlow.totalRequiredKurus).toBe(liraToKurus(67_200));
+    expect(plan.cashFlow.survivalBudgetKurus).toBe(liraToKurus(82_800));
+    expect(plan.cashFlow.extraDebtPaymentKurus).toBe(liraToKurus(70_800));
+    expect(plan.livingBudget.remainingForMonthKurus).toBe(liraToKurus(12_000));
+    expect(plan.cashFlow.minimumPaymentsCovered).toBe(true);
   });
 
   it("clears every temporary domain change when reset", () => {
