@@ -72,7 +72,9 @@ function createGeminiClient(apiKey: string): GeminiClient {
 }
 
 function estimateUsage(request: ProviderRequest) {
-  const estimatedInputTokens = Math.ceil((buildGeminiSystemPrompt().length + buildGeminiUserPrompt(request.context).length) / 4);
+  const estimatedInputTokens = Math.ceil(
+    (buildGeminiSystemPrompt(request.context.chatRequest?.language).length + buildGeminiUserPrompt(request.context).length) / 4,
+  );
   const estimatedOutputTokens = 260;
 
   return {
@@ -222,7 +224,7 @@ async function requestGemini(input: CoachContext, apiKey = process.env.GEMINI_AP
             model,
             contents: buildGeminiUserPrompt(input),
             config: {
-              systemInstruction: buildGeminiSystemPrompt(),
+              systemInstruction: buildGeminiSystemPrompt(input.chatRequest?.language),
               responseMimeType: "application/json",
               responseSchema: geminiResponseSchema,
               temperature: 0.2,

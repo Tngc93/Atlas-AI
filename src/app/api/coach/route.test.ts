@@ -21,11 +21,27 @@ const memoryServiceMock = vi.hoisted(() => ({
   buildFinancialMemoryReport: vi.fn(),
 }));
 
+const chatContextMock = vi.hoisted(() => ({
+  buildCoachFinancialSnapshot: vi.fn(),
+  withCoachChatRequest: vi.fn(),
+}));
+
+const chatResponseMock = vi.hoisted(() => ({
+  buildCoachChatResponseFromInsight: vi.fn(),
+}));
+
+const mockChatMock = vi.hoisted(() => ({
+  buildMockCoachChatResponse: vi.fn(),
+}));
+
 vi.mock("@/features/finance/data-service", () => financeMock);
 vi.mock("@/features/rates/service", () => ratesMock);
 vi.mock("@/features/coach/orchestrator", () => orchestratorMock);
 vi.mock("@/features/memory/repository", () => memoryRepositoryMock);
 vi.mock("@/features/memory/service", () => memoryServiceMock);
+vi.mock("@/features/coach/chat-context", () => chatContextMock);
+vi.mock("@/features/coach/chat-response", () => chatResponseMock);
+vi.mock("@/features/coach/mock-chat", () => mockChatMock);
 
 describe("/api/coach", () => {
   it("rejects client payloads so browser credentials cannot enter the server orchestrator", async () => {
@@ -139,5 +155,64 @@ describe("/api/coach", () => {
     expect(orchestratorMock.buildCoachContext).toHaveBeenCalledWith({ monthlyPlan, rateSnapshot, memoryReport });
     expect(orchestratorMock.generateCoachInsight).toHaveBeenCalledWith(context);
     expect(body.provider).toBe("mock");
+  });
+
+  it("accepts only a question and language, then builds chat context server-side", async () => {
+    const planSnapshot = { monthlyPlan: { monthLabel: "Temmuz 2026" } };
+    const context = { version: "coach-context-v1", summary: {}, memory: {}, trends: {}, recommendations: {} };
+    const financialSnapshot = { monthlyIncomeKurus: 150_000_00 };
+    const providerContext = { ...context, chatRequest: { question: "What is my risk?", language: "en", financialSnapshot } };
+    const insight = { provider: "gemini", providerMode: "live" };
+    const chatResponse = { summary: "Grounded answer", providerLabel: "Mock AI", simulated: true };
+
+    financeMock.getMonthlyFinancePlanSnapshot.mockResolvedValue(planSnapshot);
+    ratesMock.getLatestInterestRateSnapshot.mockResolvedValue({ source: "fallback" });
+    memoryRepositoryMock.getMemoryReportData.mockRejectedValue(new Error("no memory"));
+    orchestratorMock.buildCoachContext.mockReturnValue(context);
+    chatContextMock.buildCoachFinancialSnapshot.mockReturnValue(financialSnapshot);
+    chatContextMock.withCoachChatRequest.mockReturnValue(providerContext);
+    orchestratorMock.generateCoachInsight.mockResolvedValue(insight);
+    chatResponseMock.buildCoachChatResponseFromInsight.mockReturnValue(chatResponse);
+
+    const { POST } = await import("./route");
+    const response = await POST(
+      new Request("http://localhost/api/coach", {
+        method: "POST",
+        body: JSON.stringify({ question: "What is my risk?", language: "en" }),
+      }),
+    );
+
+    expect(chatContextMock.withCoachChatRequest).toHaveBeenCalledWith(context, "What is my risk?", "en", financialSnapshot);
+    expect(orchestratorMock.generateCoachInsight).toHaveBeenCalledWith(providerContext);
+    expect(chatResponseMock.buildCoachChatResponseFromInsight).toHaveBeenCalledWith(insight, financialSnapshot, "en");
+    expect(await response.json()).toEqual(chatResponse);
+  });
+
+  it("uses the contextual zero-cost responder when the server provider resolves to Mock AI", async () => {
+    const planSnapshot = { monthlyPlan: { monthLabel: "Temmuz 2026" } };
+    const context = { version: "coach-context-v1", summary: {}, memory: {}, trends: {}, recommendations: {} };
+    const financialSnapshot = { monthlyIncomeKurus: 150_000_00 };
+    const providerContext = { ...context, chatRequest: { question: "Can I save?", language: "en", financialSnapshot } };
+    const mockResponse = { summary: "Contextual mock answer", providerLabel: "Mock AI · Demo Mode", simulated: true };
+
+    financeMock.getMonthlyFinancePlanSnapshot.mockResolvedValue(planSnapshot);
+    ratesMock.getLatestInterestRateSnapshot.mockResolvedValue({ source: "fallback" });
+    memoryRepositoryMock.getMemoryReportData.mockRejectedValue(new Error("no memory"));
+    orchestratorMock.buildCoachContext.mockReturnValue(context);
+    chatContextMock.buildCoachFinancialSnapshot.mockReturnValue(financialSnapshot);
+    chatContextMock.withCoachChatRequest.mockReturnValue(providerContext);
+    orchestratorMock.generateCoachInsight.mockResolvedValue({ provider: "mock", providerMode: "mock" });
+    mockChatMock.buildMockCoachChatResponse.mockReturnValue(mockResponse);
+
+    const { POST } = await import("./route");
+    const response = await POST(
+      new Request("http://localhost/api/coach", {
+        method: "POST",
+        body: JSON.stringify({ question: "Can I save?", language: "en" }),
+      }),
+    );
+
+    expect(mockChatMock.buildMockCoachChatResponse).toHaveBeenCalledWith("Can I save?", financialSnapshot, "en");
+    expect(await response.json()).toEqual(mockResponse);
   });
 });

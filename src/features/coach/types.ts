@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { UiRiskLevel } from "@/features/finance/types";
+import type { ReminderKind } from "@/features/reminders/types";
 
 export const coachInsightSchema = z.object({
   summary: z.string(),
@@ -181,6 +183,68 @@ export type CoachContext = {
   memory: CoachMemoryContext;
   trends: CoachTrendContext;
   recommendations: CoachRecommendationContext;
+  chatRequest?: CoachChatRequest;
+};
+
+export type CoachLanguage = "en" | "tr";
+
+export type CoachFinancialSnapshot = {
+  monthlyIncomeKurus: number;
+  monthlyExpensesKurus: number;
+  minimumDebtPaymentsKurus: number;
+  totalDebtKurus: number;
+  availableMonthlyBalanceKurus: number;
+  protectedBufferKurus: number;
+  extraDebtPaymentCapacityKurus: number;
+  riskLevel: UiRiskLevel;
+  minimumPaymentsCovered: boolean;
+  activeDebtCount: number;
+  priorityDebt: {
+    balanceKurus: number;
+    minimumPaymentKurus: number;
+    interestRateMonthly: number;
+  } | null;
+  forecast: {
+    horizonMonths: 24;
+    remainingDebtKurus: number;
+    estimatedPayoffMonth: string | null;
+    highestRiskLevel: UiRiskLevel;
+  };
+  incomeDrop20: {
+    averageLivingBudgetDeltaKurus: number;
+    riskLevel: UiRiskLevel;
+  };
+  expenseReduction10: {
+    averageLivingBudgetDeltaKurus: number;
+    riskLevel: UiRiskLevel;
+  };
+  reminders: {
+    total: number;
+    highPriorityCount: number;
+    kinds: ReminderKind[];
+  };
+};
+
+export type CoachChatRequest = {
+  question: string;
+  language: CoachLanguage;
+  financialSnapshot: CoachFinancialSnapshot;
+};
+
+export type CoachChatKeyNumber = {
+  label: string;
+  value: string;
+};
+
+export type CoachChatResponse = {
+  summary: string;
+  recommendation: string;
+  risk: string;
+  nextAction: string;
+  keyNumbers: CoachChatKeyNumber[];
+  followUps: string[];
+  providerLabel: string;
+  simulated: boolean;
 };
 
 export type AIProviderMode = "mock" | "placeholder" | "live" | "fallback";

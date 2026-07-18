@@ -29,13 +29,16 @@ async function hashBrowserContext(context: CoachContext): Promise<string> {
     memory: context.memory,
     trends: context.trends,
     recommendations: context.recommendations,
+    chatRequest: context.chatRequest,
   });
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(serialized));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 function estimateUsage(context: CoachContext) {
-  const estimatedInputTokens = Math.ceil((buildProviderSystemPrompt().length + buildProviderUserPrompt(context).length) / 4);
+  const estimatedInputTokens = Math.ceil(
+    (buildProviderSystemPrompt(context.chatRequest?.language).length + buildProviderUserPrompt(context).length) / 4,
+  );
   return { estimatedInputTokens, estimatedOutputTokens: 260, estimatedCostKurus: 0 };
 }
 
@@ -66,7 +69,7 @@ async function callBrowserProvider(config: BrowserProviderConfig, baseUrl: strin
       method: "POST",
       headers: { "content-type": "application/json", "x-goog-api-key": secret },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: buildProviderSystemPrompt() }] },
+        systemInstruction: { parts: [{ text: buildProviderSystemPrompt(config.context.chatRequest?.language) }] },
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: { responseMimeType: "application/json", temperature: 0.2, maxOutputTokens: 700 },
       }),
@@ -87,7 +90,7 @@ async function callBrowserProvider(config: BrowserProviderConfig, baseUrl: strin
       temperature: 0.2,
       max_tokens: 700,
       messages: [
-        { role: "system", content: buildProviderSystemPrompt() },
+        { role: "system", content: buildProviderSystemPrompt(config.context.chatRequest?.language) },
         { role: "user", content: prompt },
       ],
       response_format: { type: "json_object" },
