@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { trCopy } from "@/lib/copy/tr";
+import { isNavigationItemActive } from "./navigation-state";
 
 type ThemeMode = "dark" | "light" | "system";
 
@@ -86,10 +87,6 @@ const demoNavGroups = [
 function shellHref(href: string, publicDemo: boolean) {
   if (!publicDemo) return href;
   return href === "/dashboard" ? "/demo" : `/demo${href}`;
-}
-
-function isCurrentRoute(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 function applyTheme(mode: ThemeMode) {
@@ -306,7 +303,7 @@ function SidebarContent({
                 <div className="mt-2 space-y-1.5">
                   {group.items.map((item) => {
                     const href = shellHref(item.href, publicDemo);
-                    const isActive = isCurrentRoute(pathname, href);
+                    const isActive = isNavigationItemActive({ pathname, itemHref: item.href, publicDemo });
                     return (
                       <Link
                         key={item.href}
