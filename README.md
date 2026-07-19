@@ -2,35 +2,81 @@
 
 **Open-source AI Financial Intelligence Platform**
 
-> Bring your own AI. Bring your own Database. Deploy anywhere.
+> Bring your own AI. Bring your own database. Deploy anywhere.
 
 [![CI](https://github.com/Tngc93/personal-finance-coach-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/Tngc93/personal-finance-coach-dashboard/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Release](https://img.shields.io/badge/release-v1.0.0--beta-blue)](#roadmap)
+[![Release](https://img.shields.io/badge/release-v1.0.0--beta-blue)](docs/releases/v1.0.0-beta.md)
+[![Live Demo](https://img.shields.io/badge/live%20demo-online-00b894)](https://personal-atlas-ai.vercel.app)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
 
-Atlas AI is a privacy-aware personal finance decision-support platform. It combines a deterministic finance engine with forecasts, scenario comparison, financial memory, reminders, and provider-independent AI explanations.
+Atlas AI is a privacy-aware personal finance decision-support platform. It combines a deterministic finance engine with forecasts, scenario comparison, financial memory, reminders, and a contextual AI Coach.
 
-The finance engine remains the source of truth. AI may explain calculated results, but it does not calculate budgets, determine risk, or make decisions for the user.
+The finance engine remains the source of truth. AI explains calculated results, but it does not calculate budgets, determine risk, or make decisions for the user.
 
 > [!IMPORTANT]
-> Atlas AI is educational software, not financial advice. The public demo uses fictional data and Mock AI. Do not enter real financial information into a public demo deployment.
+> Atlas AI is educational software, not financial advice. The public demo uses fictional data and simulated Mock AI responses. Do not enter real financial information into a public demo deployment.
 
-## Key Features
+## Live Demo
 
-- Deterministic monthly cash-flow and living-budget calculations
-- Debt prioritization and payoff projections
+**Production:** https://personal-atlas-ai.vercel.app  
+**Demo workspace:** https://personal-atlas-ai.vercel.app/demo  
+**AI Coach:** https://personal-atlas-ai.vercel.app/demo/coach
+
+The public demo runs without PostgreSQL, paid infrastructure, or platform-owned AI keys. Demo state lives only in active-tab memory and resets on refresh or tab closure.
+
+## Highlights
+
+- Deterministic monthly cash-flow and protected-budget calculations
+- Debt prioritization and 24-month payoff projections
 - 3, 6, 12, and 24-month forecast views
-- Temporary decision and forecast scenario comparison
+- Decision Simulator for temporary income, expense, debt, and payment scenarios
 - Financial Memory snapshots and trend intelligence
-- Deterministic recommendation and reminder engines
+- Deterministic reminders and recommendation context
+- Session-only conversational AI Coach with suggested questions, language selection, structured recommendations, and retry states
 - Provider-independent AI architecture with structured output validation
-- Mock-first graceful fallback when AI is unavailable
 - Self-host adapters for OpenAI, Gemini, Anthropic, OpenRouter, Ollama, LM Studio, and OpenAI-compatible APIs
-- Session-isolated, zero-cost public demo mode without database persistence
-- Secret scanning, unit, PostgreSQL integration, and Playwright E2E coverage
+- Database-free public demo with fictional data and Mock AI
+- Secret scanning, unit tests, PostgreSQL integration tests, and Playwright E2E coverage
 
-## Architecture Overview
+## Product Tour
+
+| Surface | Public route |
+| --- | --- |
+| Landing | [Open](https://personal-atlas-ai.vercel.app) |
+| Demo Dashboard | [Open](https://personal-atlas-ai.vercel.app/demo) |
+| AI Coach | [Open](https://personal-atlas-ai.vercel.app/demo/coach) |
+| Forecast | [Open](https://personal-atlas-ai.vercel.app/demo/forecast) |
+| Decision Simulator | [Open](https://personal-atlas-ai.vercel.app/demo/decisions) |
+| Financial Memory | [Open](https://personal-atlas-ai.vercel.app/demo/memory) |
+| Architecture | [Open](https://personal-atlas-ai.vercel.app/architecture) |
+| Documentation | [Open](https://personal-atlas-ai.vercel.app/docs) |
+
+Release-quality screenshots and a short product walkthrough will be added as launch media without blocking access to the live product.
+
+## AI Coach
+
+The AI Coach is an explanatory layer on top of the deterministic finance engine.
+
+Public demo behavior:
+
+- Browser-only Mock AI
+- No external AI request
+- No API key required
+- English by default, with Turkish response support
+- Session-only conversation history
+- Structured responses with summary, recommendation, risk, next action, and key numbers
+
+Self-host behavior:
+
+- Uses the configured server-side provider registry
+- Keeps provider credentials out of the browser
+- Rebuilds minimized financial context on the server
+- Sends only the minimum fields required for explanation
+
+AI explanations do not change calculations produced by the finance engine.
+
+## Architecture
 
 ```mermaid
 flowchart TD
@@ -46,17 +92,6 @@ flowchart TD
     REG --> LOCAL["Ollama / LM Studio"]
 ```
 
-```mermaid
-flowchart LR
-    A["PUBLIC_DEMO_MODE=true"] --> B["Fictional Immutable Seed"]
-    B --> C["Session-isolated Demo Store"]
-    C --> D["Finance Engine"]
-    D --> E["Mock AI Explanation"]
-    F["PUBLIC_DEMO_MODE=false"] --> G["PostgreSQL Repositories"]
-    G --> D
-    D --> H["Configured Self-host Provider"]
-```
-
 More detail: [Architecture](docs/ARCHITECTURE.md), [AI Architecture](docs/product/AI_ARCHITECTURE.md), and [Product Architecture](docs/product/PRODUCT_ARCHITECTURE.md).
 
 ## Technology Stack
@@ -67,29 +102,10 @@ More detail: [Architecture](docs/ARCHITECTURE.md), [AI Architecture](docs/produc
 | UI | Tailwind CSS, Recharts, Lucide |
 | Data | Prisma ORM, PostgreSQL |
 | Validation | Zod |
-| AI | Provider registry, structured responses, Mock fallback |
+| AI | Provider registry, minimized context, structured responses, Mock fallback |
 | Testing | Vitest, Playwright |
 | CI | GitHub Actions |
-
-## Screenshots
-
-Screenshots will be added before the public launch. These placeholders intentionally avoid presenting unreleased visuals as final.
-
-| Surface | Preview |
-| --- | --- |
-| Dashboard | _Screenshot placeholder — Dashboard_ |
-| Forecast | _Screenshot placeholder — Forecast_ |
-| Decision Simulator | _Screenshot placeholder — Decision Simulator_ |
-| Financial Memory | _Screenshot placeholder — Financial Memory_ |
-| AI Coach | _Screenshot placeholder — AI Coach_ |
-| Provider Settings | _Screenshot placeholder — Provider Settings_ |
-| Demo Mode | _Screenshot placeholder — Zero-Cost Demo_ |
-
-## Live Demo
-
-> **Live demo URL will be added after production deployment.**
-
-The public demo at `/demo` runs with fictional data, per-tab memory state, and Mock AI. It does not require `DATABASE_URL`, paid provider keys, authentication, or shared database mutation. The marketing website remains available at `/` in demo deployments.
+| Hosting | Vercel public demo; self-host supported |
 
 ## Quick Start
 
@@ -106,12 +122,38 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+## Public Demo Mode
+
+```bash
+PUBLIC_DEMO_MODE=true AI_PROVIDER=mock npm run dev
+```
+
+Public demo mode:
+
+- Uses an immutable fictional seed and active-tab memory
+- Supports temporary income, debt, and expense CRUD
+- Keeps every demo product link under `/demo/*`
+- Resets after refresh, tab closure, browser-context change, or confirmed reset
+- Does not write finance state to PostgreSQL, cookies, localStorage, sessionStorage, IndexedDB, Cache Storage, or service-worker storage
+- Blocks DB-backed API routes and Prisma initialization
+- Uses deterministic Mock AI with zero required API cost
+
+For a free public deployment, set only:
+
+```text
+PUBLIC_DEMO_MODE=true
+AI_PROVIDER=mock
+NEXT_PUBLIC_SITE_URL=https://your-final-origin.example
+```
+
+Do not add `DATABASE_URL`, `DIRECT_URL`, or owner-owned cloud AI credentials to the public demo deployment.
+
 ## Self-host Installation
 
 1. Provision a PostgreSQL database.
 2. Set pooled `DATABASE_URL` and direct `DIRECT_URL` values in `.env.local`.
 3. Keep `AI_PROVIDER=mock`, or configure a supported server-side provider.
-4. Generate Prisma Client and apply only reviewed PostgreSQL migrations.
+4. Generate Prisma Client and apply reviewed PostgreSQL migrations.
 5. Run validation before exposing the application.
 
 ```bash
@@ -123,66 +165,31 @@ npm run test
 npm run build
 ```
 
-Authentication and user ownership are not implemented. Do not expose database mode as a multi-user public service with real financial data. See [Self-hosting](docs/SELF_HOSTING.md) and [Production Readiness](docs/operations/production-readiness.md).
+Authentication and user ownership are not implemented. Do not expose database mode as a public multi-user financial service with real financial data. See [Self-hosting](docs/SELF_HOSTING.md) and [Production Readiness](docs/operations/production-readiness.md).
 
-## Bring Your Own AI
+## Supported AI Providers
 
-The default provider is `mock`, which makes no paid external AI call.
-
-| Provider | Server self-host | Browser/public status |
+| Provider | Self-host status | Public demo status |
 | --- | --- | --- |
-| Mock | Implemented | Default demo provider |
-| Gemini | Implemented | Experimental browser mode disabled in production |
+| Mock | Implemented | Default and only public provider |
+| Gemini | Implemented | Disabled in public production |
 | OpenAI | Implemented adapter | Self-host only |
 | Anthropic | Implemented adapter | Self-host only |
-| OpenRouter | Implemented adapter | Experimental browser mode disabled in production |
-| Ollama | Implemented adapter | Local-only; requires CORS configuration |
-| LM Studio | Implemented adapter | Local-only; requires CORS configuration |
-| Custom OpenAI-compatible | Implemented adapter | Self-host only for remote endpoints |
+| OpenRouter | Implemented adapter | Disabled in public production |
+| Ollama | Local/self-host | Requires local runtime and CORS configuration |
+| LM Studio | Local/self-host | Requires local runtime and CORS configuration |
+| Custom OpenAI-compatible | Self-host | Remote endpoints remain server-side |
 
-Credentials remain in server-side environment variables for self-host mode. Browser credentials, where explicitly enabled for local development, are session-only and must never enter repository or database storage.
+Credentials remain in server-side environment variables. No frontend API-key input is exposed.
 
-## Bring Your Own Database
-
-Atlas AI uses Prisma and PostgreSQL in self-host mode. Runtime requests use `DATABASE_URL`; Prisma migration operations use `DIRECT_URL`.
-
-- Archived SQLite migrations must not be applied to PostgreSQL.
-- Public demo mode never runs production migrations.
-- Public demo deployments must not receive database credentials.
-- Multi-user production use requires planned Auth and user ownership work.
-
-## Demo Mode
-
-```bash
-PUBLIC_DEMO_MODE=true AI_PROVIDER=mock npm run dev
-```
-
-- Uses an immutable fictional seed and active-tab memory
-- Supports temporary income, debt, and expense CRUD
-- Keeps every demo product link under `/demo/*` and fails closed for unsupported routes
-- Resets after refresh, tab closure, a new browser context, or the confirmed `Reset Demo` action
-- Does not write finance state to a database, URL, browser history, cookies, `localStorage`, `sessionStorage`, IndexedDB, Cache Storage, or service-worker storage
-- Blocks DB-backed API routes and Prisma initialization
-- Uses deterministic Mock AI with zero required API cost and no platform-owned provider key
-
-```bash
-npm run build:demo
-npm run test:e2e:demo
-```
-
-For a free public deployment, set only `PUBLIC_DEMO_MODE=true` and `AI_PROVIDER=mock`; leave database and cloud AI credentials empty. No KV, Redis, Blob, persistent service, analytics, or tracking integration is required. Hosting remains subject to the provider's free-tier quotas and acceptable-use limits; unlimited free hosting is not implied.
-
-Set the optional `NEXT_PUBLIC_SITE_URL` to the final `https://` origin after deployment. Until then, Vercel's production URL is used for canonical metadata, sitemap, robots, Open Graph, and Twitter URLs. See [Vercel Deployment](docs/operations/vercel-deployment.md).
-
-See [Public Demo](docs/PUBLIC_DEMO.md) for the route map, reset lifecycle, negative storage controls, deployment profile, and known limitations.
-
-## Security
+## Security and Privacy
 
 - Never commit `.env`, API keys, database URLs, database files, or real financial fixtures.
-- AI receives minimized deterministic context rather than raw banking activity.
-- Browser BYOK is disabled by default; cloud browser providers remain fail-closed in production.
+- AI receives minimized deterministic context rather than raw banking records.
+- Browser cloud providers fail closed in production.
 - Demo mode does not persist finance state or initialize Prisma.
 - Secret scanning is part of the quality gate.
+- Public demo responses are explicitly identified as simulated Mock AI output.
 
 Read [SECURITY.md](SECURITY.md) before reporting a vulnerability. Do not place secrets or real financial data in public issues.
 
@@ -222,33 +229,39 @@ npm run test:e2e:demo
 
 PostgreSQL integration and standard E2E tests require guarded `test-preview` variables documented in [Production Readiness](docs/operations/production-readiness.md). Demo tests require no database or paid AI key.
 
+## Current Release Status
+
+`v1.0.0-beta` is suitable for public portfolio demonstration and open-source review with these boundaries:
+
+- Public demo uses fictional data and Mock AI
+- Self-host mode is not public multi-user ready
+- Authentication, user ownership, and banking integrations are not included
+- Financial outputs are educational decision support, not financial advice
+
+See [release notes](docs/releases/v1.0.0-beta.md), [release checklist](docs/releases/RELEASE_CHECKLIST.md), and [changelog](CHANGELOG.md).
+
 ## Roadmap
 
 ### Implemented
 
 - Deterministic finance engine and debt planning
-- Forecast, scenario comparison, Decision Intelligence, Financial Memory, reminders, and trend/recommendation context
+- Forecast, scenario comparison, Decision Intelligence, Financial Memory, and reminders
+- Contextual session-only AI Coach
 - Provider-independent AI adapters and Mock fallback
 - PostgreSQL test-preview infrastructure
 - Zero-cost, session-isolated demo mode
-
-### Experimental
-
-- Browser BYOK capability gates
-- Local Ollama and LM Studio browser connectivity
-- PostgreSQL production migration workflow
+- Vercel production deployment with canonical metadata
 
 ### Planned
 
 - Authentication, user ownership, and multi-user isolation
 - Banking data import with explicit consent
+- Persistent conversation history and multiple threads
 - PWA and mobile experience
 - Plugin/extension SDK
-- Production deployment and operational monitoring
+- Operational monitoring and accessibility score automation
 
 See [Roadmap](docs/ROADMAP.md).
-
-Release candidate materials: [v1.0.0-beta notes](docs/releases/v1.0.0-beta.md) and [release checklist](docs/releases/RELEASE_CHECKLIST.md).
 
 ## Contributing
 
@@ -265,29 +278,3 @@ Atlas AI is governed by the accepted [Product Manifesto](docs/product/PRODUCT_MA
 ## Acknowledgements
 
 Atlas AI builds on the open-source ecosystems around Next.js, React, TypeScript, Prisma, PostgreSQL, Vitest, Playwright, Recharts, and supported AI provider APIs and local model runtimes.
-
-## FAQ
-
-### Is Atlas AI a financial advisor?
-
-No. It is educational decision-support software. Calculations and AI explanations are not financial advice.
-
-### Does AI calculate my budget or risk level?
-
-No. Those values come from deterministic code. AI is downstream and explanatory only.
-
-### Can I use Atlas AI without an AI API key?
-
-Yes. Mock mode requires no key and keeps all deterministic features available.
-
-### Does the public demo store my changes?
-
-No. Demo changes live only in active-tab memory and reset on refresh or tab closure.
-
-### Is the project ready for public multi-user financial data?
-
-No. Authentication and user ownership remain planned requirements.
-
-### Can I use my own AI and database?
-
-Yes in self-host mode. Configure your own PostgreSQL connection and supported server-side provider through environment variables.
