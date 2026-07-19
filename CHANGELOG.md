@@ -2,14 +2,15 @@
 
 Atlas AI is a Turkish-first, open-source AI Financial Intelligence Platform. This file records user-visible releases and material technical changes.
 
-## v1.0.0-beta - Release Candidate
+## v1.0.0-beta - Public Beta
 
-Release date: pending final deployment validation.
+Release date: 2026-07-19
 
 ### Product
 
 - Added a Turkish-first financial workspace for reviewing current position, monthly plans, forecasts, decisions, memory, reminders, and optional AI explanations.
 - Added an English public website for product, architecture, documentation, security, roadmap, contributing, and open-source resources.
+- Deployed a database-free public demo at `https://personal-atlas-ai.vercel.app`.
 - Kept financial outputs educational and decision-support oriented; Atlas AI is not a regulated financial adviser.
 
 ### Deterministic Finance Engine
@@ -41,27 +42,34 @@ Release date: pending final deployment validation.
 
 ### AI Coach
 
-- Explains minimized deterministic context through validated structured responses.
-- Falls back to Mock AI when a configured provider is unavailable or invalid.
+- Added a session-only conversational AI Coach with suggested questions, user and Coach messages, New Chat, Clear Chat, retry, loading, and keyboard support.
+- Added English and Turkish response-language controls.
+- Presents structured responses with summary, recommendation, risk, next action, related questions, and key numbers.
+- Grounds every answer in a minimized DTO generated from deterministic finance output.
+- Uses browser-only Mock AI in the public demo and the existing server-side provider registry in self-host mode.
 - Does not calculate budgets, risk, payoff order, or financial truth.
 
 ### Provider Architecture
 
 - Includes provider-independent adapters for Mock, Gemini, OpenAI, Anthropic, OpenRouter, Ollama, LM Studio, and custom OpenAI-compatible APIs.
 - Keeps OpenAI, Anthropic, and remote custom endpoints self-host only.
+- Keeps provider credentials server-side and exposes no frontend API-key input.
 - Marks browser Gemini/OpenRouter support as experimental and disabled in production; Ollama/LM Studio browser connectivity remains local-only and conditional.
 
 ### Public Demo
 
 - Adds a database-free `/demo` workspace with immutable fictional seed data and per-tab in-memory CRUD.
+- Uses a fictional monthly salary of ₺150,000 and derived finance-engine results.
 - Resets all demo state on refresh, tab closure, browser-context change, or confirmed reset.
 - Uses Mock AI only and makes no platform-owned paid AI request.
 - Does not persist finance state to PostgreSQL, URL, cookies, browser storage, analytics, or server memory.
+- Defaults to English while allowing Turkish AI Coach responses.
 
 ### Public Website
 
 - Adds product, architecture, documentation, resource, sitemap, robots, offline, and custom 404 routes.
 - Adds responsive navigation, canonical metadata, Open Graph/Twitter metadata, structured data, and reduced-motion support.
+- Uses `https://personal-atlas-ai.vercel.app` as the verified production origin.
 
 ### Self-hosting
 
@@ -79,16 +87,18 @@ Release date: pending final deployment validation.
 
 - Covers deterministic services with unit tests, repositories with isolated PostgreSQL integration tests, and product/public/demo flows with Playwright.
 - Adds database-free demo build and E2E validation to CI.
-- Includes responsive, reduced-motion, metadata, broken internal navigation, storage-negative, and no-external-AI assertions.
+- Includes responsive, reduced-motion, metadata, broken internal navigation, storage-negative, no-external-AI, chat, language, and single-active-navigation assertions.
 
 ### Known Limitations
 
 - Authentication, user ownership, and multi-user authorization are not included.
 - Banking import, account aggregation, payment execution, and transaction synchronization are not included.
+- Conversation history is session-only and resets on refresh.
 - The public demo is fictional, non-persistent, and intentionally unsuitable for real financial information.
 - Browser cloud BYOK is experimental and disabled in production; local provider access depends on browser, CORS, and local runtime configuration.
 - Self-host operators are responsible for database security, backups, migration review, provider terms, and infrastructure operations.
 - Forecasts, scenarios, reminders, and AI explanations are educational decision support, not guarantees or regulated financial advice.
+- Four moderate transitive dependency advisories remain; the configured production audit reports no high or critical advisory.
 
 ## v0.1.0 - Personal Finance OS Foundation
 
