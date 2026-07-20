@@ -11,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { TrendingDown, TrendingUp, TriangleAlert } from "lucide-react";
+import { DatabaseZap, TrendingDown, TrendingUp, TriangleAlert } from "lucide-react";
 import { formatDemoTry } from "@/features/demo/presentation";
 import { useDemoFinance } from "@/features/demo/store";
 import { simulateForecastScenario } from "@/features/forecast/scenario-engine";
@@ -32,7 +32,7 @@ export default function DemoForecastPage() {
   const { snapshot } = useDemoFinance();
   const reducedMotion = useReducedMotion();
   const [horizon, setHorizon] = useState<ForecastHorizon>(24);
-  const [compare, setCompare] = useState(true);
+  const [compare, setCompare] = useState(false);
 
   const report = useMemo(() => buildForecastReport(snapshot), [snapshot]);
   const scenario = useMemo(
@@ -110,9 +110,26 @@ export default function DemoForecastPage() {
             </p>
           </div>
           <button type="button" className="ui-button-secondary" aria-pressed={compare} onClick={() => setCompare((value) => !value)}>
-            {compare ? "Hide scenario" : "Show 10% expense decrease"}
+            {compare ? "Hide comparison" : "Compare a 10% expense decrease"}
           </button>
         </div>
+
+        {compare ? (
+          <div className="mt-5 rounded-xl border border-mint/25 bg-mint/10 p-4">
+            <p className="font-semibold text-ink">Hypothetical scenario result</p>
+            <p className="mt-2 text-sm leading-6 text-steel">
+              The chart now compares the current projection with a reversible 10% mandatory-expense decrease. Current data remains unchanged.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-5 rounded-xl border border-dashed border-line bg-surface-muted/60 p-6 text-center">
+            <DatabaseZap aria-hidden className="mx-auto text-mint" />
+            <h3 className="mt-3 font-semibold text-ink">No temporary comparison selected</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-steel">
+              Run the fictional comparison to inspect a reversible result. Nothing will be saved.
+            </p>
+          </div>
+        )}
 
         <div className="mt-5 h-80 min-w-0 overflow-hidden" aria-label="Debt forecast chart">
           <ResponsiveContainer>
@@ -122,25 +139,9 @@ export default function DemoForecastPage() {
               <YAxis tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} width={70} />
               <Tooltip formatter={formatChartValue} contentStyle={chartTooltipStyle} labelStyle={chartLabelStyle} />
               <Legend />
-              <Line
-                type="monotone"
-                dataKey="remainingDebt"
-                name="Current projection"
-                stroke={chartTheme.steel}
-                strokeWidth={3}
-                dot={false}
-                isAnimationActive={!reducedMotion}
-              />
+              <Line type="monotone" dataKey="remainingDebt" name="Current projection" stroke={chartTheme.steel} strokeWidth={3} dot={false} isAnimationActive={!reducedMotion} />
               {compare ? (
-                <Line
-                  type="monotone"
-                  dataKey="scenarioDebt"
-                  name="10% lower expenses"
-                  stroke={chartTheme.mint}
-                  strokeWidth={3}
-                  dot={false}
-                  isAnimationActive={!reducedMotion}
-                />
+                <Line type="monotone" dataKey="scenarioDebt" name="10% lower expenses" stroke={chartTheme.mint} strokeWidth={3} dot={false} isAnimationActive={!reducedMotion} />
               ) : null}
             </LineChart>
           </ResponsiveContainer>
@@ -189,15 +190,7 @@ export default function DemoForecastPage() {
               <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} />
               <YAxis tickLine={false} axisLine={false} fontSize={12} tick={chartLabelStyle} width={70} />
               <Tooltip formatter={formatChartValue} contentStyle={chartTooltipStyle} labelStyle={chartLabelStyle} />
-              <Line
-                type="monotone"
-                dataKey="livingBudget"
-                name="Safe budget"
-                stroke={chartTheme.mint}
-                strokeWidth={3}
-                dot={false}
-                isAnimationActive={!reducedMotion}
-              />
+              <Line type="monotone" dataKey="livingBudget" name="Safe budget" stroke={chartTheme.mint} strokeWidth={3} dot={false} isAnimationActive={!reducedMotion} />
             </LineChart>
           </ResponsiveContainer>
         </div>
