@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, BookOpenText, CodeXml, Menu, X } from "lucide-react";
 
-const GITHUB_URL = "https://github.com/Tngc93/personal-finance-coach-dashboard";
+const GITHUB_URL = "https://github.com/Tngc93/Atlas-AI";
 
 const navigation = [
   ["Product", "/product"],
