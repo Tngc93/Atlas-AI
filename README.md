@@ -4,7 +4,7 @@
 
 > Bring your own AI. Bring your own database. Deploy anywhere.
 
-[![CI](https://github.com/Tngc93/personal-finance-coach-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/Tngc93/personal-finance-coach-dashboard/actions/workflows/ci.yml)
+[![CI](https://github.com/Tngc93/Atlas-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/Tngc93/Atlas-AI/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Release](https://img.shields.io/badge/release-v1.0.0--beta-blue)](docs/releases/v1.0.0-beta.md)
 [![Live Demo](https://img.shields.io/badge/live%20demo-online-00b894)](https://personal-atlas-ai.vercel.app)
@@ -112,8 +112,8 @@ More detail: [Architecture](docs/ARCHITECTURE.md), [AI Architecture](docs/produc
 Requirements: Node.js 20+, npm, and PostgreSQL for normal self-host mode.
 
 ```bash
-git clone https://github.com/Tngc93/personal-finance-coach-dashboard.git
-cd personal-finance-coach-dashboard
+git clone https://github.com/Tngc93/Atlas-AI.git
+cd Atlas-AI
 npm ci
 cp .env.example .env.local
 npm run prisma:generate
