@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import { CheckCircle2, Info, RotateCcw, ShieldCheck, X } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { useDemoFinance } from "@/features/demo/store";
@@ -53,11 +54,11 @@ function DemoDialog({ open, title, description, onClose, initialFocusRef, childr
     };
   }, [initialFocusRef, onClose, open]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
   const titleId = `demo-dialog-${title.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-")}`;
   const descriptionId = `${titleId}-description`;
 
-  return (
+  return createPortal(
     <div className="demo-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <div ref={dialogRef} className="demo-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}>
         <button type="button" className="demo-dialog-close" aria-label="Close dialog" onClick={onClose}><X aria-hidden size={20} /></button>
@@ -66,7 +67,8 @@ function DemoDialog({ open, title, description, onClose, initialFocusRef, childr
         <p id={descriptionId} className="demo-dialog-description">{description}</p>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
