@@ -3,6 +3,7 @@ import { Barlow, Inter_Tight } from "next/font/google";
 import { trCopy } from "@/lib/copy/tr";
 import { resolveSiteUrl } from "@/lib/public-site/site-url";
 import "./globals.css";
+import "./mobile-fixes.css";
 
 const barlow = Barlow({
   subsets: ["latin"],
