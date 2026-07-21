@@ -28,10 +28,12 @@ function isActive(pathname: string, href: string) {
 
 export function PublicHeader({ landing = false }: { landing?: boolean }) {
   const pathname = usePathname();
+  const [isHydrated, setIsHydrated] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
+  useEffect(() => setIsHydrated(true), []);
   useEffect(() => setIsMobileOpen(false), [pathname]);
 
   useEffect(() => {
@@ -89,6 +91,7 @@ export function PublicHeader({ landing = false }: { landing?: boolean }) {
           aria-label={isMobileOpen ? "Close menu" : "Open menu"}
           aria-expanded={isMobileOpen}
           aria-controls="public-mobile-navigation"
+          disabled={!isHydrated}
           onClick={() => setIsMobileOpen((open) => !open)}
         >
           {isMobileOpen ? <X aria-hidden size={21} /> : <Menu aria-hidden size={21} />}
