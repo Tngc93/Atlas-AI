@@ -179,12 +179,15 @@ export async function createPostgresTestContext(suiteName, kind = "integration")
 
     process.env.DATABASE_URL = databaseUrl;
     process.env.DIRECT_URL = directUrl;
-  } catch {
+  } catch (error) {
     if (schemaCreated) {
       await dropTestSchema(admin, schemaName);
     }
     await admin.$disconnect();
-    throw new Error(`İzole PostgreSQL test schema'sı hazırlanamadı: ${preparationStage}.`);
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`İzole PostgreSQL test schema'sı hazırlanamadı: ${preparationStage}. ${detail}`, {
+      cause: error,
+    });
   }
 
   let cleanedUp = false;
