@@ -20,7 +20,7 @@ test("product shell exposes the active route and an accessible mobile drawer", a
   await expect(page.getByRole("button", { name: "Menüyü aç" })).toBeVisible();
   await page.getByRole("button", { name: "Menüyü aç" }).click();
   await expect(page.getByRole("complementary", { name: "Mobil menü" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Bugün" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("link", { name: "Panel" })).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("button", { name: "Menüyü kapat" }).last()).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("complementary", { name: "Mobil menü" })).toHaveCount(0);
