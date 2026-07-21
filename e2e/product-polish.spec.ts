@@ -19,11 +19,12 @@ test("product shell exposes the active route and an accessible mobile drawer", a
 
   await expect(page.getByRole("button", { name: "Menüyü aç" })).toBeVisible();
   await page.getByRole("button", { name: "Menüyü aç" }).click();
-  await expect(page.getByRole("complementary", { name: "Mobil menü" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Panel" })).toHaveAttribute("aria-current", "page");
+  const mobileMenu = page.getByRole("complementary", { name: "Mobil menü" });
+  await expect(mobileMenu).toBeVisible();
+  await expect(mobileMenu.locator('a.product-nav-link[href="/dashboard"]')).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("button", { name: "Menüyü kapat" }).last()).toBeFocused();
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("complementary", { name: "Mobil menü" })).toHaveCount(0);
+  await expect(mobileMenu).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Menüyü aç" })).toBeFocused();
 
   const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
