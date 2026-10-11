@@ -14,6 +14,11 @@ Atlas AI is a privacy-aware personal finance decision-support platform. It combi
 
 The finance engine remains the source of truth. AI explains calculated results, but it does not calculate budgets, determine risk, or make decisions for the user.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/how-it-works-dark.svg">
+  <img src="docs/assets/how-it-works-light.svg" alt="Animated diagram: you enter income, expenses and debts in the Next.js app, a deterministic finance engine calculates cash flow, protected budget and payoff, forecast, decision, memory and reminder services build on it, data goes through a repository boundary to PostgreSQL when self-hosted or per-tab browser memory in the public demo, and a minimized context goes through the AI provider registry so the AI Coach can explain the results without changing them" width="100%">
+</picture>
+
 > [!IMPORTANT]
 > Atlas AI is educational software, not financial advice. The public demo uses fictional data and simulated Mock AI responses. Do not enter real financial information into a public demo deployment.
 
