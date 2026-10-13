@@ -4,7 +4,7 @@ Thank you for helping improve Atlas AI. Contributions should preserve determinis
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 20.9+
 - npm
 - Git
 - PostgreSQL test-preview credentials only when running integration or standard E2E tests

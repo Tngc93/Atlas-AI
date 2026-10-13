@@ -207,7 +207,7 @@ export const docsPages: Record<string, PublicPageContent> = {
   },
   "getting-started": {
     path: "/docs/getting-started", eyebrow: "Docs · Getting Started", title: "Start with a safe, explainable Atlas AI setup.", description: "Install Atlas AI, choose demo or self-host mode, and validate the local environment.",
-    summary: "Begin with fictional data and Mock AI. The repository README remains the source of truth for installation, scripts, execution modes and project status.", principles: ["Node.js 20+", "Mock-first evaluation", "Fictional data only", "Validate before operation"], workflow: ["Clone", "Install", "Configure", "Generate", "Run"], visual: "deployment",
+    summary: "Begin with fictional data and Mock AI. The repository README remains the source of truth for installation, scripts, execution modes and project status.", principles: ["Node.js 20.9+", "Mock-first evaluation", "Fictional data only", "Validate before operation"], workflow: ["Clone", "Install", "Configure", "Generate", "Run"], visual: "deployment",
     sections: [{ title: "Choose an execution mode", body: "Use public demo mode for database-free evaluation or self-host mode with PostgreSQL for controlled local operation." }, { title: "Keep secrets local", body: "Copy the environment template and provide values through ignored local files or deployment secret stores." }], related: ["/docs/demo-mode", "/docs/self-hosting", "/demo"], sourceFile: "README.md",
   },
   installation: {
@@ -291,7 +291,7 @@ export const docsPages: Record<string, PublicPageContent> = {
   },
   "self-hosting": {
     path: "/docs/self-hosting", eyebrow: "Docs · Self-hosting", title: "Deploy Atlas AI in a controlled environment.", description: "Installation, PostgreSQL, provider configuration and current production limitations.",
-    summary: "Self-host mode supports single-user development and controlled environments. The operator supplies infrastructure and must add authentication and ownership controls before public multi-user use.", principles: ["Node.js 20+", "PostgreSQL", "Optional AI provider", "Operator-managed security"], workflow: ["Install", "Configure", "Generate", "Test", "Operate"], visual: "deployment",
+    summary: "Self-host mode supports single-user development and controlled environments. The operator supplies infrastructure and must add authentication and ownership controls before public multi-user use.", principles: ["Node.js 20.9+", "PostgreSQL", "Optional AI provider", "Operator-managed security"], workflow: ["Install", "Configure", "Generate", "Test", "Operate"], visual: "deployment",
     sections: [{ title: "Start with Mock", body: "Deterministic functionality does not require a paid model and can be validated before provider credentials are configured." }, { title: "Review production readiness", body: "Authentication, authorization, backups, migration drills and monitoring are required before accepting real public data." }], related: ["/architecture/self-hosting", "/docs/postgresql", "/security"], sourceFile: "docs/SELF_HOSTING.md",
   },
 };

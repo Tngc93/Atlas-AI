@@ -114,7 +114,7 @@ More detail: [Architecture](docs/ARCHITECTURE.md), [AI Architecture](docs/produc
 
 ## Quick Start
 
-Requirements: Node.js 20+, npm, and PostgreSQL for normal self-host mode.
+Requirements: Node.js 20.9+, npm, and PostgreSQL for normal self-host mode.
 
 ```bash
 git clone https://github.com/Tngc93/Atlas-AI.git

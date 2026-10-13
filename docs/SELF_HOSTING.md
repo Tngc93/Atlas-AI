@@ -6,7 +6,7 @@ Self-host mode is implemented for single-user development and controlled environ
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 20.9+
 - npm
 - PostgreSQL
 - Optional AI provider account or local model runtime
