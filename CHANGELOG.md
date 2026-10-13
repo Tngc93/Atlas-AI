@@ -2,6 +2,15 @@
 
 Atlas AI is a Turkish-first, open-source AI Financial Intelligence Platform. This file records user-visible releases and material technical changes.
 
+## Unreleased
+
+### Security
+
+- Upgraded `next` to 15.5.27 to resolve critical and high-severity Next.js advisories.
+- Added npm overrides so Next.js uses a patched `postcss` (>= 8.5.23) and `@prisma/config` uses `deepmerge-ts` 8.0.2, matching upstream Prisma.
+- Refreshed lockfile-only transitive dependencies (`sharp`, `@modelcontextprotocol/sdk`, `fast-uri`, `ip-address`, `proxy-addr`) to patched versions within their existing semver ranges.
+- `npm run security:audit` (`--audit-level=high`) passes again; remaining moderate advisories are tracked separately.
+
 ## v1.0.0-beta - Public Beta
 
 Release date: 2026-07-19
